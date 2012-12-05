@@ -3,18 +3,20 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.sound;
+module src.ttn.sound;
 
-private import std.path;
-private import std.file;
-private import abagames.util.rand;
-private import abagames.util.logger;
-private import abagames.util.sdl.sound;
+
+private import Path = tango.io.Path;
+
+private import src.util.rand;
+private import src.util.logger;
+private import src.util.sdl.sound;
+
 
 /**
  * Manage BGMs and SEs.
  */
-public class Sound: abagames.util.sdl.sound.Sound {
+public class Sound: src.util.sdl.sound.Sound {
   mixin StaticRandImpl;
  private static:
   char[][] seFileName =
@@ -39,17 +41,20 @@ public class Sound: abagames.util.sdl.sound.Sound {
 
   private static void loadMusics() {
     Music[char[]] musics;
-    char[][] files = listdir(Music.dir);
-    foreach (char[] fileName; files) {
-      char[] ext = getExt(fileName);
-      if (ext != "ogg" && ext != "wav")
-        continue;
-      Music music = new Music();
-      music.load(fileName);
-      bgm[fileName] = music;
-      bgmFileName ~= fileName;
-      Logger.info("Load bgm: " ~ fileName);
-    }
+	
+	foreach(child; Path.children(Music.dir)) {
+		if(child.folder)
+			continue;
+		char[] fileName = child.name.dup;
+		char[] ext = fileName.length > 3 ? fileName[$-3..$] : null;
+		if (ext != "ogg" && ext != "wav")
+			continue;
+		Music music = new Music();
+		music.load(fileName);
+		bgm[fileName] = music;
+		bgmFileName ~= fileName;
+		Logger.info("Load bgm: " ~ fileName);
+	}
   }
 
   private static void loadChunks() {
@@ -69,7 +74,10 @@ public class Sound: abagames.util.sdl.sound.Sound {
     if (!_bgmEnabled)
       return;
     Music.halt();
-    bgm[name].play();
+    if(name in bgm)
+        bgm[name].play();
+    else
+        Logger.info("Invalid bgm: " ~ name);
   }
 
   public static void playBgm() {

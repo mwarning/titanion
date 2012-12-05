@@ -3,9 +3,11 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.util.math;
+module src.util.math;
 
-private import std.math;
+
+private import tango.math.Math;
+
 
 /**
  * Math utility methods.

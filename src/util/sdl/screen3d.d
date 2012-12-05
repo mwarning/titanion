@@ -3,15 +3,21 @@
  *
  * Copyright 2005 Kenta Cho. Some rights reserved.
  */
-module abagames.util.sdl.screen3d;
+module src.util.sdl.screen3d;
 
-private import std.string;
-private import std.math;
-private import SDL;
-private import opengl;
-private import abagames.util.vector;
-private import abagames.util.sdl.screen;
-private import abagames.util.sdl.sdlexception;
+
+private import tango.math.Math;
+private import tango.stdc.stringz;
+private import tango.text.convert.Integer;
+
+private import derelict.sdl.sdl;
+private import derelict.opengl.gl;
+private import derelict.opengl.glu;
+
+private import src.util.vector;
+private import src.util.sdl.screen;
+private import src.util.sdl.sdlexception;
+
 
 /**
  * SDL screen handler (3D, OpenGL).
@@ -30,10 +36,14 @@ public class Screen3D: Screen, SizableScreen {
   protected void setIcon() {}
 
   public void initSDL() {
+    //derelict specific
+    DerelictGL.load();
+    DerelictGLU.load();
+    DerelictSDL.load();
+      
     // Initialize SDL.
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-      throw new SDLInitFailedException(
-        "Unable to initialize SDL: " ~ std.string.toString(SDL_GetError()));
+      throw new SDLInitFailedException("Unable to initialize SDL: " ~ fromStringz(SDL_GetError()));
     }
     setIcon();
     // Create an OpenGL screen.
@@ -44,8 +54,7 @@ public class Screen3D: Screen, SizableScreen {
       videoFlags = SDL_OPENGL | SDL_FULLSCREEN;
     } 
     if (SDL_SetVideoMode(_width, _height, 0, videoFlags) == null) {
-      throw new SDLInitFailedException
-        ("Unable to create SDL screen: " ~ std.string.toString(SDL_GetError()));
+      throw new SDLInitFailedException("Unable to create SDL screen: " ~ fromStringz(SDL_GetError()));
     }
     glViewport(0, 0, width, height);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -97,11 +106,11 @@ public class Screen3D: Screen, SizableScreen {
     if (error == GL_NO_ERROR)
       return;
     closeSDL();
-    throw new Exception("OpenGL error(" ~ std.string.toString(error) ~ ")");
+    throw new Exception("OpenGL error(" ~ .toString(error) ~ ")");
   }
 
   protected void setCaption(char[] name) {
-    SDL_WM_SetCaption(std.string.toStringz(name), null);
+    SDL_WM_SetCaption(toStringz(name), null);
   }
 
   public bool windowMode(bool v) {

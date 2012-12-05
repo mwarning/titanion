@@ -3,35 +3,39 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.frame;
+module src.ttn.frame;
 
-private import std.math;
-private import SDL;
-private import opengl;
-private import abagames.util.rand;
-private import abagames.util.vector;
-private import abagames.util.sdl.frame;
-private import abagames.util.sdl.pad;
-private import abagames.ttn.field;
-private import abagames.ttn.screen;
-private import abagames.ttn.token;
-private import abagames.ttn.player;
-private import abagames.ttn.enemy;
-private import abagames.ttn.bullet;
-private import abagames.ttn.particle;
-private import abagames.ttn.pillar;
-private import abagames.ttn.stage;
-private import abagames.ttn.letter;
-private import abagames.ttn.replay;
-private import abagames.ttn.sound;
-private import abagames.ttn.title;
-private import abagames.ttn.preference;
-private import abagames.ttn.shape;
+
+private import tango.math.Math;
+
+private import derelict.sdl.sdl;
+private import derelict.opengl.gl;
+
+private import src.util.rand;
+private import src.util.vector;
+private import src.util.sdl.frame;
+private import src.util.sdl.pad;
+private import src.ttn.field;
+private import src.ttn.screen;
+private import src.ttn.token;
+private import src.ttn.player;
+private import src.ttn.enemy;
+private import src.ttn.bullet;
+private import src.ttn.particle;
+private import src.ttn.pillar;
+private import src.ttn.stage;
+private import src.ttn.letter;
+private import src.ttn.replay;
+private import src.ttn.sound;
+private import src.ttn.title;
+private import src.ttn.preference;
+private import src.ttn.shape;
+
 
 /**
  * Game frame and actor pools.
  */
-public class Frame: abagames.util.sdl.frame.Frame {
+public class Frame: src.util.sdl.frame.Frame {
  private:
   static const char[] LAST_REPLAY_FILE_NAME = "last.rpl";
   Pad pad;

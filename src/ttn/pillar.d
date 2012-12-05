@@ -3,14 +3,17 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.pillar;
+module src.ttn.pillar;
 
-private import std.math;
-private import abagames.util.actor;
-private import abagames.ttn.field;
-private import abagames.ttn.token;
-private import abagames.ttn.shape;
-private import abagames.ttn.enemy;
+
+private import tango.math.Math;
+
+private import src.util.actor;
+private import src.ttn.field;
+private import src.ttn.token;
+private import src.ttn.shape;
+private import src.ttn.enemy;
+
 
 /**
  * Pillars at the center and on the background.
@@ -59,7 +62,7 @@ public class Pillar: Token!(PillarState, PillarSpec) {
     Pillar p = cast(Pillar) o;
     if (!p)
       return 0;
-    return cast(int) (fabs(p.pos.y) - fabs(pos.y));
+    return cast(int) (abs(p.pos.y) - abs(pos.y));
   }
 }
 

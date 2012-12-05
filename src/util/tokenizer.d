@@ -3,10 +3,12 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.util.tokenizer;
+module src.util.tokenizer;
 
-private import std.stream;
-private import std.string;
+
+private import tango.io.device.File;
+private import tango.text.Util;
+
 
 /**
  * Tokenizer.
@@ -15,20 +17,17 @@ public class Tokenizer {
  private:
 
   public static char[][] readFile(char[] fileName, char[] separator) {
-    char[][] result;
-    auto File fd = new File(fileName, FileMode.In);
-    for (;;) {
-      char[] line = fd.readLine();
-      if (!line)
-        break;
-      char[][] spl = std.string.split(line, separator);
+     char[][] result;
+     auto file = cast(char[]) File.get(fileName);
+     char[][] lines = splitLines(file);
+     foreach(line; lines) {
+      char[][] spl = split(line, separator);
       foreach (char[] s; spl) {
-        char[] r = strip(s);
+        char[] r = trim(s);
         if (r.length > 0)
           result ~= r;
       }
     }
-    fd.close();
     return result;
   }
 }

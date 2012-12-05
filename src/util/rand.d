@@ -3,10 +3,11 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.util.rand;
+module src.util.rand;
 
-private import std.stream;
-private import std.date;
+
+private import tango.time.Clock;
+
 
 /**
  * Random number generator.
@@ -25,8 +26,8 @@ public template StaticRandImpl() {
 public class Rand {
 
   public this() {
-    d_time timer = getUTCtime();
-    init_genrand(timer);
+    auto timer = Clock.now.ticks();
+    init_genrand(cast(uint) timer);
   }
 
   public void setSeed(long n) {
@@ -176,14 +177,14 @@ void init_by_array(uint init_key[], uint key_length)
 
 void next_state()
 {
-    uint *p=state;
+    uint *p = state.ptr;
 
     /* if init_genrand() has not been called, */
     /* a default initial seed is used         */
     if (initf==0) init_genrand(5489UL);
 
     left = N;
-    next = state;
+    next = state.ptr;
     
     for (int j=N-M+1; --j; p++) 
         *p = p[M] ^ TWIST(p[0], p[1]);

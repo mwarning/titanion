@@ -3,21 +3,24 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.bullet;
+module src.ttn.bullet;
 
-private import std.math;
-private import opengl;
-private import abagames.util.vector;
-private import abagames.util.actor;
-private import abagames.util.math;
-private import abagames.ttn.token;
-private import abagames.ttn.field;
-private import abagames.ttn.shape;
-private import abagames.ttn.player;
-private import abagames.ttn.particle;
-private import abagames.ttn.enemy;
-private import abagames.ttn.screen;
-private import abagames.ttn.frame;
+
+private import tango.math.Math;
+
+private import derelict.opengl.gl;
+private import src.util.vector;
+private import src.util.actor;
+private import src.util.math;
+private import src.ttn.token;
+private import src.ttn.field;
+private import src.ttn.shape;
+private import src.ttn.player;
+private import src.ttn.particle;
+private import src.ttn.enemy;
+private import src.ttn.screen;
+private import src.ttn.frame;
+
 
 /**
  * Enemies' bullets.
@@ -56,14 +59,6 @@ public class BulletPool: ActorPool!(Bullet) {
         }
       }
     }
-  }
-}
-
-public class Bullet: Token!(BulletState, BulletSpec) {
- private:
-
-  public void setWaitCnt(int c) {
-    state.waitCnt = c;
   }
 }
 
@@ -197,5 +192,13 @@ public class BulletSpec: TokenSpec!(BulletState) {
       Screen.setColor(0.6f * colorAlpha, 0.9f * colorAlpha, 0.9f * colorAlpha);
       (cast(BulletShapeBase) lineShape).draw(p, cd, d, cnt * 3.0f);
     }
+  }
+}
+
+public class Bullet: Token!(BulletState, BulletSpec) {
+ private:
+
+  public void setWaitCnt(int c) {
+    state.waitCnt = c;
   }
 }

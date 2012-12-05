@@ -3,14 +3,18 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.shape;
+module src.ttn.shape;
 
-private import std.math;
-private import opengl;
-private import abagames.util.vector;
-private import abagames.util.sdl.displaylist;
-private import abagames.ttn.screen;
-private import abagames.ttn.field;
+
+private import tango.math.Math;
+
+private import derelict.opengl.gl;
+
+private import src.util.vector;
+private import src.util.sdl.displaylist;
+private import src.ttn.screen;
+private import src.ttn.field;
+
 
 /**
  * 3D shapes of a player, enemies, particles, etc.

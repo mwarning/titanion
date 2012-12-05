@@ -3,13 +3,28 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.util.sdl.pad;
+module src.util.sdl.pad;
 
-private import std.string;
-private import std.stream;
-private import SDL;
-private import abagames.util.sdl.input;
-private import abagames.util.sdl.recordableinput;
+
+private import tango.io.device.File;
+
+private import derelict.sdl.sdl;
+
+private import src.util.sdl.input;
+private import src.util.sdl.recordableinput;
+
+
+void readFrom(T)(File fd, T* dst)
+{
+    auto count = fd.read ((cast(void*) &dst)[0..int.sizeof]);
+    assert (count is int.sizeof);
+}
+
+void writeTo(T)(File fd, T* dst)
+{
+    auto count = fd.write ((cast(void*) &dst)[0..int.sizeof]);
+    assert (count is int.sizeof);
+}
 
 /**
  * Inputs from a joystick and a keyboard.
@@ -142,14 +157,16 @@ public class PadState {
 
   public void read(File fd) {
     int s;
-    fd.read(s);
+   // fd.read(s);
+    readFrom(fd, &s);
     dir = s & (Dir.UP | Dir.DOWN | Dir.LEFT | Dir.RIGHT);
     button = s & Button.ANY;
   }
 
   public void write(File fd) {
     int s = dir | button;
-    fd.write(s);
+   // fd.write(s);
+   writeTo(fd, &s);
   }
 
   public bool equals(PadState s) {

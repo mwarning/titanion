@@ -3,10 +3,25 @@
  *
  * Copyright 2005 Kenta Cho. Some rights reserved.
  */
-module abagames.util.sdl.recordableinput;
+module src.util.sdl.recordableinput;
 
-private import std.stream;
-private import abagames.util.iterator;
+
+private import tango.io.device.File;
+
+private import src.util.iterator;
+
+
+void read(T)(File fd, T* dst)
+{
+    auto count = fd.read ((cast(void*) &dst)[0..int.sizeof]);
+    assert (count is int.sizeof);
+}
+
+void write(T)(File fd, T* dst)
+{
+    auto count = fd.write ((cast(void*) &dst)[0..int.sizeof]);
+    assert (count is int.sizeof);
+}
 
 /**
  * Record an input for a replay.
@@ -98,9 +113,10 @@ public class InputRecord(T) {
   }
 
   public void save(File fd) {
-    fd.write(record.length);
+	auto len = record.length;
+  .write(fd, &len);
     foreach (Record r; record) {
-      fd.write(r.series);
+      .write(fd ,&r.series);
       r.data.write(fd);
     }
   }
@@ -109,9 +125,9 @@ public class InputRecord(T) {
     clear();
     int l, s;
     T d;
-    fd.read(l);
+	.read(fd, &l);
     for (int i = 0; i < l; i++) {
-      fd.read(s);
+      .read(fd, &s);
       d = T.newInstance();
       d.read(fd);
       Record r;

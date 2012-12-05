@@ -3,10 +3,12 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.util.logger;
+module src.util.logger;
 
-private import std.stdio;
-private import std.string;
+
+private import tango.stdc.stdio;
+private import tango.io.Stdout;
+
 
 /**
  * Logger for error and info messages.
@@ -25,7 +27,7 @@ public class Logger {
   }
 
   private static void putMessage(char[] msg) {
-    MessageBoxA(null, std.string.toStringz(msg), "Error", MB_OK | MB_ICONEXCLAMATION);
+    MessageBoxA(null, toStringz(msg), "Error", MB_OK | MB_ICONEXCLAMATION);
   }
 
   public static void error(char[] msg) {
@@ -33,10 +35,6 @@ public class Logger {
   }
 
   public static void error(Exception e) {
-    putMessage("Error: " ~ e.toString());
-  }
-
-  public static void error(Error e) {
     putMessage("Error: " ~ e.toString());
   }
 }
@@ -47,30 +45,24 @@ public class Logger {
 
   public static void info(char[] msg, bool nline = true) {
     if (nline)
-      writefln(msg);
+      Stdout(msg).newline;
     else
-      writef(msg);
+      Stdout(msg).flush;   
   }
 
   public static void info(double n, bool nline = true) {
     if (nline)
-      writefln(std.string.toString(n));
+      Stdout(n).newline;
     else
-      writef(std.string.toString(n));
+      Stdout(n).flush;
   }
 
   public static void error(char[] msg) {
-    writefln("Error: %s", msg);
+    Stdout("Error: ")(msg).newline;
   }
 
   public static void error(Exception e) {
-    writefln("Error: %s", e.toString());
-  }
-
-  public static void error(Error e) {
-    writefln("Error: %s", e.toString());
-    if (e.next)
-      error(e.next);
+    Stdout("Error: ")(e.toString()).newline;
   }
 }
 

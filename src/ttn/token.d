@@ -3,14 +3,17 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.token;
+module src.ttn.token;
 
-private import std.math;
-private import abagames.util.vector;
-private import abagames.util.math;
-private import abagames.util.actor;
-private import abagames.ttn.field;
-private import abagames.ttn.shape;
+
+private import tango.math.Math;
+
+private import src.util.vector;
+private import src.util.math;
+private import src.util.actor;
+private import src.ttn.field;
+private import src.ttn.shape;
+
 
 /**
  * Tokens of a player, enemies, bullets, particles, etc.
@@ -68,7 +71,7 @@ public class Token(ST, SP): Actor {
  * Holding a state of a token.
  */
 public class TokenState {
- protected:
+ public: /*protected:*/
   bool isInitialized = false;
   Vector pos;
   float deg;
@@ -86,7 +89,7 @@ public class TokenState {
   public this() {
     pos = new Vector;
   }
-
+  
   public void clear() {
     pos.x = pos.y = 0;
     deg = 0;
@@ -99,6 +102,7 @@ public class TokenState {
     pos.y += cos(deg) * speed;
   }
 }
+
 
 /**
  * Base class of a token's specification.

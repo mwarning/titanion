@@ -3,24 +3,28 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.enemy;
+module src.ttn.enemy;
 
-private import std.math;
-private import opengl;
-private import abagames.util.rand;
-private import abagames.util.vector;
-private import abagames.util.actor;
-private import abagames.util.math;
-private import abagames.ttn.token;
-private import abagames.ttn.field;
-private import abagames.ttn.shape;
-private import abagames.ttn.bullet;
-private import abagames.ttn.player;
-private import abagames.ttn.particle;
-private import abagames.ttn.stage;
-private import abagames.ttn.screen;
-private import abagames.ttn.sound;
-private import abagames.ttn.frame;
+
+private import tango.math.Math;
+
+private import derelict.opengl.gl;
+
+private import src.util.rand;
+private import src.util.vector;
+private import src.util.actor;
+private import src.util.math;
+private import src.ttn.token;
+private import src.ttn.field;
+private import src.ttn.shape;
+private import src.ttn.bullet;
+private import src.ttn.player;
+private import src.ttn.particle;
+private import src.ttn.stage;
+private import src.ttn.screen;
+private import src.ttn.sound;
+private import src.ttn.frame;
+
 
 /**
  * Enemies and turrets.
@@ -63,7 +67,7 @@ public class EnemyPool: ActorPool!(Enemy) {
     if (e) {
       float ox = _field.normalizeX(e.pos.x - p.x);
       float oy = e.pos.y - p.y;
-      if (fabs(ox) < 1.0f * e.state.size.x && fabs(oy) < 1.0f * e.state.size.y * widthRatio) {
+      if (abs(ox) < 1.0f * e.state.size.x && abs(oy) < 1.0f * e.state.size.y * widthRatio) {
         e.hitShot(deg);
         return true;
       }
@@ -89,8 +93,8 @@ public class EnemyPool: ActorPool!(Enemy) {
       if (e.exists && e.isCaptured) {
         float ox = _field.normalizeX(e.pos.x - p.x);
         float oy = e.pos.y - p.y;
-        if (fabs(ox) < 0.5f * (e.state.size.x + size.x) &&
-            fabs(oy) < 0.5f * (e.state.size.y + size.y)) {
+        if (abs(ox) < 0.5f * (e.state.size.x + size.x) &&
+            abs(oy) < 0.5f * (e.state.size.y + size.y)) {
           e.hitCaptured();
           hitf = true;
         }
@@ -504,7 +508,7 @@ public class EnemySpec: TokenSpec!(EnemyState) {
       }
       if (capturable)
         checkCaptured(es);
-      float er = (1 - ellipseRatio) + fabs(sin(deg + ellipseDeg)) * ellipseRatio * 2;
+      float er = (1 - ellipseRatio) + abs(sin(deg + ellipseDeg)) * ellipseRatio * 2;
       float rk = rank;
       vel.x -= sin(deg) * speed * er * 0.1f * rk;
       vel.y += cos(deg) * speed * er * 0.1f * rk;
@@ -608,7 +612,7 @@ public class EnemySpec: TokenSpec!(EnemyState) {
         pos.y += (player.pos.y - pos.y) * 0.33f;
         vel.y *= 0.6f;
         deg *= 0.95f;
-        if (fabs(player.pos.x + cx - pos.x) < 0.2f)
+        if (abs(player.pos.x + cx - pos.x) < 0.2f)
           captureState = 3;
         break;
       case 3:

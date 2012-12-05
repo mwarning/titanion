@@ -3,23 +3,28 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.boot;
+module src.ttn.boot;
 
-private import std.string;
-private import std.stream;
-private import std.math;
-private import std.c.stdlib;
-private import abagames.util.logger;
-private import abagames.util.tokenizer;
-private import abagames.util.sdl.mainloop;
-private import abagames.util.sdl.input;
-private import abagames.util.sdl.pad;
-private import abagames.util.sdl.recordableinput;
-private import abagames.util.sdl.sound;
-private import abagames.ttn.screen;
-private import abagames.ttn.frame;
-private import abagames.ttn.preference;
-private import abagames.ttn.enemy;
+
+private import tango.text.convert.Integer;
+private import tango.io.device.File;
+private import tango.sys.Environment;
+private import tango.math.Math;
+private import tango.stdc.stdlib;
+
+private import src.util.logger;
+private import src.util.tokenizer;
+private import src.util.sdl.mainloop;
+private import src.util.sdl.input;
+private import src.util.sdl.pad;
+private import src.util.sdl.recordableinput;
+private import src.util.sdl.sound;
+private import src.ttn.screen;
+private import src.ttn.frame;
+private import src.ttn.preference;
+private import src.ttn.enemy;
+private import src.ttn.particle;
+
 
 /**
  * Boot the game.
@@ -51,7 +56,7 @@ version (Win32_release) {
     _minit();
     try {
       _moduleCtor();
-      char exe[4096];
+      char[4096] exe;
       GetModuleFileNameA(null, exe, 4096);
       char[][1] prog;
       prog[0] = std.string.toString(exe);
@@ -64,8 +69,24 @@ version (Win32_release) {
     return result;
   }
 } else {
+
+    char[] dirname(char[] path) {
+      auto i = path.length;
+      if(i == 0)
+        return path;
+      while(--i) {
+          if(path[i] == '/')
+            return path[0..i+1];
+      }
+      return null;
+    }
+
   // Boot as the general executable.
   public int main(char[][] args) {
+    //set working directory to binary location
+    char[] path = dirname(args[0]);
+    Environment.cwd(path);
+      
     return boot(args);
   }
 }
@@ -104,9 +125,9 @@ private void parseArgs(char[][] commandArgs, Screen screen, RecordablePad pad, M
         throw new Exception("Invalid options");
       }
       i++;
-      int w = std.string.atoi(args[i]);
+      int w = toInt(args[i]);
       i++;
-      int h = std.string.atoi(args[i]);
+      int h = toInt(args[i]);
       screen.width = w;
       screen.height = h;
       break;
@@ -116,7 +137,7 @@ private void parseArgs(char[][] commandArgs, Screen screen, RecordablePad pad, M
         throw new Exception("Invalid options");
       }
       i++;
-      float b = cast(float) std.string.atoi(args[i]) / 100;
+      float b = cast(float) toInt(args[i]) / 100;
       if (b < 0 || b > 1) {
         usage(args[0]);
         throw new Exception("Invalid options");
@@ -132,7 +153,7 @@ private void parseArgs(char[][] commandArgs, Screen screen, RecordablePad pad, M
         throw new Exception("Invalid options");
       }
       i++;
-      int v = std.string.atoi(args[i]);
+      int v = toInt(args[i]);
       if (v < 0 || v > 128) {
         usage(args[0]);
         throw new Exception("Invalid options");
@@ -145,7 +166,7 @@ private void parseArgs(char[][] commandArgs, Screen screen, RecordablePad pad, M
         throw new Exception("Invalid options");
       }
       i++;
-      int v = std.string.atoi(args[i]);
+      int v = toInt(args[i]);
       if (v < 0 || v > 128) {
         usage(args[0]);
         throw new Exception("Invalid options");

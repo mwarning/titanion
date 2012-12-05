@@ -3,11 +3,26 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.replay;
+module src.ttn.replay;
 
-private import std.stream;
-private import abagames.util.sdl.pad;
-private import abagames.util.sdl.recordableinput;
+
+private import tango.io.device.File;
+
+private import src.util.sdl.pad;
+private import src.util.sdl.recordableinput;
+
+
+void read(T)(File fd, T* dst)
+{
+    auto count = fd.read ((cast(void*) &dst)[0..int.sizeof]);
+    assert (count is int.sizeof);
+}
+
+void write(T)(File fd, T* dst)
+{
+    auto count = fd.write ((cast(void*) &dst)[0..int.sizeof]);
+    assert (count is int.sizeof);
+}
 
 /**
  * Save/Load a replay data.
@@ -15,7 +30,7 @@ private import abagames.util.sdl.recordableinput;
 public class ReplayData {
  public:
   static const char[] DIR = "replay";
-  static const int VERSION_NUM = 30;
+  static /*const*/ int VERSION_NUM = 30;
   InputRecord!(PadState) inputRecord;
   long seed;
   int score = 0;
@@ -24,27 +39,27 @@ public class ReplayData {
  private:
 
   public void save(char[] fileName) {
-    auto File fd = new File(DIR ~ "/" ~ fileName, FileMode.OutNew);
-    fd.write(VERSION_NUM);
-    fd.write(seed);
-    fd.write(score);
-    fd.write(mode);
-    fd.write(cast(byte) stageRandomized);
+    File fd = new File(DIR ~ "/" ~ fileName, File.WriteCreate);
+    .write(fd, &VERSION_NUM);
+    .write(fd, &seed);
+    .write(fd, &score);
+    .write(fd, &mode);
+    .write(fd, cast(byte*) &stageRandomized);
     inputRecord.save(fd);
     fd.close();
   }
 
   public void load(char[] fileName) {
-    auto File fd = new File(DIR ~ "/" ~ fileName, FileMode.In);
+    File fd = new File(DIR ~ "/" ~ fileName, File.ReadExisting);
     int ver;
-    fd.read(ver);
+    .read(fd, &ver);
     if (ver != VERSION_NUM)
-      throw new Error("Wrong version num");
-    fd.read(seed);
-    fd.read(score);
-    fd.read(mode);
+      throw new Exception("Wrong version num");
+    .read(fd, &seed);
+    .read(fd, &score);
+    .read(fd, &mode);
     byte sr;
-    fd.read(sr);
+    .read(fd, &sr);
     stageRandomized = cast(bool) sr;
     inputRecord = new InputRecord!(PadState);
     inputRecord.load(fd);

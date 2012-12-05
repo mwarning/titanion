@@ -3,13 +3,16 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.screen;
+module src.ttn.screen;
 
-private import SDL;
-private import opengl;
-private import openglu;
-private import abagames.util.sdl.screen3d;
-private import abagames.ttn.field;
+
+private import derelict.sdl.sdl;
+private import derelict.opengl.gl;
+private import derelict.opengl.glu;
+
+private import src.util.sdl.screen3d;
+private import src.ttn.field;
+
 
 /**
  * OpenGL screen.
@@ -21,7 +24,7 @@ public class Screen: Screen3D {
   Field field;
 
   protected void setIcon() {
-    SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE_NAME), null);
+    SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE_NAME.ptr), null);
   }
 
   protected void init() {

@@ -3,95 +3,28 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.particle;
+module src.ttn.particle;
 
-private import opengl;
-private import std.math;
-private import abagames.util.vector;
-private import abagames.util.math;
-private import abagames.util.actor;
-private import abagames.util.rand;
-private import abagames.ttn.token;
-private import abagames.ttn.field;
-private import abagames.ttn.screen;
-private import abagames.ttn.shape;
-private import abagames.ttn.letter;
-private import abagames.ttn.player;
+private import tango.math.Math;
+
+private import derelict.opengl.gl;
+
+private import src.util.vector;
+private import src.util.math;
+private import src.util.actor;
+private import src.util.rand;
+private import src.ttn.token;
+private import src.ttn.field;
+private import src.ttn.screen;
+private import src.ttn.shape;
+private import src.ttn.letter;
+private import src.ttn.player;
+
 
 /**
  * Particles (Triangle / Line / Quad / Bonus).
  */
 public class ParticlePool: ActorPool!(Particle) {
-}
-
-public class Particle: Token!(ParticleState, ParticleSpec) {
- public:
-  static const enum Shape {
-    TRIANGLE, LINE, QUAD, BONUS,
-  };
- private:
-  private TriangleParticleSpec triangleParticleSpec;
-  private LineParticleSpec lineParticleSpec;
-  private QuadParticleSpec quadParticleSpec;
-  private BonusParticleSpec bonusParticleSpec;
-
-  public override void init(Object[] args) {
-    super.init(args);
-    triangleParticleSpec = cast(TriangleParticleSpec) args[0];
-    lineParticleSpec = cast(LineParticleSpec) args[1];
-    quadParticleSpec = cast(QuadParticleSpec) args[2];
-    bonusParticleSpec = cast(BonusParticleSpec) args[3];
-  }
-
-  public void set(int type,
-                  float x, float y, float deg, float speed,
-                  float sz, float r, float g, float b,
-                  int c = 60, bool ebg = true, float num = 0, int waitCnt = 0) {
-    switch (type) {
-    case Shape.TRIANGLE:
-      spec = triangleParticleSpec;
-      break;
-    case Shape.LINE:
-      spec = lineParticleSpec;
-      break;
-    case Shape.QUAD:
-      spec = quadParticleSpec;
-      break;
-    case Shape.BONUS:
-      spec = bonusParticleSpec;
-      break;
-    }
-    this.spec = spec;
-    super.set(x, y, deg, speed);
-    state.size = sz;
-    state.vel.x = -sin(deg) * speed;
-    state.vel.y = cos(deg) * speed;
-    state.r = r;
-    state.g = g;
-    state.b = b;
-    state.cnt = state.startCnt = c;
-    state.effectedByGravity = ebg;
-    state.trgNum = num;
-    state.waitCnt = waitCnt;
-    if (type == Shape.BONUS)
-      (cast(BonusParticleSpec) spec).setSize(state, sz);
-  }
-
-  public void setByVelocity(float x, float y, float vx, float vy,
-                            float sz, float r, float g, float b, float a,
-                            int c = 60, bool ebg = true) {
-    spec = triangleParticleSpec;
-    super.set(x, y, 0, 0);
-    state.vel.x = vx;
-    state.vel.y = vy;
-    state.size = sz;
-    state.r = r;
-    state.g = g;
-    state.b = b;
-    state.a = a;
-    state.cnt = state.startCnt = c;
-    state.effectedByGravity = ebg;
-  }
 }
 
 public class ParticleState: TokenState {
@@ -399,7 +332,7 @@ public class BonusParticleSpec: ParticleSpec {
         cfr = 0;
       a *= cfr;
       num += (trgNum - num) * 0.2f;
-      if (fabs(trgNum - num) < 0.5f)
+      if (abs(trgNum - num) < 0.5f)
         num = trgNum;
       size += (trgSize - size) * 0.1f;
       cnt--;
@@ -425,5 +358,75 @@ public class BonusParticleSpec: ParticleSpec {
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
       glPopMatrix();
     }
+  }
+}
+
+public class Particle: Token!(ParticleState, ParticleSpec) {
+ public:
+  static const enum Shape {
+    TRIANGLE, LINE, QUAD, BONUS,
+  };
+ private:
+  private TriangleParticleSpec triangleParticleSpec;
+  private LineParticleSpec lineParticleSpec;
+  private QuadParticleSpec quadParticleSpec;
+  private BonusParticleSpec bonusParticleSpec;
+
+  public override void init(Object[] args) {
+    super.init(args);
+    triangleParticleSpec = cast(TriangleParticleSpec) args[0];
+    lineParticleSpec = cast(LineParticleSpec) args[1];
+    quadParticleSpec = cast(QuadParticleSpec) args[2];
+    bonusParticleSpec = cast(BonusParticleSpec) args[3];
+  }
+
+  public void set(int type,
+                  float x, float y, float deg, float speed,
+                  float sz, float r, float g, float b,
+                  int c = 60, bool ebg = true, float num = 0, int waitCnt = 0) {
+    switch (type) {
+    case Shape.TRIANGLE:
+      spec = triangleParticleSpec;
+      break;
+    case Shape.LINE:
+      spec = lineParticleSpec;
+      break;
+    case Shape.QUAD:
+      spec = quadParticleSpec;
+      break;
+    case Shape.BONUS:
+      spec = bonusParticleSpec;
+      break;
+    }
+    this.spec = spec;
+    super.set(x, y, deg, speed);
+    state.size = sz;
+    state.vel.x = -sin(deg) * speed;
+    state.vel.y = cos(deg) * speed;
+    state.r = r;
+    state.g = g;
+    state.b = b;
+    state.cnt = state.startCnt = c;
+    state.effectedByGravity = ebg;
+    state.trgNum = num;
+    state.waitCnt = waitCnt;
+    if (type == Shape.BONUS)
+      (cast(BonusParticleSpec) spec).setSize(state, sz);
+  }
+
+  public void setByVelocity(float x, float y, float vx, float vy,
+                            float sz, float r, float g, float b, float a,
+                            int c = 60, bool ebg = true) {
+    spec = triangleParticleSpec;
+    super.set(x, y, 0, 0);
+    state.vel.x = vx;
+    state.vel.y = vy;
+    state.size = sz;
+    state.r = r;
+    state.g = g;
+    state.b = b;
+    state.a = a;
+    state.cnt = state.startCnt = c;
+    state.effectedByGravity = ebg;
   }
 }

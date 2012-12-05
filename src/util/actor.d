@@ -3,9 +3,11 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.util.actor;
+module src.util.actor;
 
-private import std.stdarg;
+
+private import tango.core.Vararg;
+
 
 /**
  * Actor that has an interface to move and draw.

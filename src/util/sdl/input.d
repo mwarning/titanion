@@ -3,9 +3,11 @@
  *
  * Copyright 2004 Kenta Cho. Some rights reserved.
  */
-module abagames.util.sdl.input;
+module src.util.sdl.input;
 
-private import SDL;
+
+private import derelict.sdl.sdl;
+
 
 /**
  * Input device interface.

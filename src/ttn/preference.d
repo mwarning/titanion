@@ -3,41 +3,55 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.preference;
+module src.ttn.preference;
 
-private import std.stream;
-private import abagames.util.preference;
+
+private import tango.io.device.File;
+
+private import src.util.preference;
+
+
+void read(T)(File fd, T* dst)
+{
+    auto count = fd.read ((cast(void*) &dst)[0..int.sizeof]);
+    assert (count is int.sizeof);
+}
+
+void write(T)(File fd, T* dst)
+{
+    auto count = fd.write ((cast(void*) &dst)[0..int.sizeof]);
+    assert (count is int.sizeof);
+}
 
 /**
  * Load/Save/Record a high score table.
  */
-public class Preference: abagames.util.preference.Preference {
+public class Preference: src.util.preference.Preference {
  public:
   static const int RANKING_NUM = 10;
   static const int MODE_NUM = 3;
  private:
-  static const int VERSION_NUM = 30;
+  static /*const*/ int VERSION_NUM = 30;
   static const char[] PREF_FILE_NAME = "ttn.prf";
   int[RANKING_NUM][MODE_NUM] _highScore;
   int _lastMode;
 
   public void load() {
-    auto File fd = null;
+    File fd;
     try {
-      fd = new File(PREF_FILE_NAME, FileMode.In);
+      fd = new File(PREF_FILE_NAME, File.ReadExisting);
       int ver;
-      fd.read(ver);
+      .read(fd, &ver);
       if (ver != VERSION_NUM)
-        throw new Error("Wrong version num");
-      fd.read(_lastMode);
+        throw new Exception("Wrong version num");
+       .read(fd, &_lastMode);
       for(int j = 0; j < MODE_NUM; j++)
         for(int i = 0; i < RANKING_NUM; i++)
-          fd.read(_highScore[j][i]);
+           .read(fd, &_highScore[j][i]);
     } catch (Object e) {
       init();
     } finally {
       if (fd)
-        if (fd.isOpen())
           fd.close();
     }
   }
@@ -50,12 +64,12 @@ public class Preference: abagames.util.preference.Preference {
   }
 
   public void save() {
-    auto File fd = new File(PREF_FILE_NAME, FileMode.OutNew);
-    fd.write(VERSION_NUM);
-    fd.write(_lastMode);
+    File fd = new File(PREF_FILE_NAME, File.WriteCreate);
+    .write(fd, &VERSION_NUM);
+    .write(fd, &_lastMode);
     for(int j = 0; j < MODE_NUM; j++)
       for(int i = 0; i < RANKING_NUM; i++)
-        fd.write(_highScore[j][i]);
+        .write(fd, &_highScore[j][i]);
     fd.close();
   }
 

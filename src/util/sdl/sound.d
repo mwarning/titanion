@@ -3,12 +3,16 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.util.sdl.sound;
+module src.util.sdl.sound;
 
-private import std.string;
-private import SDL;
-private import SDL_mixer;
-private import abagames.util.sdl.sdlexception;
+
+private import tango.stdc.stringz;
+
+private import derelict.sdl.sdl;
+private import derelict.sdl.mixer;
+
+private import src.util.sdl.sdlexception;
+
 
 /**
  * Initialize and close SDL_mixer.
@@ -23,6 +27,10 @@ public class Sound {
   public static void init() {
     if (noSound)
       return;
+
+    //derelict specific
+    DerelictSDLMixer.load(); 
+    
     int audio_rate;
     Uint16 audio_format;
     int audio_channels;
@@ -30,7 +38,7 @@ public class Sound {
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
       noSound = true;
       throw new SDLInitFailedException
-        ("Unable to initialize SDL_AUDIO: " ~ std.string.toString(SDL_GetError()));
+        ("Unable to initialize SDL_AUDIO: " ~ fromStringz(SDL_GetError()));
     }
     audio_rate = 44100;
     audio_format = AUDIO_S16;
@@ -39,7 +47,7 @@ public class Sound {
     if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers) < 0) {
       noSound = true;
       throw new SDLInitFailedException
-        ("Couldn't open audio: " ~ std.string.toString(SDL_GetError()));
+        ("Couldn't open audio: " ~ fromStringz(SDL_GetError()));
     }
     Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels);
     Mix_VolumeMusic(bgmVol);
@@ -69,11 +77,11 @@ public class Music {
     if (Sound.noSound)
       return;
     char[] fileName = dir ~ "/" ~ name;
-    music = Mix_LoadMUS(std.string.toStringz(fileName));
+    music = Mix_LoadMUS(toStringz(fileName));
     if (!music) {
       Sound.noSound = true;
       throw new SDLException("Couldn't load: " ~ fileName ~ 
-                             " (" ~ std.string.toString(Mix_GetError()) ~ ")");
+                             " (" ~ fromStringz(Mix_GetError()) ~ ")");
     }
   }
 
@@ -124,11 +132,11 @@ public class Chunk {
     if (Sound.noSound)
       return;
     char[] fileName = dir ~ "/" ~ name;
-    chunk = Mix_LoadWAV(std.string.toStringz(fileName));
+    chunk = Mix_LoadWAV(fileName);
     if (!chunk) {
       Sound.noSound = true;
       throw new SDLException("Couldn't load: " ~ fileName ~ 
-                             " (" ~ std.string.toString(Mix_GetError()) ~ ")");
+                             " (" ~ fromStringz(Mix_GetError()) ~ ")");
     }
     chunkChannel = ch;
   }

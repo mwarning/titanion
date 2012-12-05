@@ -3,7 +3,8 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.util.preference;
+module src.util.preference;
+
 
 /**
  * Save/load the preference (e.g. high-score).

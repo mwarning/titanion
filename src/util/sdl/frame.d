@@ -3,12 +3,12 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.util.sdl.frame;
+module src.util.sdl.frame;
 
-private import abagames.util.preference;
-private import abagames.util.sdl.mainloop;
-private import abagames.util.sdl.screen;
-private import abagames.util.sdl.input;
+private import src.util.preference;
+private import src.util.sdl.mainloop;
+private import src.util.sdl.screen;
+private import src.util.sdl.input;
 
 /**
  * Lifecycle of the game.

@@ -3,17 +3,20 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.util.sdl.mainloop;
+module src.util.sdl.mainloop;
 
-private import SDL;
-private import abagames.util.logger;
-private import abagames.util.rand;
-private import abagames.util.preference;
-private import abagames.util.sdl.frame;
-private import abagames.util.sdl.screen;
-private import abagames.util.sdl.input;
-private import abagames.util.sdl.sound;
-private import abagames.util.sdl.sdlexception;
+
+private import derelict.sdl.sdl;
+
+private import src.util.logger;
+private import src.util.rand;
+private import src.util.preference;
+private import src.util.sdl.frame;
+private import src.util.sdl.screen;
+private import src.util.sdl.input;
+private import src.util.sdl.sound;
+private import src.util.sdl.sdlexception;
+
 
 /**
  * SDL main loop.

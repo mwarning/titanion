@@ -3,7 +3,8 @@
  *
  * Copyright 2004 Kenta Cho. Some rights reserved.
  */
-module abagames.util.sdl.sdlexception;
+module src.util.sdl.sdlexception;
+
 
 /**
  * SDL initialize failed.

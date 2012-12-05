@@ -3,13 +3,17 @@
  *
  * Copyright 2005 Kenta Cho. Some rights reserved.
  */
-module abagames.util.sdl.texture;
+module src.util.sdl.texture;
 
-private import std.string;
-private import opengl;
-private import openglu;
-private import SDL;
-private import abagames.util.sdl.sdlexception;
+
+private import tango.stdc.stringz;
+
+private import derelict.opengl.gl;
+private import derelict.opengl.glu;
+private import derelict.sdl.sdl;
+
+private import src.util.sdl.sdlexception;
+
 
 /**
  * OpenGL textures.
@@ -29,7 +33,7 @@ public class Texture {
       return surface[name];
     } else {
       char[] fileName = imagesDir ~ name;
-      SDL_Surface *s = SDL_LoadBMP(std.string.toStringz(fileName));
+      SDL_Surface *s = SDL_LoadBMP(toStringz(fileName));
       if (!s)
         throw new SDLInitFailedException("Unable to load: " ~ fileName);
       SDL_PixelFormat format;
@@ -103,13 +107,13 @@ public class Texture {
         }
         glBindTexture(GL_TEXTURE_2D, num + ti);
         gluBuild2DMipmaps(GL_TEXTURE_2D, 4, panelWidth, panelHeight,
-                          GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+                          GL_RGBA, GL_UNSIGNED_BYTE, pixels.ptr);
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
         if (maskColor != 0xffffffffu) {
           glBindTexture(GL_TEXTURE_2D, maskNum + ti);
           gluBuild2DMipmaps(GL_TEXTURE_2D, 4, panelWidth, panelHeight,
-                            GL_RGBA, GL_UNSIGNED_BYTE, maskPixels);
+                            GL_RGBA, GL_UNSIGNED_BYTE, maskPixels.ptr);
           glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
           glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
         }

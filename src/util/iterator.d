@@ -3,7 +3,8 @@
  *
  * Copyright 2004 Kenta Cho. Some rights reserved.
  */
-module abagames.util.iterator;
+module src.util.iterator;
+
 
 /**
  * Simple iterator for an array.

@@ -3,7 +3,8 @@
  *
  * Copyright 2005 Kenta Cho. Some rights reserved.
  */
-module abagames.util.sdl.screen;
+module src.util.sdl.screen;
+
 
 /**
  * SDL screen handler interface.

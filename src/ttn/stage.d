@@ -3,22 +3,25 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.stage;
+module src.ttn.stage;
 
-private import std.math;
-private import abagames.util.rand;
-private import abagames.util.vector;
-private import abagames.ttn.field;
-private import abagames.ttn.token;
-private import abagames.ttn.enemy;
-private import abagames.ttn.bullet;
-private import abagames.ttn.player;
-private import abagames.ttn.particle;
-private import abagames.ttn.pillar;
-private import abagames.ttn.shape;
-private import abagames.ttn.sound;
-private import abagames.ttn.frame;
-private import abagames.ttn.letter;
+
+private import tango.math.Math;
+
+private import src.util.rand;
+private import src.util.vector;
+private import src.ttn.field;
+private import src.ttn.token;
+private import src.ttn.enemy;
+private import src.ttn.bullet;
+private import src.ttn.player;
+private import src.ttn.particle;
+private import src.ttn.pillar;
+private import src.ttn.shape;
+private import src.ttn.sound;
+private import src.ttn.frame;
+private import src.ttn.letter;
+
 
 /**
  * Enemy appearance pattern handler.

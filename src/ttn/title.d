@@ -3,17 +3,21 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.title;
+module src.ttn.title;
 
-private import std.string;
-private import opengl;
-private import abagames.util.vector;
-private import abagames.util.sdl.pad;
-private import abagames.util.sdl.texture;
-private import abagames.ttn.screen;
-private import abagames.ttn.letter;
-private import abagames.ttn.preference;
-private import abagames.ttn.frame;
+
+private import tango.text.convert.Integer;
+
+private import derelict.opengl.gl;
+
+private import src.util.vector;
+private import src.util.sdl.pad;
+private import src.util.sdl.texture;
+private import src.ttn.screen;
+private import src.ttn.letter;
+private import src.ttn.preference;
+private import src.ttn.frame;
+
 
 /**
  * Title screen.
@@ -174,7 +178,7 @@ public class Title {
           rstr = "3RD";
           break;
         default:
-          rstr = std.string.toString(i + 1) ~ "TH";
+          rstr = .toString(i + 1) ~ "TH";
           break;
         }
         if (i < 9)

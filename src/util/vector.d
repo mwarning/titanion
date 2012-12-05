@@ -3,10 +3,12 @@
  *
  * Copyright 2004 Kenta Cho. Some rights reserved.
  */
-module abagames.util.vector;
+module src.util.vector;
 
-private import std.math;
-private import std.string;
+
+private import tango.math.Math;
+private static import Float = tango.text.convert.Float;
+
 
 /**
  * 2D vector.
@@ -212,8 +214,8 @@ public class Vector {
   }
 
   public float dist(float px = 0, float py = 0) {
-    float ax = fabs(x - px);
-    float ay = fabs(y - py);
+    float ax = abs(x - px);
+    float ay = abs(y - py);
     if (ax > ay)
       return ax + ay / 2;
     else
@@ -242,7 +244,7 @@ public class Vector {
   }
 
   public char[] toString() {
-    return "(" ~ std.string.toString(x) ~ ", " ~ std.string.toString(y) ~ ")";
+    return "(" ~ Float.toString(x) ~ ", " ~ Float.toString(y) ~ ")";
   }
 }
 
@@ -306,9 +308,9 @@ public class Vector3 {
   }
 
   public float dist(float px = 0, float py = 0, float pz = 0) {
-    float ax = fabs(x - px);
-    float ay = fabs(y - py);
-    float az = fabs(z - pz);
+    float ax = abs(x - px);
+    float ay = abs(y - py);
+    float az = abs(z - pz);
     float axy;
     if (ax > ay)
       axy = ax + ay / 2;
@@ -362,6 +364,6 @@ public class Vector3 {
   }
 
   public char[] toString() {
-    return "(" ~ std.string.toString(x) ~ ", " ~ std.string.toString(y) ~ ", " ~ std.string.toString(z) ~ ")";
+    return "(" ~ Float.toString(x) ~ ", " ~ Float.toString(y) ~ ", " ~ Float.toString(z) ~ ")";
   }
 }

@@ -3,26 +3,30 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.player;
+module src.ttn.player;
 
-private import std.math;
-private import opengl;
-private import abagames.util.vector;
-private import abagames.util.rand;
-private import abagames.util.math;
-private import abagames.util.actor;
-private import abagames.util.sdl.pad;
-private import abagames.util.sdl.recordableinput;
-private import abagames.ttn.field;
-private import abagames.ttn.frame;
-private import abagames.ttn.screen;
-private import abagames.ttn.shape;
-private import abagames.ttn.token;
-private import abagames.ttn.enemy;
-private import abagames.ttn.bullet;
-private import abagames.ttn.particle;
-private import abagames.ttn.sound;
-private import abagames.ttn.letter;
+
+private import tango.math.Math;
+
+private import derelict.opengl.gl;
+
+private import src.util.vector;
+private import src.util.rand;
+private import src.util.math;
+private import src.util.actor;
+private import src.util.sdl.pad;
+private import src.util.sdl.recordableinput;
+private import src.ttn.field;
+private import src.ttn.frame;
+private import src.ttn.screen;
+private import src.ttn.shape;
+private import src.ttn.token;
+private import src.ttn.enemy;
+private import src.ttn.bullet;
+private import src.ttn.particle;
+private import src.ttn.sound;
+private import src.ttn.letter;
+
 
 /**
  * Player and shots.
@@ -68,7 +72,7 @@ public class Player: Token!(PlayerState, PlayerSpec) {
     with (state) {
       if (!hasCollision)
         return false;
-      if (fabs(pos.x - p.x) < size.x && fabs(pos.y - p.y) < size.y) {
+      if (abs(pos.x - p.x) < size.x && abs(pos.y - p.y) < size.y) {
         switch (spec.gameState.mode) {
         case GameState.Mode.CLASSIC:
           destroy();

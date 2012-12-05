@@ -3,10 +3,13 @@
  *
  * Copyright 2005 Kenta Cho. Some rights reserved.
  */
-module abagames.util.sdl.displaylist;
+module src.util.sdl.displaylist;
 
-private import opengl;
-private import abagames.util.sdl.sdlexception;
+
+private import derelict.opengl.gl;
+
+private import src.util.sdl.sdlexception;
+
 
 /**
  * Display list of OpenGL.

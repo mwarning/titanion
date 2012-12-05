@@ -3,15 +3,17 @@
  *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-module abagames.ttn.field;
+module src.ttn.field;
 
-private import std.math;
-private import opengl;
-private import openglu;
-private import abagames.util.vector;
-private import abagames.util.math;
-private import abagames.ttn.screen;
-private import abagames.ttn.frame;
+private import tango.math.Math;
+
+private import derelict.opengl.gl;
+private import derelict.opengl.glu;
+
+private import src.util.vector;
+private import src.util.math;
+private import src.ttn.screen;
+private import src.ttn.frame;
 
 /**
  * Game field.
@@ -82,8 +84,8 @@ public class Field {
   }
 
   public float calcCircularDist(Vector p1, Vector p2) {
-    float ax = fabs(normalizeX(p1.x - p2.x));
-    float ay = fabs(p1.y - p2.y);
+    float ax = abs(normalizeX(p1.x - p2.x));
+    float ay = abs(p1.y - p2.y);
     if (ax > ay)
       return ax + ay / 2;
     else
