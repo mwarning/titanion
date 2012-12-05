@@ -1,0 +1,20 @@
+By Moritz Warning:
+2009 4/20  ver. 0.4
+	Port code base to use Tango (http://dsource.org/projects/tango)
+		and Derelict (http://dsource.org/projects/derelict).
+	MacOS and Unix support.
+
+By Kenta Cho:
+2006 12/9  ver. 0.3
+	Ver.0.1 game mode came back as the BASIC mode with
+	the proximity multiplier.
+	Adjusted visual effects.
+	A provacation beam becomes brighter when provacating
+	a midsize enemy.
+	Added '-bgmvol', '-sevol' and '-randomized' options.
+	Adjusted the difficulty settings.
+2006 11/26  ver. 0.2
+	Added the CLASSIC and MODERN mode.
+	Adjusted the difficulty settings.
+2006 11/23  ver. 0.1
+	First released version.
