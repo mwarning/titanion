@@ -3,7 +3,7 @@ You strike down super high-velocity swooping insects.
 
 Titanion works on Windows98/2000/XP (OpenGL required), Unix, and MacOS.
 
-Repository maintainer: Moritz Warning
+Repository maintainer: Moritz Warning <moritzwarning@web.de>
 Original author: (C) Kenta Cho
 
 
@@ -126,12 +126,7 @@ These command-line options are available:
  -trail           Add a trail effect to enemies.
  -noslowdown      Stop an intentional slowdown.
  -randomized      Attack patterns of enemies randomly change with each play.
- 
- If you have any comments, please email to mwarning@users.sourceforge.net
 
-
-* Webpage
-http://titanion.sourceforge.net
 
 * Original Titanion webpage:
 http://www.asahi-net.or.jp/~cs8k-cyu/windows/ttn_e.html
