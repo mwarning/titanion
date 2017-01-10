@@ -6,8 +6,6 @@
 module src.ttn.sound;
 
 
-private import Path = tango.io.Path;
-
 private import src.util.rand;
 private import src.util.logger;
 private import src.util.sdl.sound;
@@ -19,15 +17,15 @@ private import src.util.sdl.sound;
 public class Sound: src.util.sdl.sound.Sound {
   mixin StaticRandImpl;
  private static:
-  char[][] seFileName =
+  string[] seFileName =
     ["shot.wav", "explosion1.wav", "explosion2.wav", "explosion3.wav",
      "tractor.wav", "flying_down.wav", "player_explosion.wav", "flick.wav", "extend.wav"];
   int[] seChannel =
     [0, 1, 2, 3, 4, 5, 6, 6, 7];
-  Music[char[]] bgm;
-  Chunk[char[]] se;
-  bool[char[]] seMark;
-  char[][] bgmFileName;
+  Music[string] bgm;
+  Chunk[string] se;
+  bool[string] seMark;
+  string[] bgmFileName;
   char[] currentBgm;
   int prevBgmIdx;
   int nextIdxMv;
@@ -45,8 +43,8 @@ public class Sound: src.util.sdl.sound.Sound {
 	foreach(child; Path.children(Music.dir)) {
 		if(child.folder)
 			continue;
-		char[] fileName = child.name.dup;
-		char[] ext = fileName.length > 3 ? fileName[$-3..$] : null;
+		string fileName = child.name.dup;
+		string ext = fileName.length > 3 ? fileName[$-3..$] : null;
 		if (ext != "ogg" && ext != "wav")
 			continue;
 		Music music = new Music();
@@ -59,7 +57,7 @@ public class Sound: src.util.sdl.sound.Sound {
 
   private static void loadChunks() {
     int i = 0;
-    foreach (char[] fileName; seFileName) {
+    foreach (string fileName; seFileName) {
       Chunk chunk = new Chunk();
       chunk.load(fileName, seChannel[i]);
       se[fileName] = chunk;
@@ -69,7 +67,7 @@ public class Sound: src.util.sdl.sound.Sound {
     }
   }
 
-  public static void playBgm(char[] name) {
+  public static void playBgm(string name) {
     currentBgm = name;
     if (!_bgmEnabled)
       return;
@@ -109,7 +107,7 @@ public class Sound: src.util.sdl.sound.Sound {
     Music.halt();
   }
 
-  public static void playSe(char[] name) {
+  public static void playSe(string name) {
     if (!_seEnabled)
       return;
     seMark[name] = true;

@@ -6,8 +6,6 @@
 module src.ttn.preference;
 
 
-private import tango.io.device.File;
-
 private import src.util.preference;
 
 

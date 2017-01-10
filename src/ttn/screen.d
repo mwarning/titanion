@@ -19,8 +19,8 @@ private import src.ttn.field;
  */
 public class Screen: Screen3D {
  private:
-  static const char[] CAPTION = "Titanion";
-  static const char[] ICON_FILE_NAME = "images/ttn_icon32.bmp";
+  static const string CAPTION = "Titanion";
+  static const string ICON_FILE_NAME = "images/ttn_icon32.bmp";
   Field field;
 
   protected void setIcon() {

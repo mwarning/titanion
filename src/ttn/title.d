@@ -6,8 +6,6 @@
 module src.ttn.title;
 
 
-private import tango.text.convert.Integer;
-
 private import derelict.opengl.gl;
 
 private import src.util.vector;

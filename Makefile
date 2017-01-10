@@ -10,47 +10,19 @@ default:
 
 
 D_FILES = \
-	derelict/sdl/mixer.d \
-	derelict/sdl/sdltypes.d \
-	derelict/sdl/sdlfuncs.d \
-	derelict/sdl/sdl.d \
-	derelict/sdl/macinit/SDLMain.d \
-	derelict/sdl/macinit/CoreFoundation.d \
-	derelict/sdl/macinit/NSAutoreleasePool.d \
-	derelict/sdl/macinit/NSMenu.d \
-	derelict/sdl/macinit/NSString.d \
-	derelict/sdl/macinit/string.d \
-	derelict/sdl/macinit/ID.d \
-	derelict/sdl/macinit/NSDictionary.d \
-	derelict/sdl/macinit/NSMenuItem.d \
-	derelict/sdl/macinit/NSZone.d \
-	derelict/sdl/macinit/MacTypes.d \
-	derelict/sdl/macinit/NSEnumerator.d \
-	derelict/sdl/macinit/NSNotification.d \
-	derelict/sdl/macinit/runtime.d \
-	derelict/sdl/macinit/NSApplication.d \
-	derelict/sdl/macinit/NSEvent.d \
-	derelict/sdl/macinit/NSObject.d \
-	derelict/sdl/macinit/NSArray.d \
-	derelict/sdl/macinit/NSGeometry.d \
-	derelict/sdl/macinit/NSProcessInfo.d \
-	derelict/sdl/macinit/selectors.d \
-	derelict/util/wrapper.d \
-	derelict/opengl/glfuncs.d \
-	derelict/util/exception.d \
-	derelict/util/loader.d \
-	derelict/util/wintypes.d \
-	derelict/opengl/cgl.d \
-	derelict/opengl/gl.d \
-	derelict/opengl/glu.d \
-	derelict/opengl/glx.d \
-	derelict/opengl/wgl.d \
-	derelict/opengl/gl12.d \
-	derelict/opengl/gl13.d \
-	derelict/opengl/gl14.d \
-	derelict/opengl/gl15.d \
-	derelict/opengl/gl20.d \
-	derelict/opengl/gl21.d \
+	derelict/sdl/mixer.di \
+	derelict/sdl/sdltypes.di \
+	derelict/sdl/sdlfuncs.di \
+	derelict/sdl/sdl.di \
+	derelict/opengl/glfuncs.di \
+	derelict/util/exception.di \
+	derelict/util/loader.di \
+	derelict/util/wintypes.di \
+	derelict/opengl/cgl.di \
+	derelict/opengl/gl.di \
+	derelict/opengl/glu.di \
+	derelict/opengl/glx.di \
+	derelict/opengl/wgl.di \
 	src/util/rand.d \
 	src/util/preference.d \
 	src/util/sdl/mainloop.d \

@@ -6,7 +6,7 @@
 module src.ttn.shape;
 
 
-private import tango.math.Math;
+private import std.math;
 
 private import derelict.opengl.gl;
 

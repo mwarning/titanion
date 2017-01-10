@@ -6,9 +6,6 @@
 module src.util.actor;
 
 
-private import tango.core.Vararg;
-
-
 /**
  * Actor that has an interface to move and draw.
  */

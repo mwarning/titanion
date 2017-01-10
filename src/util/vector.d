@@ -6,8 +6,8 @@
 module src.util.vector;
 
 
-private import tango.math.Math;
-private static import Float = tango.text.convert.Float;
+private import std.math;
+private import std.conv;
 
 
 /**
@@ -242,9 +242,9 @@ public class Vector {
     y = x * sin(d) + y * cos(d);
     x = tx;
   }
-
-  public char[] toString() {
-    return "(" ~ Float.toString(x) ~ ", " ~ Float.toString(y) ~ ")";
+  
+  public string toString() {
+    return "(" ~ to!string(x) ~ ", " ~ to!string(y) ~ ")";
   }
 }
 
@@ -363,7 +363,7 @@ public class Vector3 {
     z /= a;
   }
 
-  public char[] toString() {
-    return "(" ~ Float.toString(x) ~ ", " ~ Float.toString(y) ~ ", " ~ Float.toString(z) ~ ")";
+  public string toString() {
+    return "(" ~ to!string(x) ~ ", " ~ to!string(y) ~ ", " ~ to!string(z) ~ ")";
   }
 }

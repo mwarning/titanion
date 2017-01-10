@@ -6,8 +6,6 @@
 module src.ttn.stage;
 
 
-private import tango.math.Math;
-
 private import src.util.rand;
 private import src.util.vector;
 private import src.ttn.field;

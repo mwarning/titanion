@@ -6,12 +6,13 @@
 module src.ttn.letter;
 
 
-private import tango.math.Math;
+private import std.math;
 
 private import derelict.opengl.gl;
 
 private import src.util.sdl.displaylist;
 private import src.ttn.screen;
+
 
 /**
  * Letters.
@@ -114,7 +115,7 @@ public class Letter {
     return idx;
   }
 
-  public static void drawString(char[] str, float lx, float y, float s,
+  public static void drawString(string str, float lx, float y, float s,
                                 int d = Direction.TO_RIGHT,
                                 bool rev = false, float od = 0,
                                 float r = 1, float g = 1, float b = 1) {
@@ -123,7 +124,7 @@ public class Letter {
     float x = lx;
     int idx;
     float ld;
-    switch (d) {
+    final switch (d) {
     case Direction.TO_RIGHT:
       ld = 0;
       break;
@@ -160,7 +161,7 @@ public class Letter {
         }
       }
       if (od == 0) {
-        switch(d) {
+        final switch(d) {
         case Direction.TO_RIGHT:
           x += s * LETTER_WIDTH;
           break;
@@ -292,7 +293,7 @@ public class Letter {
       x = -x;
       y = y;
       deg %= 180;
-      switch (type) {
+      final switch (type) {
       case Shape.NORMAL:
         drawSegment(x, y, size, length, deg);
         break;

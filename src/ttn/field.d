@@ -5,7 +5,8 @@
  */
 module src.ttn.field;
 
-private import tango.math.Math;
+
+private import std.math;
 
 private import derelict.opengl.gl;
 private import derelict.opengl.glu;
@@ -14,6 +15,7 @@ private import src.util.vector;
 private import src.util.math;
 private import src.ttn.screen;
 private import src.ttn.frame;
+
 
 /**
  * Game field.

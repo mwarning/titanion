@@ -6,7 +6,7 @@
 module src.ttn.replay;
 
 
-private import tango.io.device.File;
+import std.stream;
 
 private import src.util.sdl.pad;
 private import src.util.sdl.recordableinput;
@@ -29,7 +29,7 @@ void write(T)(File fd, T* dst)
  */
 public class ReplayData {
  public:
-  static const char[] DIR = "replay";
+  static const string DIR = "replay";
   static /*const*/ int VERSION_NUM = 30;
   InputRecord!(PadState) inputRecord;
   long seed;
@@ -38,7 +38,7 @@ public class ReplayData {
   bool stageRandomized;
  private:
 
-  public void save(char[] fileName) {
+  public void save(string fileName) {
     File fd = new File(DIR ~ "/" ~ fileName, File.WriteCreate);
     .write(fd, &VERSION_NUM);
     .write(fd, &seed);
@@ -49,7 +49,7 @@ public class ReplayData {
     fd.close();
   }
 
-  public void load(char[] fileName) {
+  public void load(string fileName) {
     File fd = new File(DIR ~ "/" ~ fileName, File.ReadExisting);
     int ver;
     .read(fd, &ver);

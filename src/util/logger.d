@@ -6,9 +6,9 @@
 module src.util.logger;
 
 
-private import tango.stdc.stdio;
-private import tango.io.Stdout;
-
+private import std.stdio;
+private import std.string;
+private import std.conv;
 
 /**
  * Logger for error and info messages.
@@ -43,26 +43,28 @@ public class Logger {
 
 public class Logger {
 
-  public static void info(char[] msg, bool nline = true) {
+  public static void info(string msg, bool nline = true) {
     if (nline)
-      Stdout(msg).newline;
+      writefln(msg);
     else
-      Stdout(msg).flush;   
+      writef(msg);
   }
 
   public static void info(double n, bool nline = true) {
     if (nline)
-      Stdout(n).newline;
+      writefln(to!string(n));
     else
-      Stdout(n).flush;
+      writef(to!string(n));
   }
 
-  public static void error(char[] msg) {
-    Stdout("Error: ")(msg).newline;
+  public static void error(string msg) {
+    writefln("Error: %s", msg);
   }
 
   public static void error(Exception e) {
-    Stdout("Error: ")(e.toString()).newline;
+    writefln("Error: %s", e.toString());
+    //if (e.next)
+    //  error(e.next);
   }
 }
 

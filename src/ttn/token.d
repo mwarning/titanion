@@ -6,7 +6,7 @@
 module src.ttn.token;
 
 
-private import tango.math.Math;
+private import std.math;
 
 private import src.util.vector;
 private import src.util.math;
@@ -77,7 +77,7 @@ public class TokenState {
   float deg;
   float speed;
 
-  invariant {
+  invariant() {
     if (isInitialized) {
       assert(pos.x <>= 0);
       assert(pos.y <>= 0);

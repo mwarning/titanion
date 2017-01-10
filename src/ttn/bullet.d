@@ -6,8 +6,6 @@
 module src.ttn.bullet;
 
 
-private import tango.math.Math;
-
 private import derelict.opengl.gl;
 private import src.util.vector;
 private import src.util.actor;

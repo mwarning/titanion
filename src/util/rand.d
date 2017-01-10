@@ -6,8 +6,7 @@
 module src.util.rand;
 
 
-private import tango.time.Clock;
-
+private import core.time;
 
 /**
  * Random number generator.
@@ -26,12 +25,12 @@ public template StaticRandImpl() {
 public class Rand {
 
   public this() {
-    auto timer = Clock.now.ticks();
+    auto timer = TickDuration.currSystemTick().nsecs();
     init_genrand(cast(uint) timer);
   }
 
   public void setSeed(long n) {
-    init_genrand(n);
+    init_genrand(cast(uint) n);
   }
 
   public uint nextInt32() {
@@ -134,7 +133,7 @@ void init_genrand(uint s)
 {
     state[0]= s & 0xffffffffUL;
     for (int j=1; j<N; j++) {
-        state[j] = (1812433253UL * (state[j-1] ^ (state[j-1] >> 30)) + j); 
+        state[j] = cast(uint) (1812433253UL * (state[j-1] ^ (state[j-1] >> 30)) + j); 
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
         /* In the previous versions, MSBs of the seed affect   */
         /* only MSBs of the array state[].                        */
@@ -156,7 +155,7 @@ void init_by_array(uint init_key[], uint key_length)
     i=1; j=0;
     k = (N>key_length ? N : key_length);
     for (; k; k--) {
-        state[i] = (state[i] ^ ((state[i-1] ^ (state[i-1] >> 30)) * 1664525UL))
+        state[i] = cast(uint) (state[i] ^ ((state[i-1] ^ (state[i-1] >> 30)) * 1664525UL))
           + init_key[j] + j; /* non linear */
         state[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
         i++; j++;
@@ -164,7 +163,7 @@ void init_by_array(uint init_key[], uint key_length)
         if (j>=key_length) j=0;
     }
     for (k=N-1; k; k--) {
-        state[i] = (state[i] ^ ((state[i-1] ^ (state[i-1] >> 30)) * 1566083941UL))
+        state[i] = cast(uint) (state[i] ^ ((state[i-1] ^ (state[i-1] >> 30)) * 1566083941UL))
           - i; /* non linear */
         state[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
         i++;

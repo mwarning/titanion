@@ -6,7 +6,7 @@
 module src.util.math;
 
 
-private import tango.math.Math;
+private import std.math;
 
 
 /**

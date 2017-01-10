@@ -6,9 +6,10 @@
 module src.util.sdl.screen3d;
 
 
-private import tango.math.Math;
-private import tango.stdc.stringz;
-private import tango.text.convert.Integer;
+private import std.string;
+private import core.stdc.string;
+private import std.math;
+private import std.conv;
 
 private import derelict.sdl.sdl;
 private import derelict.opengl.gl;
@@ -18,6 +19,10 @@ private import src.util.vector;
 private import src.util.sdl.screen;
 private import src.util.sdl.sdlexception;
 
+
+string fromStringz(char* str) {
+    return (str[0..strlen(str)]).idup;
+}
 
 /**
  * SDL screen handler (3D, OpenGL).
@@ -106,10 +111,10 @@ public class Screen3D: Screen, SizableScreen {
     if (error == GL_NO_ERROR)
       return;
     closeSDL();
-    throw new Exception("OpenGL error(" ~ .toString(error) ~ ")");
+    throw new Exception("OpenGL error(" ~ to!string(error) ~ ")");
   }
 
-  protected void setCaption(char[] name) {
+  protected void setCaption(string name) {
     SDL_WM_SetCaption(toStringz(name), null);
   }
 

@@ -6,22 +6,10 @@
 module src.util.sdl.recordableinput;
 
 
-private import tango.io.device.File;
+private import std.stream;
 
 private import src.util.iterator;
 
-
-void read(T)(File fd, T* dst)
-{
-    auto count = fd.read ((cast(void*) &dst)[0..int.sizeof]);
-    assert (count is int.sizeof);
-}
-
-void write(T)(File fd, T* dst)
-{
-    auto count = fd.write ((cast(void*) &dst)[0..int.sizeof]);
-    assert (count is int.sizeof);
-}
 
 /**
  * Record an input for a replay.
@@ -54,7 +42,7 @@ public template RecordableInput(T) {
 }
 
 public class NoRecordDataException: Exception {
-  public this(char[] msg) {
+  public this(string msg) {
     super(msg);
   }
 }
@@ -113,10 +101,9 @@ public class InputRecord(T) {
   }
 
   public void save(File fd) {
-	auto len = record.length;
-  .write(fd, &len);
+    fd.write(record.length);
     foreach (Record r; record) {
-      .write(fd ,&r.series);
+      fd.write(r.series);
       r.data.write(fd);
     }
   }
@@ -125,9 +112,9 @@ public class InputRecord(T) {
     clear();
     int l, s;
     T d;
-	.read(fd, &l);
+    fd.read(l);
     for (int i = 0; i < l; i++) {
-      .read(fd, &s);
+      fd.read(s);
       d = T.newInstance();
       d.read(fd);
       Record r;

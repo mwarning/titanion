@@ -6,8 +6,6 @@
 module src.ttn.pillar;
 
 
-private import tango.math.Math;
-
 private import src.util.actor;
 private import src.ttn.field;
 private import src.ttn.token;

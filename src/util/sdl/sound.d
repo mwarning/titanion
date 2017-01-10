@@ -6,13 +6,18 @@
 module src.util.sdl.sound;
 
 
-private import tango.stdc.stringz;
+private import std.string;
+private import core.stdc.string;
 
 private import derelict.sdl.sdl;
 private import derelict.sdl.mixer;
 
 private import src.util.sdl.sdlexception;
 
+
+string fromStringz(char* str) {
+    return (str[0..strlen(str)]).idup;
+}
 
 /**
  * Initialize and close SDL_mixer.
@@ -69,14 +74,14 @@ public class Sound {
 public class Music {
  public:
   static int fadeOutSpeed = 1280;
-  static char[] dir = "sounds/musics";
+  static string dir = "sounds/musics";
  private:
   Mix_Music* music;
 
-  public void load(char[] name) {
+  public void load(string name) {
     if (Sound.noSound)
       return;
-    char[] fileName = dir ~ "/" ~ name;
+    string fileName = dir ~ "/" ~ name;
     music = Mix_LoadMUS(toStringz(fileName));
     if (!music) {
       Sound.noSound = true;
@@ -123,15 +128,15 @@ public class Music {
  */
 public class Chunk {
  public:
-  static char[] dir = "sounds/chunks";
+  static string dir = "sounds/chunks";
  private:
   Mix_Chunk* chunk;
   int chunkChannel;
 
-  public void load(char[] name, int ch) {
+  public void load(string name, int ch) {
     if (Sound.noSound)
       return;
-    char[] fileName = dir ~ "/" ~ name;
+    string fileName = dir ~ "/" ~ name;
     chunk = Mix_LoadWAV(fileName);
     if (!chunk) {
       Sound.noSound = true;

@@ -6,8 +6,8 @@
 module src.util.tokenizer;
 
 
-private import tango.io.device.File;
-private import tango.text.Util;
+private import std.stream;
+private import std.string;
 
 
 /**
@@ -16,16 +16,16 @@ private import tango.text.Util;
 public class Tokenizer {
  private:
 
-  public static char[][] readFile(char[] fileName, char[] separator) {
-     char[][] result;
-     auto file = cast(char[]) File.get(fileName);
+  public static string[] readFile(string fileName, string separator) {
+     string[] result;
+     auto file = new File(fileName, FileMode.In);
      char[][] lines = splitLines(file);
      foreach(line; lines) {
       char[][] spl = split(line, separator);
       foreach (char[] s; spl) {
         char[] r = trim(s);
         if (r.length > 0)
-          result ~= r;
+          result ~= r.idup;
       }
     }
     return result;
@@ -38,7 +38,7 @@ public class Tokenizer {
 public class CSVTokenizer {
  private:
 
-  public static char[][] readFile(char[] fileName) {
+  public static char[][] readFile(string fileName) {
     return Tokenizer.readFile(fileName, ",");
   }
 }

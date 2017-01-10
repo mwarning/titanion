@@ -6,8 +6,6 @@
 module src.ttn.enemy;
 
 
-private import tango.math.Math;
-
 private import derelict.opengl.gl;
 
 private import src.util.rand;
@@ -325,7 +323,7 @@ public class EnemyState: TokenState {
   bool isFirstEnemy;
   float anger;
 
-  invariant {
+  invariant() {
     if (isInitialized) {
       assert(baseBaseSpeed >= 0);
       assert(baseSpeed >= 0);
@@ -451,7 +449,7 @@ public class EnemySpec: TokenSpec!(EnemyState) {
   char[] explosionSeName;
   bool removeBullets;
 
-  invariant {
+  invariant() {
     assert(shield > 0);
     assert(rank >= 0);
     assert(turretWidth >= 0);
@@ -992,7 +990,7 @@ public class Trail {
   float deg;
   int cnt;
 
-  invariant {
+  invariant() {
     assert(pos.x <>= 0);
     assert(pos.y <>= 0);
     assert(deg <>= 0);
@@ -1446,7 +1444,7 @@ public class TurretState: TokenState {
   int burstNum;
   int nwaySpeedAccelDir;
 
-  invariant {
+  invariant() {
     if (isInitialized) {
       assert(fireCnt <>= 0);
       assert(burstCnt <>= 0);
@@ -1492,7 +1490,7 @@ public class TurretSpec: TokenSpec!(TurretState) {
   bool _disabled;
   float minimumFireDist;
 
-  invariant {
+  invariant() {
     assert(interval > 0);
     assert(speed > 0);
     assert(speedAccel < 1 && speedAccel > -1);

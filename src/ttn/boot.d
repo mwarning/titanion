@@ -6,11 +6,7 @@
 module src.ttn.boot;
 
 
-private import tango.text.convert.Integer;
-private import tango.io.device.File;
-private import tango.sys.Environment;
-private import tango.math.Math;
-private import tango.stdc.stdlib;
+private import std.conv;
 
 private import src.util.logger;
 private import src.util.tokenizer;
@@ -69,7 +65,8 @@ version (Win32_release) {
     return result;
   }
 } else {
-
+    private import core.stdc.stdlib;
+    
     char[] dirname(char[] path) {
       auto i = path.length;
       if(i == 0)
@@ -82,16 +79,16 @@ version (Win32_release) {
     }
 
   // Boot as the general executable.
-  public int main(char[][] args) {
+  public int main(string[] args) {
     //set working directory to binary location
-    char[] path = dirname(args[0]);
-    Environment.cwd(path);
+    //char[] path = dirname(args[0]);
+    //Environment.cwd(path);
       
     return boot(args);
   }
 }
 
-public int boot(char[][] args) {
+public int boot(string[] args) {
   screen = new Screen;
   input = new RecordablePad;
   frame = new Frame;
@@ -106,11 +103,11 @@ public int boot(char[][] args) {
   return EXIT_SUCCESS;
 }
 
-private void parseArgs(char[][] commandArgs, Screen screen, RecordablePad pad, MainLoop mainLoop) {
-  char[][] args = readOptionsIniFile();
+private void parseArgs(string[] commandArgs, Screen screen, RecordablePad pad, MainLoop mainLoop) {
+  string[] args = readOptionsIniFile();
   for (int i = 1; i < commandArgs.length; i++)
     args ~= commandArgs[i];
-  char[] progName = commandArgs[0];
+  string progName = commandArgs[0];
   for (int i = 0; i < args.length; i++) {
     switch (args[i]) {
     case "-fullscreen":
@@ -125,9 +122,9 @@ private void parseArgs(char[][] commandArgs, Screen screen, RecordablePad pad, M
         throw new Exception("Invalid options");
       }
       i++;
-      int w = toInt(args[i]);
+      int w = to!int(args[i]);
       i++;
-      int h = toInt(args[i]);
+      int h = to!int(args[i]);
       screen.width = w;
       screen.height = h;
       break;
@@ -137,7 +134,7 @@ private void parseArgs(char[][] commandArgs, Screen screen, RecordablePad pad, M
         throw new Exception("Invalid options");
       }
       i++;
-      float b = cast(float) toInt(args[i]) / 100;
+      float b = cast(float) to!int(args[i]) / 100;
       if (b < 0 || b > 1) {
         usage(args[0]);
         throw new Exception("Invalid options");
@@ -153,7 +150,7 @@ private void parseArgs(char[][] commandArgs, Screen screen, RecordablePad pad, M
         throw new Exception("Invalid options");
       }
       i++;
-      int v = toInt(args[i]);
+      int v = to!int(args[i]);
       if (v < 0 || v > 128) {
         usage(args[0]);
         throw new Exception("Invalid options");
@@ -166,7 +163,7 @@ private void parseArgs(char[][] commandArgs, Screen screen, RecordablePad pad, M
         throw new Exception("Invalid options");
       }
       i++;
-      int v = toInt(args[i]);
+      int v = to!int(args[i]);
       if (v < 0 || v > 128) {
         usage(args[0]);
         throw new Exception("Invalid options");
@@ -192,17 +189,17 @@ private void parseArgs(char[][] commandArgs, Screen screen, RecordablePad pad, M
   }
 }
 
-private const char[] OPTIONS_INI_FILE = "options.ini";
+private const string OPTIONS_INI_FILE = "options.ini";
 
-private char[][] readOptionsIniFile() {
+private string[] readOptionsIniFile() {
   try {
     return Tokenizer.readFile(OPTIONS_INI_FILE, " ");
-  } catch (Object e) {
+  } catch (Throwable e) {
     return null;
   }
 }
 
-private void usage(char[] progName) {
+private void usage(string progName) {
   Logger.error
     ("Usage: " ~ progName ~ " [-fullscreen] [-res x y] [-brightness [0-100]] [-nosound] [-bgmvol [0-128]] [-sevol [0-128]] [-exchange] [-trail] [-noslowdown] [-randomized]");
 }
