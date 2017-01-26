@@ -1,3 +1,21 @@
+This Game is in the process to be converted to the Rust Programming Language. For Fun and Learning,
+The old code is written in D, and is placed along the *.rs files until the code is finished.
+
+##TODO
+
+- --raw conversion of the source code syntax--
+- trait structure of shape.rs
+- mapping of inheritance into Rust via traits
+- sound working
+- rand working
+- sdl bindings added
+- opengl bindings added
+
+
+Any help is welcome!
+
+--
+
 Titanion is a 2.5D shooter game for Windows, *nix and MacOSX.
 You strike down super high-velocity swooping insects.
 
