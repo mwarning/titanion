@@ -17,399 +17,544 @@ private import src.ttn.screen;
 private import src.ttn.field;
 */
 
+use std::f32::consts::PI;
+
+use util::vector::Vector;
+use util::vector::Vector3;
+
+use util::sdl::displaylist::DisplayList;
+
+/*
+//Dummy
+struct DisplayList {
+    size : usize,
+}
+
+impl DisplayList {
+    fn new(num : usize) -> DisplayList {
+        DisplayList{size : num}
+    }
+}*/
+
+const Field_CIRCLE_RADIUS : f32 = 64.0;
+const GL_TRIANGLES : usize = 0;
+const GL_TRIANGLE_FAN : usize = 0;
+const GL_LINES : usize = 0;
+const GL_LINE_STRIP : usize = 0;
+const GL_SRC_ALPHA : usize = 0;
+const GL_ONE_MINUS_SRC_ALPHA : usize = 0;
+const GL_QUADS : usize = 0;
+const GL_ONE : usize = 0;
+const GL_LINE_LOOP : usize = 0;
+
+fn glPushMatrix() {}
+fn glPopMatrix() {}
+fn glRotatef(angle : f32, x : f32, y : f32, z : f32) {}
+fn glTranslatef(angle : f32, x : f32, y : f32) {}
+fn glBegin(mode : usize) {}
+fn glVertex3f(x : f32, y : f32, z : f32) {}
+fn glEnd() {}
+fn glBlendFunc(a : usize, b : usize) {}
+fn glScalef(a : f32, b : f32, c : f32) {}
+fn Screen_setColor(r : f32, g : f32, b : f32, a : f32) {}
+fn drawPillar(a : f32, b : f32, c : f32) {}
+fn Screen_glTranslate(v : Vector3) {}
+fn Screen_glRotate(deg : f32) {}
+
+//#############
+
 /**
  * 3D shapes of a player, enemies, particles, etc.
  */
 
 trait Shape {
-  fn draw(pos : Vector3, cd : f32, deg : f32);
-}
 
-struct DisplayListShape {
-  DisplayList displayList;
-}
+    fn get_display_list(&mut self) -> &mut DisplayList;
 
-impl Shape for DisplayListShape {
-    fn draw(pos : Vector3, cd : f32, deg : f32) {
-    glPushMatrix();
-    Screen.glTranslate(pos);
-    glRotatef(cd * 180.0 / PI, 0, 1, 0);
-    Screen.glRotate(deg);
-    displayList.call();
-    glPopMatrix();
-  }
-}
-
-impl DisplayListShape {
-  fn this(&mut self) {
-    self.displayList = new DisplayList(1);
-    self.displayList.beginNewList();
-    self.drawList();
-    self.displayList.endNewList();
-  }
-
-  fn draw(&mut self) {
-   self.drawList();
-  }
-
-  fn close(&mut self) {
-    self.displayList.close();
-  }
-}
-
-struct PyramidShape {
-
-}
-
-impl PyramidShape {
-  fn draw() {
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0, 0, 0);
-    glVertex3f(1, 1, 1);
-    glVertex3f(1, 1, -1);
-    glVertex3f(-1, 1, -1);
-    glVertex3f(-1, 1, 1);
-    glVertex3f(1, 1, 1);
-    glEnd();
-    Screen.setColor(0.1, 0.1, 0.1, 0.5);
-    glBegin(GL_LINE_STRIP);
-    glVertex3f(0, 0, 0);
-    glVertex3f(1, 1, 1);
-    glVertex3f(1, 1, -1);
-    glVertex3f(0, 0, 0);
-    glVertex3f(-1, 1, -1);
-    glVertex3f(-1, 1, 1);
-    glVertex3f(0, 0, 0);
-    glEnd();
-    glBegin(GL_LINES);
-    glVertex3f(1, 1, 1);
-    glVertex3f(-1, 1, 1);
-    glVertex3f(1, 1, -1);
-    glVertex3f(-1, 1, -1);
-    glEnd();
-  }
-
-  fn drawShadow(r : f32, g : f32, b : f32, noAlpha : bool /*= false*/) {
-    glBegin(GL_TRIANGLE_FAN);
-    Screen.setColor(r, g, b);
-    glVertex3f(0, 0, 0);
-    if !noAlpha {
-      Screen.setColor(r * 0.75, g * 0.75, b * 0.75, 0.33);
-    } else {
-      Screen.setColor(r * 0.75, g * 0.75, b * 0.75, 0.75);
+    fn draw4(&mut self, pos : Vector3, cd : f32, deg : f32) {
+        let dl = self.get_display_list();
+        glPushMatrix();
+        Screen_glTranslate(pos);
+        glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
+        Screen_glRotate(deg);
+        dl.call(0);
+        glPopMatrix();
     }
-    glVertex3f(1, 1, 1);
-    glVertex3f(1, 1, -1);
-    glVertex3f(-1, 1, -1);
-    glVertex3f(-1, 1, 1);
-    glVertex3f(1, 1, 1);
-    glEnd();
-  }
+  //fn draw4(&mut self, pos : Vector3, cd : f32, deg : f32);
+}
 
-  fn drawPolygonShape() {
+trait DisplayListShape : Shape {
+    //displayList : DisplayList, //implements .call() close(), *List()
+
+    //fn get_display_list(&mut self) -> &mut DisplayList;
+
+    fn drawList(&self);
+/*
+    fn draw4(&mut self, pos : Vector3, cd : f32, deg : f32) {
+        let dl = self.get_display_list();
+        glPushMatrix();
+        Screen_glTranslate(pos);
+        glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
+        Screen_glRotate(deg);
+        dl.call();
+        glPopMatrix();
+    }
+*/
+    fn new(&mut self) {
+        let dl = self.get_display_list();
+        dl.beginNewList();
+        self.drawList();
+        dl.endNewList();
+    }
+
+    fn draw(&mut self) {
+        let dl = self.get_display_list();
+        self.drawList()
+    }
+
+    fn close(&mut self) {
+        let dl = self.get_display_list();
+        dl.close();
+    }
+}
+
+fn PyramidShape_draw() {
     glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0, 0, 0);
-    glVertex3f(1, 1, 1);
-    glVertex3f(1, 1, -1);
-    glVertex3f(-1, 1, -1);
-    glVertex3f(-1, 1, 1);
-    glVertex3f(1, 1, 1);
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(1.0, 1.0, 1.0);
+    glVertex3f(1.0, 1.0, -1.0);
+    glVertex3f(-1.0, 1.0, -1.0);
+    glVertex3f(-1.0, 1.0, 1.0);
+    glVertex3f(1.0, 1.0, 1.0);
     glEnd();
-  }
-
-  fn drawLineShape() {
+    Screen_setColor(0.1, 0.1, 0.1, 0.5);
     glBegin(GL_LINE_STRIP);
-    glVertex3f(0, 0, 0);
-    glVertex3f(1, 1, 1);
-    glVertex3f(1, 1, -1);
-    glVertex3f(0, 0, 0);
-    glVertex3f(-1, 1, -1);
-    glVertex3f(-1, 1, 1);
-    glVertex3f(0, 0, 0);
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(1.0, 1.0, 1.0);
+    glVertex3f(1.0, 1.0, -1.0);
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(-1.0, 1.0, -1.0);
+    glVertex3f(-1.0, 1.0, 1.0);
+    glVertex3f(0.0, 0.0, 0.0);
     glEnd();
     glBegin(GL_LINES);
-    glVertex3f(1, 1, 1);
-    glVertex3f(-1, 1, 1);
-    glVertex3f(1, 1, -1);
-    glVertex3f(-1, 1, -1);
+    glVertex3f(1.0, 1.0, 1.0);
+    glVertex3f(-1.0, 1.0, 1.0);
+    glVertex3f(1.0, 1.0, -1.0);
+    glVertex3f(-1.0, 1.0, -1.0);
     glEnd();
-  }
+}
+
+fn PyramidShape_drawShadow(r : f32, g : f32, b : f32, noAlpha : bool /*= false*/) {
+    glBegin(GL_TRIANGLE_FAN);
+    Screen_setColor(r, g, b, 1.0);
+    glVertex3f(0.0, 0.0, 0.0);
+    if !noAlpha {
+      Screen_setColor(r * 0.75, g * 0.75, b * 0.75, 0.33);
+    } else {
+      Screen_setColor(r * 0.75, g * 0.75, b * 0.75, 0.75);
+    }
+    glVertex3f(1.0, 1.0, 1.0);
+    glVertex3f(1.0, 1.0, -1.0);
+    glVertex3f(-1.0, 1.0, -1.0);
+    glVertex3f(-1.0, 1.0, 1.0);
+    glVertex3f(1.0, 1.0, 1.0);
+    glEnd();
+}
+
+fn PyramidShape_drawPolygonShape() {
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(1.0, 1.0, 1.0);
+    glVertex3f(1.0, 1.0, -1.0);
+    glVertex3f(-1.0, 1.0, -1.0);
+    glVertex3f(-1.0, 1.0, 1.0);
+    glVertex3f(1.0, 1.0, 1.0);
+    glEnd();
+}
+
+fn PyramidShape_drawLineShape() {
+    glBegin(GL_LINE_STRIP);
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(1.0, 1.0, 1.0);
+    glVertex3f(1.0, 1.0, -1.0);
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(-1.0, 1.0, -1.0);
+    glVertex3f(-1.0, 1.0, 1.0);
+    glVertex3f(0.0, 0.0, 0.0);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex3f(1.0, 1.0, 1.0);
+    glVertex3f(-1.0, 1.0, 1.0);
+    glVertex3f(1.0, 1.0, -1.0);
+    glVertex3f(-1.0, 1.0, -1.0);
+    glEnd();
 }
 
 struct PlayerShape {
+    displayList : DisplayList,
+}
 
+impl Shape for PlayerShape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
 }
 
 impl DisplayListShape for PlayerShape {
-
   fn drawList(&self) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glPushMatrix();
-    glRotatef(180, 0, 0, 1);
-    glTranslatef(0, -0.6, 0);
+    glRotatef(180.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.0, -0.6, 0.0);
     glScalef(0.4, 1.3, 0.4);
-    PyramidShape.drawShadow(1, 0.5, 0.5, true);
+    PyramidShape_drawShadow(1.0, 0.5, 0.5, true);
     glPopMatrix();
     glPushMatrix();
-    glRotatef(180, 0, 0, 1);
-    glTranslatef(0.5, -0.2, 0);
+    glRotatef(180.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.5, -0.2, 0.0);
     glScalef(0.3, 0.9, 0.3);
-    PyramidShape.drawShadow(1, 1, 1, true);
+    PyramidShape_drawShadow(1.0, 1.0, 1.0, true);
     glPopMatrix();
     glPushMatrix();
-    glRotatef(180, 0, 0, 1);
-    glTranslatef(-0.5, -0.2, 0);
+    glRotatef(180.0, 0.0, 0.0, 1.0);
+    glTranslatef(-0.5, -0.2, 0.0);
     glScalef(0.3, 0.9, 0.3);
-    PyramidShape.drawShadow(1, 1, 1, true);
+    PyramidShape_drawShadow(1.0, 1.0, 1.0, true);
     glPopMatrix();
-    Screen.setColor(1, 0.5, 0.5);
+    Screen_setColor(1.0, 0.5, 0.5, 1.0);
     glPushMatrix();
-    glRotatef(180, 0, 0, 1);
-    glTranslatef(0, -0.6, 0);
+    glRotatef(180.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.0, -0.6, 0.0);
     glScalef(0.3, 1.2, 0.3);
-    PyramidShape.drawPolygonShape();
+    PyramidShape_drawPolygonShape();
     glPopMatrix();
-    Screen.setColor(1, 1, 1);
+    Screen_setColor(1.0, 1.0, 1.0, 1.0);
     glPushMatrix();
-    glRotatef(180, 0, 0, 1);
-    glTranslatef(0.5, -0.2, 0);
+    glRotatef(180.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.5, -0.2, 0.0);
     glScalef(0.2, 0.8, 0.2);
-    PyramidShape.drawPolygonShape();
+    PyramidShape_drawPolygonShape();
     glPopMatrix();
-    Screen.setColor(1, 1, 1);
+    Screen_setColor(1.0, 1.0, 1.0, 1.0);
     glPushMatrix();
-    glRotatef(180, 0, 0, 1);
-    glTranslatef(-0.5, -0.2, 0);
+    glRotatef(180.0, 0.0, 0.0, 1.0);
+    glTranslatef(-0.5, -0.2, 0.0);
     glScalef(0.2, 0.8, 0.2);
-    PyramidShape.drawPolygonShape();
+    PyramidShape_drawPolygonShape();
     glPopMatrix();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   }
 }
 
 struct PlayerLineShape {
+    displayList : DisplayList,
+}
+
+impl Shape for PlayerLineShape {
+  fn get_display_list(&mut self) -> &mut DisplayList {
+    &mut self.displayList
+  }
 }
 
 impl DisplayListShape for PlayerLineShape {
  fn drawList(&self) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glPushMatrix();
-    glRotatef(180, 0, 0, 1);
-    glTranslatef(0, -0.6, 0);
+    glRotatef(180.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.0, -0.6, 0.0);
     glScalef(0.3, 1.2, 0.3);
-    PyramidShape.drawLineShape();
+    PyramidShape_drawLineShape();
     glPopMatrix();
     glPushMatrix();
-    glRotatef(180, 0, 0, 1);
-    glTranslatef(0.5, -0.2, 0);
+    glRotatef(180.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.5, -0.2, 0.0);
     glScalef(0.2, 0.8, 0.2);
-    PyramidShape.drawLineShape();
+    PyramidShape_drawLineShape();
     glPopMatrix();
     glPushMatrix();
-    glRotatef(180, 0, 0, 1);
-    glTranslatef(-0.5, -0.2, 0);
+    glRotatef(180.0, 0.0, 0.0, 1.0);
+    glTranslatef(-0.5, -0.2, 0.0);
     glScalef(0.2, 0.8, 0.2);
-    PyramidShape.drawLineShape();
+    PyramidShape_drawLineShape();
     glPopMatrix();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   }
 }
 
 struct ShotShape {
+    displayList : DisplayList,
+}
+
+impl Shape for ShotShape {
+  fn get_display_list(&mut self) -> &mut DisplayList {
+    &mut self.displayList
+  }
 }
 
 impl DisplayListShape for ShotShape {
-
   fn drawList(&self) {
     glPushMatrix();
-    glRotatef(180, 0, 0, 1);
-    glTranslatef(0.5, -0.5, 0);
+    glRotatef(180.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.5, -0.5, 0.0);
     glScalef(0.1, 1.0, 0.1);
-    Screen.setColor(0.4, 0.2, 0.8);
-    PyramidShape.drawLineShape();
+    Screen_setColor(0.4, 0.2, 0.8, 1.0);
+    PyramidShape_drawLineShape();
     glPopMatrix();
     glPushMatrix();
-    glRotatef(180, 0, 0, 1);
-    glTranslatef(-0.5, -0.5, 0);
+    glRotatef(180.0, 0.0, 0.0, 1.0);
+    glTranslatef(-0.5, -0.5, 0.0);
     glScalef(0.1, 1.0, 0.1);
-    Screen.setColor(0.4, 0.2, 0.8f);
-    PyramidShape.drawLineShape();
+    Screen_setColor(0.4, 0.2, 0.8, 1.0);
+    PyramidShape_drawLineShape();
     glPopMatrix();
   }
 }
 
-struct TractorBeamShape {
-}
-
-impl DisplayListShape for TractorBeamShape {
-
+trait TractorBeamShape : DisplayListShape {
     fn drawTractorBeam(&self, r : f32, g : f32, b : f32) {
-    Screen.setColor(r, g, b, 0.5);
+    Screen_setColor(r, g, b, 0.5);
     glBegin(GL_QUADS);
-    glVertex3f(-1, 0, -1);
-    glVertex3f(1, 0, -1);
-    glVertex3f(1, 0, 1);
-    glVertex3f(-1, 0, 1);
+    glVertex3f(-1.0, 0.0, -1.0);
+    glVertex3f(1.0, 0.0, -1.0);
+    glVertex3f(1.0, 0.0, 1.0);
+    glVertex3f(-1.0, 0.0, 1.0);
     glEnd();
-    Screen.setColor(r, g, b);
+    Screen_setColor(r, g, b, 1.0);
     glBegin(GL_LINE_LOOP);
-    glVertex3f(-1, 0, -1);
-    glVertex3f(1, 0, -1);
-    glVertex3f(1, 0, 1);
-    glVertex3f(-1, 0, 1);
+    glVertex3f(-1.0, 0.0, -1.0);
+    glVertex3f(1.0, 0.0, -1.0);
+    glVertex3f(1.0, 0.0, 1.0);
+    glVertex3f(-1.0, 0.0, 1.0);
     glEnd();
   }
 
-  fn drawTractorBeamLine(f&self, r : f32, g : f32, b : f32) {
-    Screen.setColor(r, g, b);
+  fn drawTractorBeamLine(&self, r : f32, g : f32, b : f32) {
+    Screen_setColor(r, g, b, 1.0);
     glBegin(GL_LINE_LOOP);
-    glVertex3f(-1, 0, -1);
-    glVertex3f(1, 0, -1);
-    glVertex3f(1, 0, 1);
-    glVertex3f(-1, 0, 1);
+    glVertex3f(-1.0, 0.0, -1.0);
+    glVertex3f(1.0, 0.0, -1.0);
+    glVertex3f(1.0, 0.0, 1.0);
+    glVertex3f(-1.0, 0.0, 1.0);
     glEnd();
   }
 }
 
 struct TractorBeamShapeRed {
+    displayList : DisplayList,
+}
+
+impl Shape for TractorBeamShapeRed {
+  fn get_display_list(&mut self) -> &mut DisplayList {
+    &mut self.displayList
+  }
 }
 
 impl TractorBeamShape for TractorBeamShapeRed {
+}
+
+impl DisplayListShape for TractorBeamShapeRed {
   fn drawList(&self) {
     self.drawTractorBeam(0.5, 0.2, 0.2);
   }
 }
 
 struct TractorBeamShapeBlue {
+    displayList : DisplayList, 
+}
+
+impl Shape for TractorBeamShapeBlue {
+  fn get_display_list(&mut self) -> &mut DisplayList {
+    &mut self.displayList
+  }
 }
 
 impl TractorBeamShape for TractorBeamShapeBlue {
+}
+
+impl DisplayListShape for TractorBeamShapeBlue {
     fn drawList(&self) {
      self.drawTractorBeam(0.2, 0.2, 0.5);
   }
 }
 
 struct TractorBeamShapePurple {
+    displayList : DisplayList,
+}
+
+impl Shape for TractorBeamShapePurple {
+  fn get_display_list(&mut self) -> &mut DisplayList {
+    &mut self.displayList
+  }
 }
 
 impl TractorBeamShape for TractorBeamShapePurple {
+}
+
+impl DisplayListShape for TractorBeamShapePurple {
   fn drawList(&self) {
-    drawTractorBeam(0.5, 0.2, 0.5);
+    self.drawTractorBeam(0.5, 0.2, 0.5);
   }
 }
 
 struct TractorBeamShapeDarkRed {
+    displayList : DisplayList,
+}
+
+impl Shape for TractorBeamShapeDarkRed {
+  fn get_display_list(&mut self) -> &mut DisplayList {
+    &mut self.displayList
+  }
 }
 
 impl TractorBeamShape for TractorBeamShapeDarkRed {
-    fn drawList() {
-        drawTractorBeamLine(0.4, 0.1, 0.1);
+}
+
+impl DisplayListShape for TractorBeamShapeDarkRed {
+    fn drawList(&self) {
+        self.drawTractorBeamLine(0.4, 0.1, 0.1);
     }
 }
 
 struct TractorBeamShapeDarkBlue {
+    displayList : DisplayList,
+}
+
+impl Shape for TractorBeamShapeDarkBlue {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
 }
 
 impl TractorBeamShape for TractorBeamShapeDarkBlue {
-  fn drawList() {
-    drawTractorBeamLine(0.1, 0.1, 0.4);
+}
+
+impl DisplayListShape for TractorBeamShapeDarkBlue {
+  fn drawList(&self) {
+    self.drawTractorBeamLine(0.1, 0.1, 0.4);
   }
 }
 
 struct TractorBeamShapeDarkPurple {
+    displayList : DisplayList,
 }
 
+impl Shape for TractorBeamShapeDarkPurple {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
+}
 
 impl TractorBeamShape for TractorBeamShapeDarkPurple {
+}
 
-  fn drawList() {
-    drawTractorBeamLine(0.4, 0.1, 0.4);
+impl DisplayListShape for TractorBeamShapeDarkPurple {
+  fn drawList(&self) {
+    self.drawTractorBeamLine(0.4, 0.1, 0.4);
   }
 }
 
-struct BulletShapeBase {
-}
-
-impl DisplayListShape for BulletShapeBase {
-
-  fn draw(&self, pos : Vector3, cd : f32, deg : f32, rd : f32) {
+trait BulletShapeBase : DisplayListShape {
+  fn draw5(&self, pos : Vector3, cd : f32, deg : f32, rd : f32) {
+    let dl = self.get_display_list();
     glPushMatrix();
-    Screen.glTranslate(pos);
-    glRotatef(cd * 180.0 / PI, 0, 1, 0);
-    Screen.glRotate(deg);
-    glRotatef(rd, 0, 1, 0);
-    displayList.call();
+    Screen_glTranslate(pos);
+    glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
+    Screen_glRotate(deg);
+    glRotatef(rd, 0.0, 1.0, 0.0);
+    dl.call(0);
     glPopMatrix();
   }
 }
 
 struct BulletShape {
+    displayList : DisplayList,
 }
 
-impl BulletShapeBase for BulletShape {
-  fn drawList() {
+impl Shape for BulletShape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
+}
+
+impl DisplayListShape for BulletShape {
+  fn drawList(&self) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    Screen.setColor(0, 0, 0);
+    Screen_setColor(0.0, 0.0, 0.0, 1.0);
     glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0, 0.5, 0);
+    glVertex3f(0.0, 0.5, 0.0);
     glVertex3f(-0.34, -0.3, -0.2);
     glVertex3f(0.34, -0.3, -0.2);
-    glVertex3f(0, -0.3, 0.4);
+    glVertex3f(0.0, -0.3, 0.4);
     glVertex3f(-0.34, -0.3, -0.2);
     glEnd();
     glBegin(GL_TRIANGLE_FAN);
     glVertex3f(-0.34, -0.3, -0.2);
     glVertex3f(0.34, -0.3, -0.2);
-    glVertex3f(0, -0.3, 0.4);
+    glVertex3f(0.0, -0.3, 0.4);
     glEnd();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glScalef(1.2, 1.2, 1.2);
-    Screen.setColor(0.1, 0.3, 0.3);
+    Screen_setColor(0.1, 0.3, 0.3, 1.0);
     glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0, 0.5, 0);
+    glVertex3f(0.0, 0.5, 0.0);
     glVertex3f(-0.34, -0.3, -0.2);
     glVertex3f(0.34, -0.3, -0.2);
-    glVertex3f(0, -0.3, 0.4);
+    glVertex3f(0.0, -0.3, 0.4);
     glVertex3f(-0.34, -0.3, -0.2);
     glEnd();
     glBegin(GL_TRIANGLE_FAN);
     glVertex3f(-0.34, -0.3, -0.2);
     glVertex3f(0.34, -0.3, -0.2);
-    glVertex3f(0, -0.3, 0.4);
+    glVertex3f(0.0, -0.3, 0.4);
     glEnd();
   }
 }
 
 struct BulletLineShape {
+    displayList : DisplayList,
 }
 
-impl BulletShapeBase for BulletLineShape {
-  fn drawList() {
+impl Shape for BulletLineShape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
+}
+
+impl DisplayListShape for BulletLineShape {
+  fn drawList(&self) {
     glScalef(1.2, 1.2, 1.2);
     glBegin(GL_LINES);
-    glVertex3f(0, 0.5, 0);
+    glVertex3f(0.0, 0.5, 0.0);
     glVertex3f(-0.34, -0.3, -0.2);
-    glVertex3f(0, 0.5, 0);
+    glVertex3f(0.0, 0.5, 0.0);
     glVertex3f(0.34, -0.3, -0.2);
-    glVertex3f(0, 0.5, 0);
-    glVertex3f(0, -0.3, 0.4);
+    glVertex3f(0.0, 0.5, 0.0);
+    glVertex3f(0.0, -0.3, 0.4);
     glEnd();
     glBegin(GL_LINE_LOOP);
     glVertex3f(-0.34, -0.3, -0.2);
     glVertex3f(0.34, -0.3, -0.2);
-    glVertex3f(0, -0.3, 0.4);
+    glVertex3f(0.0, -0.3, 0.4);
     glEnd();
   }
 }
 
 struct MiddleBulletShape {
+    displayList : DisplayList,
 }
 
-impl BulletShapeBase for MiddleBulletShape {
-  fn drawList() {
+impl Shape for MiddleBulletShape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
+}
+
+impl DisplayListShape for MiddleBulletShape {
+  fn drawList(&self) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glScalef(1.1, 1.0, 1.1);
-    Screen.setColor(0, 0, 0);
+    Screen_setColor(0.0, 0.0, 0.0, 1.0);
     glBegin(GL_QUADS);
     glVertex3f(-0.17, 0.3, -0.1);
     glVertex3f(-0.34, -0.3, -0.2);
@@ -417,24 +562,24 @@ impl BulletShapeBase for MiddleBulletShape {
     glVertex3f(0.17, 0.3, -0.1);
     glVertex3f(0.17, 0.3, -0.1);
     glVertex3f(0.34, -0.3, -0.2);
-    glVertex3f(0, -0.3, 0.4);
-    glVertex3f(0, 0.3, 0.2);
-    glVertex3f(0, 0.3, 0.2);
-    glVertex3f(0, -0.3, 0.4);
+    glVertex3f(0.0, -0.3, 0.4);
+    glVertex3f(0.0, 0.3, 0.2);
+    glVertex3f(0.0, 0.3, 0.2);
+    glVertex3f(0.0, -0.3, 0.4);
     glVertex3f(-0.34, -0.3, -0.2);
     glVertex3f(-0.17, 0.3, -0.1);
     glEnd();
     glBegin(GL_TRIANGLES);
     glVertex3f(-0.17, -0.3, -0.1);
     glVertex3f(0.17, -0.3, -0.1);
-    glVertex3f(0, -0.3, 0.2);
+    glVertex3f(0.0, -0.3, 0.2);
     glVertex3f(-0.34, -0.3, -0.2);
     glVertex3f(0.34, -0.3, -0.2);
-    glVertex3f(0, -0.3, 0.4);
+    glVertex3f(0.0, -0.3, 0.4);
     glEnd();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glScalef(1.4, 1.3, 1.4);
-    Screen.setColor(0.1, 0.2, 0.3);
+    Screen_setColor(0.1, 0.2, 0.3, 1.0);
     glBegin(GL_QUADS);
     glVertex3f(-0.17, 0.3, -0.1);
     glVertex3f(-0.34, -0.3, -0.2);
@@ -442,503 +587,638 @@ impl BulletShapeBase for MiddleBulletShape {
     glVertex3f(0.17, 0.3, -0.1);
     glVertex3f(0.17, 0.3, -0.1);
     glVertex3f(0.34, -0.3, -0.2);
-    glVertex3f(0, -0.3, 0.4);
-    glVertex3f(0, 0.3, 0.2);
-    glVertex3f(0, 0.3, 0.2);
-    glVertex3f(0, -0.3, 0.4);
+    glVertex3f(0.0, -0.3, 0.4);
+    glVertex3f(0.0, 0.3, 0.2);
+    glVertex3f(0.0, 0.3, 0.2);
+    glVertex3f(0.0, -0.3, 0.4);
     glVertex3f(-0.34, -0.3, -0.2);
     glVertex3f(-0.17, 0.3, -0.1);
     glEnd();
     glBegin(GL_TRIANGLES);
     glVertex3f(-0.17, 0.3, -0.1);
     glVertex3f(0.17, 0.3, -0.1);
-    glVertex3f(0, 0.3, 0.2);
+    glVertex3f(0.0, 0.3, 0.2);
     glVertex3f(-0.34, -0.3, -0.2);
     glVertex3f(0.34, -0.3, -0.2);
-    glVertex3f(0, -0.3, 0.4);
+    glVertex3f(0.0, -0.3, 0.4);
     glEnd();
   }
 }
 
 struct MiddleBulletLineShape {
+    displayList : DisplayList,
 }
 
-impl BulletShapeBase for MiddleBulletLineShape {
-  fn drawList() {
+impl Shape for MiddleBulletLineShape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
+}
+
+impl DisplayListShape for MiddleBulletLineShape {
+  fn drawList(&self) {
     glScalef(1.4, 1.3, 1.4);
     glBegin(GL_LINES);
     glVertex3f(-0.17, 0.3, -0.1);
     glVertex3f(-0.34, -0.3, -0.2);
     glVertex3f(0.17, 0.3, -0.1);
     glVertex3f(0.34, -0.3, -0.2);
-    glVertex3f(0, 0.3, 0.2);
-    glVertex3f(0, -0.3, 0.4);
+    glVertex3f(0.0, 0.3, 0.2);
+    glVertex3f(0.0, -0.3, 0.4);
     glEnd();
     glBegin(GL_LINE_LOOP);
     glVertex3f(-0.17, 0.3, -0.1);
     glVertex3f(0.17, 0.3, -0.1);
-    glVertex3f(0, 0.3, 0.2);
+    glVertex3f(0.0, 0.3, 0.2);
     glEnd();
     glBegin(GL_LINE_LOOP);
     glVertex3f(-0.34, -0.3, -0.2);
     glVertex3f(0.34, -0.3, -0.2);
-    glVertex3f(0, -0.3, 0.4);
+    glVertex3f(0.0, -0.3, 0.4);
     glEnd();
   }
 }
 
-struct RollBulletShapeBase {
-}
-
-impl BulletShapeBase for RollBulletShapeBase {
-
-  fn draw(pos : Vector3, cd : f32, deg : f32, rd : f32) {
+trait RollBulletShapeBase : BulletShapeBase {
+  fn draw5(&self, pos : Vector3, cd : f32, deg : f32, rd : f32) {
+    let dl = self.get_display_list();
     glPushMatrix();
-    Screen.glTranslate(pos);
-    glRotatef(cd * 180.0 / PI, 0, 1, 0);
-    glRotatef(rd, 0, 0, 1);
-    displayList.call();
+    Screen_glTranslate(pos);
+    glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
+    glRotatef(rd, 0.0, 0.0, 1.0);
+    dl.call(0);
     glPopMatrix();
   }
 }
 
 struct CounterBulletShape {
+    displayList : DisplayList,
 }
 
-impl RollBulletShapeBase for CounterBulletShape {
-  fn drawList() {
+impl Shape for CounterBulletShape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
+}
+
+impl DisplayListShape for CounterBulletShape {
+  fn drawList(&self) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    Screen.setColor(0, 0, 0);
+    Screen_setColor(0.0, 0.0, 0.0, 1.0);
     glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0, 0, 0.5);
-    glVertex3f(0.5, 0, 0);
-    glVertex3f(0, 0.5, 0);
-    glVertex3f(-0.5, 0, 0);
-    glVertex3f(0, -0.5, 0);
-    glVertex3f(0.5, 0, 0);
+    glVertex3f(0.0, 0.0, 0.5);
+    glVertex3f(0.5, 0.0, 0.0);
+    glVertex3f(0.0, 0.5, 0.0);
+    glVertex3f(-0.5, 0.0, 0.0);
+    glVertex3f(0.0, -0.5, 0.0);
+    glVertex3f(0.5, 0.0, 0.0);
     glEnd();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glScalef(1.2, 1.2, 1.2);
-    Screen.setColor(0.5, 0.5, 0.5);
+    Screen_setColor(0.5, 0.5, 0.5, 1.0);
     glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0, 0, 0.5);
-    glVertex3f(0.5, 0, 0);
-    glVertex3f(0, 0.5, 0);
-    glVertex3f(-0.5, 0, 0);
-    glVertex3f(0, -0.5, 0);
-    glVertex3f(0.5, 0, 0);
+    glVertex3f(0.0, 0.0, 0.5);
+    glVertex3f(0.5, 0.0, 0.0);
+    glVertex3f(0.0, 0.5, 0.0);
+    glVertex3f(-0.5, 0.0, 0.0);
+    glVertex3f(0.0, -0.5, 0.0);
+    glVertex3f(0.5, 0.0, 0.0);
     glEnd();
   }
 }
 
 struct CounterBulletLineShape {
+    displayList : DisplayList,
 }
 
-impl RollBulletShapeBase for CounterBulletLineShape {
-  fn drawList() {
+impl Shape for CounterBulletLineShape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
+}
+
+impl DisplayListShape for CounterBulletLineShape {
+  fn drawList(&self) {
     glScalef(1.2, 1.2, 1.2);
     glBegin(GL_LINE_LOOP);
-    glVertex3f(0.5, 0, 0);
-    glVertex3f(0, 0.5, 0);
-    glVertex3f(-0.5, 0, 0);
-    glVertex3f(0, -0.5, 0);
+    glVertex3f(0.5, 0.0, 0.0);
+    glVertex3f(0.0, 0.5, 0.0);
+    glVertex3f(-0.5, 0.0, 0.0);
+    glVertex3f(0.0, -0.5, 0.0);
     glEnd();
     glBegin(GL_LINES);
-    glVertex3f(0, 0, 0.5);
-    glVertex3f(0.5, 0, 0);
-    glVertex3f(0, 0, 0.5);
-    glVertex3f(0, 0.5, 0);
-    glVertex3f(0, 0, 0.5);
-    glVertex3f(-0.5, 0, 0);
-    glVertex3f(0, 0, 0.5);
-    glVertex3f(0, -0.5, 0);
+    glVertex3f(0.0, 0.0, 0.5);
+    glVertex3f(0.5, 0.0, 0.0);
+    glVertex3f(0.0, 0.0, 0.5);
+    glVertex3f(0.0, 0.5, 0.0);
+    glVertex3f(0.0, 0.0, 0.5);
+    glVertex3f(-0.5, 0.0, 0.0);
+    glVertex3f(0.0, 0.0, 0.5);
+    glVertex3f(0.0, -0.5, 0.0);
     glEnd();
   }
 }
 
-struct EnemyShape {
-}
+trait EnemyShape : DisplayListShape {
 
-impl DisplayListShape for EnemyShape {}
-  fn draw(pos : Vector3, cd : f32, deg : f32, cnt : f32, size : Vector) {
-    draw(pos, cd, deg, cnt, size.x, size.y);
+  fn draw6(&self, pos : Vector3, cd : f32, deg : f32, cnt : f32, size : Vector) {
+    self.draw7(pos, cd, deg, cnt, size.x, size.y);
   }
 
-  fn draw(pos : Vector3, cd : f32, deg : f32, cnt : f32, sx : f32, sy : f32) {
+  fn draw7(&self, pos : Vector3, cd : f32, deg : f32, cnt : f32, sx : f32, sy : f32) {
+    let dl = self.get_display_list();
     glPushMatrix();
-    Screen.glTranslate(pos);
-    glRotatef(cd * 180 / PI, 0, 1, 0);
-    Screen.glRotate(deg);
-    glScalef(sx, sy, 1);
-    glRotatef(cnt * 3.0f, 0, 1, 0);
-    displayList.call();
+    Screen_glTranslate(pos);
+    glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
+    Screen_glRotate(deg);
+    glScalef(sx, sy, 1.0);
+    glRotatef(cnt * 3.0, 0.0, 1.0, 0.0);
+    dl.call(0);
     glPopMatrix();
   }
 }
 
 struct Enemy1Shape {
+    displayList : DisplayList,
+}
+
+impl Shape for Enemy1Shape {
+   fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
 }
 
 impl EnemyShape for Enemy1Shape {
-  fn drawList() {
+}
+
+impl DisplayListShape for Enemy1Shape {
+  fn drawList(&self) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glPushMatrix();
-    glTranslatef(0, -0.6, 0);
+    glTranslatef(0.0, -0.6, 0.0);
     glScalef(0.5, 1.4, 0.5);
-    PyramidShape.drawShadow(0.5, 0.5, 0.3);
+    PyramidShape_drawShadow(0.5, 0.5, 0.3, false);
     glPopMatrix();
     glPushMatrix();
-    glRotatef(120, 0, 0, 1);
-    glTranslatef(0.5, -0.2, 0);
+    glRotatef(120.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.5, -0.2, 0.0);
     glScalef(0.4, 1.0, 0.4);
-    PyramidShape.drawShadow(0.2, 0.2, 0.5);
+    PyramidShape_drawShadow(0.2, 0.2, 0.5, false);
     glPopMatrix();
-    Screen.setColor(0.2, 0.2, 0.5);
+    Screen_setColor(0.2, 0.2, 0.5, 1.0);
     glPushMatrix();
-    glRotatef(240, 0, 0, 1);
-    glTranslatef(-0.5, -0.2, 0);
+    glRotatef(240.0, 0.0, 0.0, 1.0);
+    glTranslatef(-0.5, -0.2, 0.0);
     glScalef(0.4, 1.0, 0.4);
-    PyramidShape.drawShadow(0.2, 0.2, 0.5);
+    PyramidShape_drawShadow(0.2, 0.2, 0.5, false);
     glPopMatrix();
-    Screen.setColor(1, 1, 0.6);
+    Screen_setColor(1.0, 1.0, 0.6, 1.0);
     glPushMatrix();
-    glTranslatef(0, -0.6, 0);
+    glTranslatef(0.0, -0.6, 0.0);
     glScalef(0.3, 1.2, 0.3);
-    PyramidShape.draw();
+    PyramidShape_draw();
     glPopMatrix();
-    Screen.setColor(0.5, 0.5, 1);
+    Screen_setColor(0.5, 0.5, 1.0, 1.0);
     glPushMatrix();
-    glRotatef(120, 0, 0, 1);
-    glTranslatef(0.5, -0.2, 0);
-    glScalef(0.2, 0.8f, 0.2);
-    PyramidShape.draw();
+    glRotatef(120.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.5, -0.2, 0.0);
+    glScalef(0.2, 0.8, 0.2);
+    PyramidShape_draw();
     glPopMatrix();
-    Screen.setColor(0.5, 0.5, 1);
+    Screen_setColor(0.5, 0.5, 1.0, 1.0);
     glPushMatrix();
-    glRotatef(240, 0, 0, 1);
-    glTranslatef(-0.5, -0.2, 0);
-    glScalef(0.2, 0.8f, 0.2);
-    PyramidShape.draw();
+    glRotatef(240.0, 0.0, 0.0, 1.0);
+    glTranslatef(-0.5, -0.2, 0.0);
+    glScalef(0.2, 0.8, 0.2);
+    PyramidShape_draw();
     glPopMatrix();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   }
 }
 
 struct Enemy1TrailShape {
+   displayList : DisplayList,
+}
+
+impl Shape for Enemy1TrailShape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
 }
 
 impl EnemyShape for Enemy1TrailShape {
-  fn drawList() {
+}
+
+impl DisplayListShape for Enemy1TrailShape {
+  fn drawList(&self) {
     glPushMatrix();
-    glTranslatef(0, -0.6, 0);
+    glTranslatef(0.0, -0.6, 0.0);
     glScalef(0.3, 1.2, 0.3);
-    PyramidShape.drawLineShape();
+    PyramidShape_drawLineShape();
     glPopMatrix();
     glPushMatrix();
-    glRotatef(120, 0, 0, 1);
-    glTranslatef(0.5, -0.2, 0);
-    glScalef(0.2, 0.8f, 0.2);
-    PyramidShape.drawLineShape();
+    glRotatef(120.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.5, -0.2, 0.0);
+    glScalef(0.2, 0.8, 0.2);
+    PyramidShape_drawLineShape();
     glPopMatrix();
     glPushMatrix();
-    glRotatef(240, 0, 0, 1);
-    glTranslatef(-0.5, -0.2, 0);
-    glScalef(0.2, 0.8f, 0.2);
-    PyramidShape.drawLineShape();
+    glRotatef(240.0, 0.0, 0.0, 1.0);
+    glTranslatef(-0.5, -0.2, 0.0);
+    glScalef(0.2, 0.8, 0.2);
+    PyramidShape_drawLineShape();
     glPopMatrix();
   }
 }
 
 struct Enemy2Shape {
+    displayList : DisplayList,
+}
+
+impl Shape for Enemy2Shape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
 }
 
 impl EnemyShape for Enemy2Shape {
-  fn drawList() {
+}
+
+impl DisplayListShape for Enemy2Shape {
+  fn drawList(&self) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glPushMatrix();
-    glTranslatef(0, -0.5, 0);
+    glTranslatef(0.0, -0.5, 0.0);
     glScalef(0.5, 1.2, 0.5);
-    PyramidShape.drawShadow(0.5, 0.4, 0.5);
+    PyramidShape_drawShadow(0.5, 0.4, 0.5, false);
     glPopMatrix();
     glPushMatrix();
-    glRotatef(60, 0, 0, 1);
-    glTranslatef(0.6, -0.7, 0);
+    glRotatef(60.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.6, -0.7, 0.0);
     glScalef(0.4, 1.4, 0.4);
-    PyramidShape.drawShadow(0.9, 0.6, 0.5);
+    PyramidShape_drawShadow(0.9, 0.6, 0.5, false);
     glPopMatrix();
     glPushMatrix();
-    glRotatef(300, 0, 0, 1);
-    glTranslatef(-0.6, -0.7, 0);
+    glRotatef(300.0, 0.0, 0.0, 1.0);
+    glTranslatef(-0.6, -0.7, 0.0);
     glScalef(0.4, 1.4, 0.4);
-    PyramidShape.drawShadow(0.9, 0.6, 0.5);
+    PyramidShape_drawShadow(0.9, 0.6, 0.5, false);
     glPopMatrix();
-    Screen.setColor(1, 0.9, 1.0);
+    Screen_setColor(1.0, 0.9, 1.0, 1.0);
     glPushMatrix();
-    glTranslatef(0, -0.5, 0);
+    glTranslatef(0.0, -0.5, 0.0);
     glScalef(0.3, 1.0, 0.3);
-    PyramidShape.draw();
+    PyramidShape_draw();
     glPopMatrix();
-    Screen.setColor(0.9, 0.6, 0.5);
+    Screen_setColor(0.9, 0.6, 0.5, 1.0);
     glPushMatrix();
-    glRotatef(60, 0, 0, 1);
-    glTranslatef(0.6, -0.7, 0);
+    glRotatef(60.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.6, -0.7, 0.0);
     glScalef(0.2, 1.2, 0.2);
-    PyramidShape.draw();
+    PyramidShape_draw();
     glPopMatrix();
-    Screen.setColor(0.9, 0.6, 0.5);
+    Screen_setColor(0.9, 0.6, 0.5, 1.0);
     glPushMatrix();
-    glRotatef(300, 0, 0, 1);
-    glTranslatef(-0.6, -0.7, 0);
+    glRotatef(300.0, 0.0, 0.0, 1.0);
+    glTranslatef(-0.6, -0.7, 0.0);
     glScalef(0.2, 1.2, 0.2);
-    PyramidShape.draw();
+    PyramidShape_draw();
     glPopMatrix();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   }
 }
 
 struct Enemy2TrailShape {
+    displayList : DisplayList,
+}
+
+impl Shape for Enemy2TrailShape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
 }
 
 impl EnemyShape for Enemy2TrailShape {
-  fn drawList() {
+}
+
+impl DisplayListShape for Enemy2TrailShape {
+  fn drawList(&self) {
     glPushMatrix();
-    glTranslatef(0, -0.5, 0);
+    glTranslatef(0.0, -0.5, 0.0);
     glScalef(0.3, 1.0, 0.3);
-    PyramidShape.drawLineShape();
+    PyramidShape_drawLineShape();
     glPopMatrix();
     glPushMatrix();
-    glRotatef(60, 0, 0, 1);
-    glTranslatef(0.6, -0.7, 0);
+    glRotatef(60.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.6, -0.7, 0.0);
     glScalef(0.2, 1.2, 0.2);
-    PyramidShape.drawLineShape();
+    PyramidShape_drawLineShape();
     glPopMatrix();
     glPushMatrix();
-    glRotatef(300, 0, 0, 1);
-    glTranslatef(-0.6, -0.7, 0);
+    glRotatef(300.0, 0.0, 0.0, 1.0);
+    glTranslatef(-0.6, -0.7, 0.0);
     glScalef(0.2, 1.2, 0.2);
-    PyramidShape.drawLineShape();
+    PyramidShape_drawLineShape();
     glPopMatrix();
   }
 }
 
 struct Enemy3Shape {
+    displayList : DisplayList,
+}
+
+impl Shape for Enemy3Shape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
 }
 
 impl EnemyShape for Enemy3Shape {
-  fn drawList() {
+}
+
+impl DisplayListShape for Enemy3Shape {
+  fn drawList(&self) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glPushMatrix();
-    glTranslatef(0, -0.4, 0);
+    glTranslatef(0.0, -0.4, 0.0);
     glScalef(0.5, 1.4, 0.5);
-    PyramidShape.drawShadow(0.5, 0.5, 0.3);
+    PyramidShape_drawShadow(0.5, 0.5, 0.3, false);
     glPopMatrix();
     glPushMatrix();
-    glRotatef(150, 0, 0, 1);
-    glTranslatef(0.5, 0.2, 0);
+    glRotatef(150.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.5, 0.2, 0.0);
     glScalef(0.4, 1.0, 0.4);
-    PyramidShape.drawShadow(0.2, 0.2, 0.5);
+    PyramidShape_drawShadow(0.2, 0.2, 0.5, false);
     glPopMatrix();
-    Screen.setColor(0.2, 0.2, 0.5);
+    Screen_setColor(0.2, 0.2, 0.5, 1.0);
     glPushMatrix();
-    glRotatef(210, 0, 0, 1);
-    glTranslatef(-0.5, 0.2, 0);
+    glRotatef(210.0, 0.0, 0.0, 1.0);
+    glTranslatef(-0.5, 0.2, 0.0);
     glScalef(0.4, 1.0, 0.4);
-    PyramidShape.drawShadow(0.2, 0.2, 0.5);
+    PyramidShape_drawShadow(0.2, 0.2, 0.5, false);
     glPopMatrix();
-    Screen.setColor(1, 0.6, 0.9);
+    Screen_setColor(1.0, 0.6, 0.9, 1.0);
     glPushMatrix();
-    glTranslatef(0, -0.4, 0);
+    glTranslatef(0.0, -0.4, 0.0);
     glScalef(0.3, 1.2, 0.3);
-    PyramidShape.draw();
+    PyramidShape_draw();
     glPopMatrix();
-    Screen.setColor(0.3, 0.5, 1);
+    Screen_setColor(0.3, 0.5, 1.0, 1.0);
     glPushMatrix();
-    glRotatef(150, 0, 0, 1);
-    glTranslatef(0.5, 0.2, 0);
-    glScalef(0.2, 0.8f, 0.2);
-    PyramidShape.draw();
+    glRotatef(150.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.5, 0.2, 0.0);
+    glScalef(0.2, 0.8, 0.2);
+    PyramidShape_draw();
     glPopMatrix();
-    Screen.setColor(0.3, 0.5, 1);
+    Screen_setColor(0.3, 0.5, 1.0, 1.0);
     glPushMatrix();
-    glRotatef(210, 0, 0, 1);
-    glTranslatef(-0.5, 0.2, 0);
-    glScalef(0.2, 0.8f, 0.2);
-    PyramidShape.draw();
+    glRotatef(210.0, 0.0, 0.0, 1.0);
+    glTranslatef(-0.5, 0.2, 0.0);
+    glScalef(0.2, 0.8, 0.2);
+    PyramidShape_draw();
     glPopMatrix();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   }
 }
 
 struct Enemy3TrailShape {
+    displayList : DisplayList,
+}
+
+impl Shape for Enemy3TrailShape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
 }
 
 impl EnemyShape for Enemy3TrailShape {
-  fn drawList() {
+}
+
+impl DisplayListShape for Enemy3TrailShape {
+  fn drawList(&self) {
     glPushMatrix();
-    glTranslatef(0, -0.4, 0);
+    glTranslatef(0.0, -0.4, 0.0);
     glScalef(0.3, 1.2, 0.3);
-    PyramidShape.drawLineShape();
+    PyramidShape_drawLineShape();
     glPopMatrix();
     glPushMatrix();
-    glRotatef(150, 0, 0, 1);
-    glTranslatef(0.5, 0.2, 0);
-    glScalef(0.2, 0.8f, 0.2);
-    PyramidShape.drawLineShape();
+    glRotatef(150.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.5, 0.2, 0.0);
+    glScalef(0.2, 0.8, 0.2);
+    PyramidShape_drawLineShape();
     glPopMatrix();
     glPushMatrix();
-    glRotatef(210, 0, 0, 1);
-    glTranslatef(-0.5, 0.2, 0);
-    glScalef(0.2, 0.8f, 0.2);
-    PyramidShape.drawLineShape();
+    glRotatef(210.0, 0.0, 0.0, 1.0);
+    glTranslatef(-0.5, 0.2, 0.0);
+    glScalef(0.2, 0.8, 0.2);
+    PyramidShape_drawLineShape();
     glPopMatrix();
   }
 }
 
 struct TriangleParticleShape {
+    displayList : DisplayList,
+}
+
+impl Shape for TriangleParticleShape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
+}
+
+impl EnemyShape for TriangleParticleShape {
 }
 
 impl DisplayListShape for TriangleParticleShape {
-  fn drawList() {
+  fn drawList(&self) {
     glBegin(GL_LINE_LOOP);
-    glVertex3f(0, 0.5, 0);
-    glVertex3f(0.4, -0.3, 0);
-    glVertex3f(-0.4, -0.3, 0);
+    glVertex3f(0.0, 0.5, 0.0);
+    glVertex3f(0.4, -0.3, 0.0);
+    glVertex3f(-0.4, -0.3, 0.0);
     glEnd();
   }
-}
-
-struct PillarShape {
 }
 
 const TICKNESS : f32 = 4.0;
 const RADIUS_RATIO : f32 = 0.3;
 
-impl DisplayListShape for PillarShape {
-  fn drawPillar(r : f32, g : f32, b : f32, outside : bool /*= false*/)) {
+trait PillarShape : DisplayListShape {
+  fn drawPillar(&self, r : f32, g : f32, b : f32, outside : bool /*= false*/) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBegin(GL_QUADS);
-    Screen.setColor(r, g, b);
+    Screen_setColor(r, g, b, 1.0);
     for i in 0..8 {
       let mut d : f32 = PI * 2.0 * (i as f32) / 8.0;
-      glVertex3f(d.sin() * Field.CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
                  TICKNESS,
-                 d.cos() * Field.CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
       d += PI * 2.0 / 8.0;
-      glVertex3f(d.sin() * Field.CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
                  TICKNESS,
-                 d.cos() * Field.CIRCLE_RADIUS * RADIUS_RATIO);
-      glVertex3f(d.sin() * Field.CIRCLE_RADIUS * RADIUS_RATIO,
+                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
                  -TICKNESS,
-                 d.cos() * Field.CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
       d -= PI * 2.0 / 8.0;
-      glVertex3f(d.sin() * Field.CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
                  -TICKNESS,
-                 d.cos() * Field.CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
     }
     glEnd();
-    if !self.outside {
-      Screen.setColor(r, g, b);
+    if !outside {
+      Screen_setColor(r, g, b, 1.0);
       glBegin(GL_TRIANGLES);
       for i in 0..8 {
-        let d : f32 = PI * 2.0 * i / 8.0;
-        glVertex3f(0, TICKNESS, 0);
-        glVertex3f(d.sin() * Field.CIRCLE_RADIUS * RADIUS_RATIO,
+        let d : f32 = PI * 2.0 * (i as f32) / 8.0;
+        glVertex3f(0.0, TICKNESS, 0.0);
+        glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
                    TICKNESS,
-                   d.cos() * Field.CIRCLE_RADIUS * RADIUS_RATIO);
-        d += PI * 2 / 8;
-        glVertex3f(d.sin() * Field.CIRCLE_RADIUS * RADIUS_RATIO,
+                   d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+        d += PI * 2.0 / 8.0;
+        glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
                    TICKNESS,
-                   d.cos() * Field.CIRCLE_RADIUS * RADIUS_RATIO);
-        d -= PI * 2 / 8;
-        glVertex3f(0, -TICKNESS, 0);
-        glVertex3f(d.sin() * Field.CIRCLE_RADIUS * RADIUS_RATIO,
+                   d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+        d -= PI * 2.0 / 8.0;
+        glVertex3f(0.0, -TICKNESS, 0.0);
+        glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
                    -TICKNESS,
-                   d.cos() * Field.CIRCLE_RADIUS * RADIUS_RATIO);
-        d += PI * 2 / 8;
-        glVertex3f(d.sin() * Field.CIRCLE_RADIUS * RADIUS_RATIO,
+                   d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+        d += PI * 2.0 / 8.0;
+        glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
                    -TICKNESS,
-                   d.cos() * Field.CIRCLE_RADIUS * RADIUS_RATIO);
+                   d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
       }
       glEnd();
     }
-    Screen.setColor(0.1, 0.1, 0.1);
+    Screen_setColor(0.1, 0.1, 0.1, 1.0);
     for i in 0..8 {
       let mut d : f32 = PI * 2.0 * (i as f32) / 8.0; 
       glBegin(GL_LINE_STRIP);
-      glVertex3f(d.sin() * Field.CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
                  TICKNESS,
-                 d.cos() * Field.CIRCLE_RADIUS * RADIUS_RATIO);
-      d += PI * 2 / 8;
-      glVertex3f(d.sin() * Field.CIRCLE_RADIUS * RADIUS_RATIO,
+                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+      d += PI * 2.0 / 8.0;
+      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
                  TICKNESS,
-                 d.cos() * Field.CIRCLE_RADIUS * RADIUS_RATIO);
-      glVertex3f(d.sin() * Field.CIRCLE_RADIUS * RADIUS_RATIO,
+                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
                  -TICKNESS,
-                 d.cos() * Field.CIRCLE_RADIUS * RADIUS_RATIO);
-      d -= PI * 2 / 8;
-      glVertex3f(d.sin() * Field.CIRCLE_RADIUS * RADIUS_RATIO,
+                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+      d -= PI * 2.0 / 8.0;
+      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
                  -TICKNESS,
-                 d.cos() * Field.CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
       glEnd();
     }
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   }
 
-  fn draw(y : f32, deg : f32) {
+  fn draw3(&self, y : f32, deg : f32) {
+    let dl = self.get_display_list();
     glPushMatrix();
-    glTranslatef(0, y, 0);
-    glRotatef(deg * 180.0 / PI, 0, 1, 0);
-    displayList.call();
+    glTranslatef(0.0, y, 0.0);
+    glRotatef(deg * 180.0 / PI, 0.0, 1.0, 0.0);
+    dl.call(0);
     glPopMatrix();
   }
 }
 
 struct Pillar1Shape {
+    displayList : DisplayList,
 }
 
-impl PillarShape for Pillar1Shape{
-  fn drawList() {
+impl Shape  for Pillar1Shape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
+}
+
+impl PillarShape for Pillar1Shape {
+}
+
+impl DisplayListShape for Pillar1Shape {
+  fn drawList(&self) {
     glScalef(0.6, 1.0, 0.6);
-    drawPillar(0.5, 0.4, 0.4);
+    self.drawPillar(0.5, 0.4, 0.4, false);
   }
 }
 
 struct Pillar2Shape {
+    displayList : DisplayList,
+}
+
+impl Shape for Pillar2Shape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
 }
 
 impl PillarShape for Pillar2Shape {
-  fn drawList() {
-    glScalef(0.8f, 1.0, 0.8f);
-    drawPillar(0.6, 0.3, 0.3);
+}
+
+impl DisplayListShape for Pillar2Shape {
+  fn drawList(&self) {
+    glScalef(0.8, 1.0, 0.8);
+    self.drawPillar(0.6, 0.3, 0.3, false);
   }
 }
 
 struct Pillar3Shape {
+    displayList : DisplayList,
+}
+
+impl Shape for Pillar3Shape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
 }
 
 impl PillarShape for Pillar3Shape {
-  fn drawList() {
-    drawPillar(0.5, 0.5, 0.4);
+}
+
+impl DisplayListShape for Pillar3Shape {
+  fn drawList(&self) {
+    self.drawPillar(0.5, 0.5, 0.4, false);
   }
 }
 
 struct Pillar4Shape {
+    displayList : DisplayList,
+}
+
+impl Shape for Pillar4Shape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
 }
 
 impl PillarShape for Pillar4Shape {
-  fn drawList() {
+}
+
+impl DisplayListShape for Pillar4Shape {
+  fn drawList(&self) {
     glScalef(1.1, 1.0, 1.1);
-    drawPillar(0.5, 0.4, 0.5);
+    self.drawPillar(0.5, 0.4, 0.5, false);
   }
 }
 
 
-struct OutsidePillarShape{    
+struct OutsidePillarShape {
+    displayList : DisplayList,  
+}
+
+impl Shape for OutsidePillarShape {
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
 }
 
 impl PillarShape for OutsidePillarShape {
-  fn drawList() {
-    glScalef(7.0f, 3.0f, 7.0f);
-    drawPillar(0.2, 0.2, 0.3, true);
+}
+
+impl DisplayListShape for OutsidePillarShape {
+  fn drawList(&self) {
+    glScalef(7.0, 3.0, 7.0);
+    self.drawPillar(0.2, 0.2, 0.3, true);
   }
 }

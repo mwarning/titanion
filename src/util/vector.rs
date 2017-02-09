@@ -9,17 +9,20 @@
 //private import std.math;
 //private import std.conv;
 
+//fn main() {}
+
 use std::ops::{Mul, MulAssign, Add, AddAssign};
 
-static mut rsl : Vector = Vector{x : 0.0, y : 0.0};
+#[allow(dead_code)]
+static mut RSL : Vector = Vector{x : 0.0, y : 0.0};
 
 /**
  * 2D vector.
  */
 #[derive(Copy, Clone, PartialEq, Debug)]
-struct Vector {
- x : f32,
- y : f32,
+pub struct Vector {
+ pub x : f32,
+ pub y : f32,
 
  //private:
  // static Vector rsl;
@@ -86,6 +89,7 @@ impl AddAssign<Vector> for Vector {
   }
 }
 
+
 impl Vector {
 /*
   public static this() {
@@ -101,6 +105,9 @@ impl Vector {
     this.y = y;
   }
   */
+  pub fn new(x : f32, y : f32) -> Vector {
+    Vector {x: x, y: y,}
+  }
 
   fn clear(&mut self) {
     self.x = 0.0;
@@ -115,13 +122,13 @@ impl Vector {
     let ll : f32 = v * v;
     if ll > 0.1 {
       let mag : f32 = self * v;
-      rsl.x = mag * self.x / ll;
-      rsl.y = mag * self.y / ll;
+      RSL.x = mag * self.x / ll;
+      RSL.y = mag * self.y / ll;
     } else {
-      rsl.x = 0.0;
-      rsl.y = 0.0;
+      RSL.x = 0.0;
+      RSL.y = 0.0;
     }
-    rsl
+    RSL
   }
 
   // was getElement
@@ -129,19 +136,19 @@ impl Vector {
     let ll : f32 = v * v;
     if ll > 0.1 {
       let mag : f32 = (self * v) / ll;
-      rsl.x = mag * self.x;
-      rsl.y = mag * self.y;
+      RSL.x = mag * self.x;
+      RSL.y = mag * self.y;
     } else {
-      rsl.x = 0.0;
-      rsl.y = 0.0;
+      RSL.x = 0.0;
+      RSL.y = 0.0;
     }
-    let d : f32 = rsl.vctSize();
+    let d : f32 = RSL.vctSize();
     if d > 0.1 && d < min {
-      rsl *= min / d;
+      RSL *= min / d;
     } else if d > max {
-      rsl *= max / d;
+      RSL *= max / d;
     }
-    rsl
+    RSL
   }
 
   fn opAddAssign(&mut self, v : Vector) {
@@ -222,10 +229,10 @@ impl Vector {
   }
 
   fn checkCross(&self, p : Vector, p1 : Vector, p2 : Vector, width : f32) -> bool {
-    let mut a1x : f32 = 0.0;
-    let mut a1y : f32 = 0.0;
-    let mut a2x : f32 = 0.0;
-    let mut a2y : f32 = 0.0;
+    let a1x : f32;
+    let a1y : f32;
+    let a2x : f32;
+    let a2y : f32;
 
     if self.x < p.x {
       a1x = self.x - width;
@@ -243,10 +250,10 @@ impl Vector {
       a2y = self.y + width;
     }
 
-    let mut b1x : f32 = 0.0;
-    let mut b1y : f32 = 0.0;
-    let mut b2x : f32 = 0.0;
-    let mut b2y : f32 = 0.0;
+    let b1x : f32;
+    let b1y : f32;
+    let b2x : f32;
+    let b2y : f32;
 
     if p2.y < p1.y {
       b1y = p2.y - width;
@@ -359,13 +366,13 @@ impl Vector {
   }
 }
 
-static mut rsl3 : Vector3 = Vector3{x : 0.0, y : 0.0, z : 0.0};
+static mut RSL3 : Vector3 = Vector3{x : 0.0, y : 0.0, z : 0.0};
 
 /**
  * 3D vector.
  */
 #[derive(Copy, Clone, PartialEq, Debug)]
-struct Vector3 {
+pub struct Vector3 {
   x : f32,
   y : f32,
   z : f32,
@@ -402,6 +409,10 @@ impl Vector3 {
     this.y = y;
     this.z = z;
   }*/
+
+  pub fn new(x : f32, y : f32, z:f32) -> Vector3 {
+    Vector3 {x: x, y: y, z: z}
+  }
 
   fn clear(&mut self) {
     self.x = 0.0;
@@ -466,16 +477,16 @@ impl Vector3 {
     let ll : f32 = v * v;
     if ll != 0.0 {
       let mag : f32 = self * v;
-      rsl3.x = mag * v.x / ll;
-      rsl3.y = mag * v.y / ll;
-      rsl3.z = mag * v.z / ll;
+      RSL3.x = mag * v.x / ll;
+      RSL3.y = mag * v.y / ll;
+      RSL3.z = mag * v.z / ll;
     } else {
-      rsl3.x = 0.0;
-      rsl3.y = 0.0;
-      rsl3.z = 0.0;
+      RSL3.x = 0.0;
+      RSL3.y = 0.0;
+      RSL3.z = 0.0;
     }
 
-    rsl3
+    RSL3
   }
 
   fn op_mul(&self, v : Vector3) -> f32 {
@@ -505,6 +516,7 @@ impl Vector3 {
     self.y /= a;
     self.z /= a;
   }
+
 
   fn to_string(&self) -> String {
     format!("({}, {}, {})", self.x, self.y, self.z)
