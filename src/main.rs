@@ -14,6 +14,7 @@ mod util {
 
 mod ttn {
 	pub mod shape;
+	pub mod enemy;
 }
 
 

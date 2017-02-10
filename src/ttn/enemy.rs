@@ -32,8 +32,8 @@ private import src.ttn.frame;
 static trailEffect : bool = false;
 
 struct EnemyPool {
-  ap : ActorPool!(Enemy),
-  self._field : Field,
+  ap : ActorPool<Enemy>,
+  _field : Field,
 }
 
 impl EnemyPool {
@@ -83,7 +83,7 @@ impl EnemyPool {
   fn checkBulletHit(&self, p : Vector, pp : Vector) -> bool {
     let hitf : bool = false;
     for e in self.actors {
-      if e.exists && e.isCaptured {}
+      if e.exists && e.isCaptured {
         if self.self._field.checkHitDist(e.pos, p, pp, EnemySpec.BULLET_HIT_WIDTH) {
           e.hitCaptured();
           hitf = true;
@@ -124,20 +124,22 @@ impl EnemyPool {
 
   fn num(&self) -> i32 {
     let mut n : i32 = 0;
-    for e in self.actors
+    for e in self.actors {
       if e.exists && !e.isCaptured {
         n += 1;
       }
-    return n;
+    }
+    n
   }
 
   fn numInAttack(&self) -> i32 {
     let mut n = 0;
-    for e in self.actors
+    for e in self.actors {
       if e.exists && e.isInAttack {
         n += 1;
       }
-    return n;
+    }
+    n
   }
 
   fn numInScreen(&self) -> i32 {
@@ -163,13 +165,13 @@ impl EnemyPool {
   fn drawFront(&self) {
     if self.trailEffect {
       for a in self.actors {
-        if a.exists && (a.state.pos.y <= (self._field.size.y * 1.5) {
+        if a.exists && (a.state.pos.y <= (self._field.size.y * 1.5)) {
           a.drawTrails();
         }
       }
     }
     for a in self.actors {
-      if a.exists && a.state.pos.y <= (self._field.size.y * 1.5) {
+      if a.exists && (a.state.pos.y <= (self._field.size.y * 1.5)) {
         a.draw();
       }
     }
@@ -196,8 +198,8 @@ impl EnemyPool {
     }
   }
 
-  public void drawPillarBack() {
-    if (trailEffect)
+  fn drawPillarBack() {
+    if trailEffect {
       for a in self.actors {
         if a.exists &&
             a.state.pos.y > self._field.size.y * 1.5 &&
@@ -206,6 +208,7 @@ impl EnemyPool {
           a.drawTrails();
         }
       }
+    }
     for a in self.actors {
       if a.exists &&
           a.state.pos.y > self._field.size.y * 1.5 &&
@@ -223,11 +226,11 @@ impl EnemyPool {
 }
 
 struct Enemy {
-  tok : Token!(EnemyState, EnemySpec),
+  tok : Token<EnemyState, EnemySpec>,
 }
 
 impl Enemy {
-  fn init(&mut self, Object[] args) {
+  fn init(&mut self, args : &[Object]) {
     self.tok.init(args);
     self.tok.state.enemy = this;
   }
@@ -345,11 +348,11 @@ impl Enemy {
 
 const TRAIL_NUM : i32 = 64;
 const TRAIL_INTERVAL : i32 = 8;
-const TURRET_MAX_NUM : i32 = 3;
+const TURRET_MAX_NUM2 : i32 = 3;
 
 struct EnemyState {
   ts : TokenState,
-  TurretState[TURRET_MAX_NUM] turretStates,
+  turretStates : [TurretState; TURRET_MAX_NUM2],
   enemy : Enemy,
   vel : Vector,
   centerPos : Vector,
@@ -367,14 +370,18 @@ struct EnemyState {
   phase : i32,
   phaseCnt : i32,
   nextPhaseCnt : i32,
-  int captureState, captureIdx,
+  captureState : i32,
+  captureIdx : i32,
   isGoingDownBeforeStandBy : bool,
-  Vector size, targetSize, sizeVel,
-  trails : vec!<Trail>,
+  size : Vector,
+  targetSize : Vector,
+  sizeVel : Vector,
+  trails : Vec<Trail>,
   trailIdx : i32,
   trailLooped : bool,
   isFirstEnemy : bool,
   anger : f32,
+}
 /*
   invariant() {
     if (isInitialized) {
@@ -398,22 +405,25 @@ struct EnemyState {
     }
   }
 */
-  fn this(&mut self) {
-    self.super();
-    for &ts in self.turretStates {
-      ts = new TurretState;
+impl EnemyState {
+  fn new() -> EnemyState {
+    let mut inst : Self = Default::default(); 
+    //inst.super();
+    for &ts in inst.turretStates {
+      ts = TurretState::new();
     }
-    self.vel = new Vector;
-    self.centerPos = new Vector;
-    self.centerVel = new Vector;
-    self.standByPos = new Vector;
-    self.size = new Vector;
-    self.targetSize = new Vector;
-    self.sizeVel = new Vector;
-    self.trails = new Trail[TRAIL_NUM];
+    inst.vel = Vector::new();
+    inst.centerPos = Vector::new();
+    inst.centerVel = Vector::new();
+    inst.standByPos = Vector::new();
+    inst.size = Vector::new();
+    inst.targetSize = Vector::new();
+    inst.sizeVel = Vector::new();
+    inst.trails = Trail[TRAIL_NUM];
     for &t in self.trails {
-      t = new Trail;
+      t = Trail::new();
     }
+    inst
   }
 
   fn clear(&mut self) {
@@ -452,7 +462,8 @@ struct EnemyState {
     self.ts.clear();
   }
 
-  fn move(&self) {
+  //was move()
+  fn move1(&mut self) {
     self.cnt += 1;;
     self.anger *= 0.9995;
   }
@@ -469,7 +480,7 @@ struct EnemyState {
   fn fndrawTrails(s : EnemyShape, r : f32, g : f32, b : f32, size : Vector, field : Field) {
     let mut ti : i32 = trailIdx;
     let mut a : f32 = 1.0;
-    for i..(TRAIL_NUM / TRAIL_INTERVAL) {
+    for i in 0..(TRAIL_NUM / TRAIL_INTERVAL) {
       ti -= TRAIL_INTERVAL;
       if ti < 0 {
         if self.trailLooped {
@@ -490,20 +501,21 @@ struct EnemyState {
 
 const BULLET_HIT_WIDTH : f32 = 0.8;
 const NEXT_PHASE_DIST : f32 = 5.0;
-const TURRET_MAX_NUM : i32 = 3;
+const TURRET_MAX_NUM1 : i32 = 3;
 
 struct EnemySpec {
-  ts : TokenSpec!(EnemyState),
+  ts : TokenSpec<EnemyState>,
   //mixin StaticRandImpl;
   bullets : BulletPool,
   player : Player,
-  ParticlePool particles, bonusParticles,
+  particles : ParticlePool,
+  bonusParticles : ParticlePool,
   enemies : EnemyPool,
   stage : Stage,
   trailShape : EnemyShape,
   bulletSpec : BulletSpec,
   counterBulletSpec : BulletSpec,
-  TurretSpec[TURRET_MAX_NUM] turretSpecs,
+  turretSpecs : [TurretSpec; TURRET_MAX_NUM1],
   turretNum : i32,
   turretWidth : f32, //= 0;
   gameState : GameState,
@@ -513,6 +525,7 @@ struct EnemySpec {
   score : i32,
   explosionSeName : String,
   removeBullets : bool,
+}
 /*
   invariant() {
     assert(shield > 0);
@@ -522,24 +535,27 @@ struct EnemySpec {
 */
   //public this() {}
 
-  fn this(&mut self, field : Field, bullets : BulletPool, player : Player,
+impl EnemySpec {
+  fn new(field : Field, bullets : BulletPool, player : Player,
               particles : ParticlePool, bonusParticles : ParticlePool,
-              enemies : EnemyPool, Stage stage,
+              enemies : EnemyPool, stage : Stage,
               shape : Shape, trailShape : EnemyShape,
               bulletSpec : BulletSpec, counterBulletSpec : BulletSpec,
-              gameState : GameState) {
-    self.field = field;
-    self.bullets = bullets;
-    self.player = player;
-    self.particles = particles;
-    self.bonusParticles = bonusParticles;
-    self.enemies = enemies;
-    self.stage = stage;
-    self.shape = shape;
-    self.trailShape = trailShape;
-    self.bulletSpec = bulletSpec;
-    self.counterBulletSpec = counterBulletSpec;
-    self.gameState = gameState;
+              gameState : GameState) -> EnemySpec {
+    EnemySpec {
+      field : field,
+      bullets : bullets,
+      player : player,
+      particles : particles,
+      bonusParticles : bonusParticles,
+      enemies : enemies,
+      stage : stage,
+      shape : shape,
+      trailShape : trailShape,
+      bulletSpec : bulletSpec,
+      counterBulletSpec : counterBulletSpec,
+      gameState : gameState,
+    }
   }
 
   fn set(&mut self , es : EnemyState) {
@@ -549,19 +565,19 @@ struct EnemySpec {
     }
   }
 
-  fn move(es : EnemyState) -> bool {
+  fn move2(&mut self, es : EnemyState) -> bool {
     //with (es) {
       es.move();
-      if self.isInScreen(es) && self.isFirstEnemy) {
+      if self.isInScreen(es) && self.isFirstEnemy {
         Sound.playSe("flying_down.wav");
         self.isFirstEnemy = false;
       }
-      if captureState > 0) {
+      if captureState > 0 {
         moveCaptured(es);
         return true;
       }
       if player.enemiesHasCollision() {
-        if (enemies.checkEnemyHit(es.pos, size)) {
+        if enemies.checkEnemyHit(es.pos, size) {
           destroyed(es);
           return false;
         }
@@ -590,7 +606,7 @@ struct EnemySpec {
       if waitCnt > 0 {
         waitCnt -= 1;
       } else {
-        Vector cp = centerPos;
+        let cp : Vector = centerPos;
         centerPos.x = field.normalizeX(centerPos.x);
         phaseCnt += 1;
         if field.calcCircularDist(centerPos, pos) < NEXT_PHASE_DIST {
@@ -627,24 +643,24 @@ struct EnemySpec {
           1 => { tx -= turretWidth; },
           2 => { tx += turretWidth; },
           }
-          let turretDeg : f32 = atan2(field.normalizeX(-(player.pos.x - tx)), player.pos.y - ty);
+          let turretDeg : f32 = (field.normalizeX(-(player.pos.x - tx)), player.pos.y - ty).atan2();
           match self.gameState.mode {
-            GameState.Mode.CLASSIC => {
-              if (turretDeg >= 0) && (turretDeg < (PI - PI / 6.0) {
+            GameState::Mode::CLASSIC => {
+              if (turretDeg >= 0) && (turretDeg < (PI - PI / 6.0)) {
                 turretDeg = PI - PI / 6;
-              } else if (turretDeg < 0 && turretDeg > (-PI + PI / 6.0) {
+              } else if (turretDeg < 0) && turretDeg > (-PI + PI / 6.0) {
                 turretDeg = -PI + PI / 6;
              }
-             turretDeg = ((turretDeg + PI / 64) / (PI / 32)) * (PI / 32)) as i32;
+             turretDeg = ((((turretDeg + PI / 64.0) / (PI / 32.0)) as i32) as f32) * (PI / 32.0);
             },
-            GameState.Mode.BASIC => {
+            GameState::Mode::BASIC => {
               if (turretDeg >= 0 && turretDeg < PI - PI / 4.0) {
                turretDeg = PI - PI / 4.0;
               } else if (turretDeg < 0 && turretDeg > -PI + PI / 4.0) {
                turretDeg = -PI + PI / 4.0;
               }
             },
-            GameState.Mode.MODERN => {}
+            GameState::Mode::MODERN => {}
           }
           ts.update(tx, ty, turretDeg);
         }
@@ -705,7 +721,7 @@ struct EnemySpec {
   fn checkCaptured(&self, es : EnemyState) {
     //with (es) {
       if player.isInTractorBeam(pos) {
-        if gameState.mode != GameState.Mode.MODERN {
+        if gameState.mode != GameState::Mode::MODERN {
           let idx : i32 = player.addCapturedEnemy(es.enemy);
           if idx >= 0 {
             captureState = 1;
@@ -718,11 +734,11 @@ struct EnemySpec {
     //}
   }
 
-  fn hitCaptured(es, EnemyState) {
+  fn hitCaptured(&mut self, es : EnemyState) {
     player.destroyCapturedEnemies(es.captureIdx);
   }
 
-  fn bool isBeingCaptured(es : EnemyState) -> bool {
+  fn isBeingCaptured(&self, es : EnemyState) -> bool {
     (es.captureState > 0)
   }
 
@@ -734,7 +750,7 @@ struct EnemySpec {
     (es.phase < -10)
   }
 
-  fn hitShot(&mut self, es : EnemyState es, dd : f32 /* = 0*/) -> bool {
+  fn hitShot(&mut self, es : EnemyState, dd : f32 /* = 0*/) -> bool {
     //with (es) {
       shield -= 1;
       let r : f32 = 0.5 + rand.nextFloat(0.5);
@@ -755,15 +771,15 @@ struct EnemySpec {
         return true;
       }
       match gameState.mode {
-       GameState.Mode.CLASSIC => {}
+       GameState::Mode::CLASSIC => {
         targetSize.x *= 1.3;
         targetSize.y *= 1.3;
         },
-      GameState.Mode.BASIC => {
+      GameState::Mode::BASIC => {
         targetSize.x *= 1.2;
         targetSize.y *= 1.2;
         },
-      GameState.Mode.MODERN => {
+      GameState::Mode::MODERN => {
         targetSize.x *= 1.01;
         targetSize.y *= 1.01;
         },
@@ -804,13 +820,13 @@ struct EnemySpec {
           if cnt <= 50 {
             wc = cnt;
           } else {
-            wc = 50 + ((cnt - 50) as f32).sqrt() as i32);
+            wc = 50 + (((cnt - 50) as f32).sqrt() as i32);
           }
           p.set(Particle.Shape.BONUS, pos.x, pos.y, 0, 0.1,
                 1.0 + (wc as f32) / 75.0, 1, 1, 1, 120, false, cnt, wc);
           player.addScore(score * cnt);
         } else {
-          if gameState.mode == GameState.Mode.BASIC) {
+          if gameState.mode == GameState::Mode::BASIC {
             let oy : f32 = pos.y - player.pos.y;
             let mut pm : i32 = (18.0 - oy) as i32;
             if pm > 16 {
@@ -858,18 +874,18 @@ struct EnemySpec {
       if removeBullets {
         player.midEnemyProvacated();
       }
-    }
+    //}
   }
 
-  fn gotoNextPhaseInAppearing(&mut self, EnemyState es) -> bool {
+  fn gotoNextPhaseInAppearing(&mut self, es : EnemyState) -> bool {
     //with (es) {
       match phase {
       -300 => {
         let mut cpw : f32;
         match gameState.mode {
-          GameState.Mode.CLASSIC => { cpw = 0.2; },
-          GameState.Mode.BASIC => { cpw = 0.2; },
-          GameState.Mode.MODERN => { cpw = 0.4; },
+          GameState::Mode::CLASSIC => { cpw = 0.2; },
+          GameState::Mode::BASIC => { cpw = 0.2; },
+          GameState::Mode::MODERN => { cpw = 0.4; },
         }
         centerPos.x = rand.nextSignedFloat(field.size.x * cpw);
         centerPos.y = field.size.y * 2.0;
@@ -896,9 +912,9 @@ struct EnemySpec {
         },
       -199 => {
         if standByPos.x < 0 {
-          centerPos.x = field.size.x * 0.75f;
+          centerPos.x = field.size.x * 0.75;
         } else {
-          centerPos.x = -field.size.x * 0.75f;
+          centerPos.x = -field.size.x * 0.75;
         }
         centerPos.y = 0;
         if isGoingDownBeforeStandBy {
@@ -991,48 +1007,33 @@ struct EnemySpec {
   fn movePhase(&mut self, es : EnemyState) {
     //with (es) {
       match phase {
-      -200 => {
+      -200|-100 => {
         if (pos.y < field.size.y * 1.5) {
           pos.y = field.size.y * 1.5;
         }
       },
-      -100 => {
-        if (pos.y < field.size.y * 1.5) {
-          pos.y = field.size.y * 1.5;
-        }
-      },
-      case -99 => {
+      -99 => {
         if (centerPos.x < 0) && (pos.x > -field.size.x) {
           pos.x += (-field.size.x - pos.x) * 0.2;
         } else if (centerPos.x > 0) && (pos.x < field.size.x) {
           pos.x += (field.size.x - pos.x) * 0.2;
         }
       },
-      case -50 => {
+      -50|-49|-10=> {
         if (pos.y < -field.size.y * 0.5) {
           pos.y += (-field.size.y * 0.5 - pos.y) * 0.2;
         }
       },
-      case -49 => {
-        if (pos.y < -field.size.y * 0.5) {
-          pos.y += (-field.size.y * 0.5 - pos.y) * 0.2;
-        }
-      },
-      case -10 => {
-        if (pos.y < -field.size.y * 0.5) {
-          pos.y += (-field.size.y * 0.5 - pos.y) * 0.2;
-        }
-      },
-      _ => {}
-      }
+      _ => {},
+      };
       if isInAttack(es) {
-        if (gameState.mode == GameState.Mode.MODERN) || (phase >= 0) || (rand.nextInt(5) == 0) {
+        if (gameState.mode == GameState::Mode::MODERN) || (phase >= 0) || (rand.nextInt(5) == 0) {
           for i in 0..turretNum {
             turretSpecs[i].move(turretStates[i], rank, anger);
           }
         }
       }
-    }
+    //}
   }
 
   fn isInScreen(&self, es : EnemyState) -> bool {
@@ -1049,7 +1050,7 @@ struct EnemySpec {
     let mut p : Vector3 = self.field.calcCircularPos(es.pos);
     let mut cd : f32 = self.field.calcCircularDeg(es.pos.x);
     (shape as EnemyShape).draw(p, cd, es.deg, es.cnt, es.size);
-    for i in 1..turretNum; {
+    for i in 1..turretNum {
       let x : f32 = es.pos.x;
       match i {
       1 => {
@@ -1067,7 +1068,7 @@ struct EnemySpec {
   }
 
   fn drawTrails(&self, es : EnemyState) {
-    if (es.captureState > 0) {
+    if es.captureState > 0 {
       return;
     }
     es.drawTrails(trailShape, 0.2, 0.2, 0.8, es.size, field);
@@ -1089,9 +1090,8 @@ struct Trail {
 */
 
 impl Trail {
-  fn this(&mut self) {
-    self.pos = new Vector;
-    self.deg = 0;
+  fn new() -> Self {
+    Trail{pos : Vector::new(), deg : 0.0, cnt : 0}
   }
 
   fn set(&mut self, x : f32, y : f32, d : f32, c : i32) {
@@ -1122,15 +1122,15 @@ impl GhostEnemySpec {
   }
 
   fn set(&mut self, es : EnemyState) {}
-  fn move(&mut self, es : EnemyState) -> bool { return true; }
+  fn move2(&mut self, es : EnemyState) -> bool { true }
   fn destroyed(&mut self, es : EnemyState, dd : f32 /*= 0*/) {}
   fn setRank(&mut self, rank : f32) {}
-  fn init(&mut self ,EnemyState es) {}
-  fn gotoNextPhase(&mut self, es : EnemyState) -> bool { return false; }
-  fn isInAttack(&mut self, ses : EnemyState) -> bool { return false; }
-  fn calcStandByTime(&mut self, es : EnemyState) -> i32 { return 0; }
-  fn isBeingCaptured(&mut self, es : EnemyState) -> bool { return true; }
-  fn isCaptured(&mut self, es : EnemyState) -> bool { return true; }
+  fn init(&mut self, es : EnemyState) {}
+  fn gotoNextPhase(&mut self, es : EnemyState) -> bool { false }
+  fn isInAttack(&mut self, ses : EnemyState) -> bool { false }
+  fn calcStandByTime(&mut self, es : EnemyState) -> i32 { 0 }
+  fn isBeingCaptured(&mut self, es : EnemyState) -> bool { true }
+  fn isCaptured(&mut self, es : EnemyState) -> bool { true }
 }
 
 
@@ -1139,36 +1139,38 @@ struct MiddleEnemySpec {
 }
 
 impl MiddleEnemySpec {
-  fn this(&mut self, field : Field, bullets : BulletPool, player : Player,
+  fn new(field : Field, bullets : BulletPool, player : Player,
               particles :  ParticlePool, bonusParticles : ParticlePool,
               enemies : EnemyPool, stage : Stage,
               shape : Shape, trailShape : EnemyShape,
               bulletSpec : BulletSpec, counterBulletSpec : BulletSpec,
-              gameState : GameState) {
-    self.es.super(field, bullets, player, particles, bonusParticles, enemies, stage,
-          shape, trailShape, bulletSpec, counterBulletSpec, gameState);
-    for &ts in turretSpecs {
-      ts = new TurretSpec(field, bullets, player, enemies, particles, stage, bulletSpec, gameState);
+              gameState : GameState) -> MiddleEnemySpec {
+    let mut inst = MiddleEnemySpec{es : EnemySpec {
+      field : field, bullets: bullets, player : player, particles : particles, bonusParticles : bonusParticles, enemies : enemies, stage : stage,
+          shape : shape, trailShape: trailShape, bulletSpec : bulletSpec, counterBulletSpec : counterBulletSpec, gameState : gameState}};
+    for &ts in inst.turretSpecs {
+      ts = TurretSpec::new(field, bullets, player, enemies, particles, stage, bulletSpec, gameState);
     }
     match gameState.mode {
-    GameState.Mode.CLASSIC => {
-      shield = 2;
-      capturable = false;
-      removeBullets = false;
+    GameState::Mode::CLASSIC => {
+      inst.shield = 2;
+      inst.capturable = false;
+      inst.removeBullets = false;
     },
-    GameState.Mode.BASIC => {
-      shield = 3;
-      capturable = false;
-      removeBullets = false;
+    GameState::Mode::BASIC => {
+      inst.shield = 3;
+      inst.capturable = false;
+      inst.removeBullets = false;
     },
-    GameState.Mode.MODERN => {
-      shield = 32;
-      capturable = true;
-      removeBullets = true;
+    GameState::Mode::MODERN => {
+      inst.shield = 32;
+      inst.capturable = true;
+      inst.removeBullets = true;
       },
     }
-    score = 100;
+    inst.score = 100;
     explosionSeName = "explosion3.wav";
+    inst
   }
 
   fn init(&mut self, es : EnemyState) {
@@ -1184,24 +1186,24 @@ impl MiddleEnemySpec {
     rank = r.sqrt();
     let mut tr : f32;
     match gameState.mode {
-    GameState.Mode.CLASSIC => {
+    GameState::Mode::CLASSIC => {
       rank = sqrt(rank);
       tr = r * 2.0;
       },
-    GameState.Mode.BASIC => {
+    GameState::Mode::BASIC => {
       tr = r * 3.0;
       },
-    GameState.Mode.MODERN => {
+    GameState::Mode::MODERN => {
       rank = 1.0;
       tr = r * 15.0;
       },
-    }
+    };
     if rank < 1.5 {
       rank = 1.5;
     }
     turretSpecs[0].setRankMiddle(tr);
     turretNum = 1;
-    if gameState.mode == GameState.Mode.MODERN {
+    if gameState.mode == GameState::Mode::MODERN {
       let ts : TurretSpec = turretSpecs[0];
       let ptn : i32 = rand.nextInt(6);
       if ptn == 1 || ptn == 2 || ptn == 4 {
@@ -1255,28 +1257,28 @@ impl MiddleEnemySpec {
         turretSpecs[2].nwayBaseDeg = -turretSpecs[1].nwayBaseDeg;
         turretWidth = 1.5 + rand.nextFloat(0.5);
         turretNum = 3;
-        }
       }
     }
   }
 
-  fn gotoNextPhase(&mut self, es : EnemyState) -> bool{
+  fn gotoNextPhase(&mut self, es : EnemyState) -> bool {
     //with (es) {
       if phase < 0 {
         return gotoNextPhaseInAppearing(es);
       }
       match phase {
       1 => {
-        if (gameState.mode != GameState.Mode.MODERN && !player.hasCollision) {
+        if (gameState.mode != GameState::Mode::MODERN && !player.hasCollision) {
           phase = 0;
           nextPhaseCnt = calcStandByTime(es);
           break;
         }
         Sound.playSe("flying_down.wav");
-        if (gameState.mode != GameState.Mode.MODERN) {
+        if (gameState.mode != GameState::Mode::MODERN) {
           centerPos.x = field.size.x * (0.6 + rand.nextSignedFloat(0.1));
-          if (rand.nextInt(2) == 0)
+          if rand.nextInt(2) == 0 {
             centerPos.x *= -1;
+          }
           centerPos.y = field.size.y * (0.2 + rand.nextFloat(0.2));
           nextPhaseCnt = 60;
         } else {
@@ -1287,7 +1289,7 @@ impl MiddleEnemySpec {
         }
       },
       2 => {
-        if (gameState.mode != GameState.Mode.MODERN) {
+        if (gameState.mode != GameState::Mode::MODERN) {
           centerPos.x *= -0.9;
           centerPos.y = field.size.y * (0.2 + rand.nextFloat(0.2));
           nextPhaseCnt = 60;
@@ -1299,7 +1301,7 @@ impl MiddleEnemySpec {
         }
       },
       3 => {
-        if gameState.mode != GameState.Mode.MODERN {
+        if gameState.mode != GameState::Mode::MODERN {
           centerPos.x = standByPos.x;
           centerPos.y = standByPos.y;
           phase = 0;
@@ -1314,10 +1316,10 @@ impl MiddleEnemySpec {
       _ => {
         return false;
       },
-      }
+      };
       nextPhaseCnt /= rank;
       phaseCnt = 0;
-    }
+    //}
     true
   }
 
@@ -1326,7 +1328,7 @@ impl MiddleEnemySpec {
   }
 
   fn calcStandByTime(&mut self, es : EnemyState) -> i32 {
-    if (es.phase < 0) || (gameState.mode == GameState.Mode.MODERN) {
+    if (es.phase < 0) || (gameState.mode == GameState::Mode::MODERN) {
       return 30 + rand.nextInt(30);
     } else {
       return 200 + rand.nextInt(150);
@@ -1339,24 +1341,25 @@ struct SmallEnemySpec {
 }
 
 impl SmallEnemySpec {
-  fn this(&mut self, field : Field, bullets : BulletPool, player : Player,
+  fn new(field : Field, bullets : BulletPool, player : Player,
               particles : ParticlePool, bonusParticles : ParticlePool,
               enemies :  EnemyPool, stage : Stage,
               shape : Shape, trailShape : EnemyShape,
               bulletSpec :  BulletSpec, counterBulletSpec : BulletSpec,
-              gameState : GameState) {
-    self.super(field, bullets, player, particles, bonusParticles, enemies, stage,
-          shape, trailShape, bulletSpec, counterBulletSpec, gameState);
-    turretSpecs[0] = new TurretSpec(field, bullets, player, enemies, particles,
-                                    stage, bulletSpec, gameState);
-    match gameState.mode {
-    GameState.Mode.CLASSIC => { shield = 1; },
-    GameState.Mode.BASIC => { shield = 1; },
-    GameState.Mode.MODERN => { shield = 2; },
-    }
-    capturable = true;
-    score = 10;
-    removeBullets = false;
+              gameState : GameState) -> SmallEnemySpec {
+    let mut inst = SmallEnemySpec{ es : EnemySpec{
+      field : field, bullets: bullets, player : player, particles : particles, bonusParticles : bonusParticles, enemies : enemies, stage : stage,
+          shape : shape, trailShape : trailShape, bulletSpec : bulletSpec, counterBulletSpec : counterBulletSpec, gameState : gameState}};
+    inst.turretSpecs[0] = TurretSpec::new(field, bullets, player, enemies, particles, stage, bulletSpec, gameState);
+    inst.shild = match gameState.mode {
+    GameState::Mode::CLASSIC => 1,
+    GameState::Mode::BASIC => 1,
+    GameState::Mode::MODERN => 2,
+    };
+    inst.capturable = true;
+    inst.score = 10;
+    inst.removeBullets = false;
+    inst
   }
 
   fn init(&mut self, es : EnemyState) {
@@ -1374,25 +1377,25 @@ impl SmallEnemySpec {
       angVel = fes.angVel;
       phase = fes.phase;
       size.x = size.y = 1.25;
-    }
+    //}
   }
 
 fn setRank(&mut self, r : f32) {
     rank =(r * 0.5).sqrt();
     let mut tr : f32;
     match gameState.mode {
-    GameState.Mode.CLASSIC => {
+    GameState::Mode::CLASSIC => {
       rank = sqrt(rank);
       tr = r;
     },
-    GameState.Mode.BASIC => {
+    GameState::Mode::BASIC => {
       tr = r * 2;
     },
-    GameState.Mode.MODERN => {
+    GameState::Mode::MODERN => {
       rank = 1;
       tr = r;
     },
-    }
+    };
     if rank < 1 {
       rank = 1;
     }
@@ -1405,7 +1408,7 @@ fn setRank(&mut self, r : f32) {
   }
 }
 
-fn SE1Spec {
+struct SE1Spec {
   ses : SmallEnemySpec,
 }
 
@@ -1456,7 +1459,7 @@ impl SE1Spec {
     true
   }
 
-  fn isInAttack(EnemyState es) -> bool {
+  fn isInAttack(es : EnemyState) -> bool {
     (es.phase < -10 || es.phase == 1 || es.phase == 2)
   }
 }
@@ -1487,14 +1490,14 @@ impl SE2Spec {
         if !player.hasCollision || (enemies.numInAttack > stage.attackSmallEnemyNum) {
           phase = 0;
           nextPhaseCnt = calcStandByTime(es);
-          break;
+        } else {
+          Sound.playSe("flying_down.wav");
+          centerPos.y = -field.size.y * 0.3;
+          centerPos.x = (standByPos.x + player.pos.x) / 2;
+          baseSpeed = baseBaseSpeed;
+          angVel = baseAngVel;
+          nextPhaseCnt = 30 + rand.nextInt(60);
         }
-        Sound.playSe("flying_down.wav");
-        centerPos.y = -field.size.y * 0.3;
-        centerPos.x = (standByPos.x + player.pos.x) / 2;
-        baseSpeed = baseBaseSpeed;
-        angVel = baseAngVel;
-        nextPhaseCnt = 30 + rand.nextInt(60);
       },
       2 => {
         centerPos.y = -field.size.y * 1.3;
@@ -1521,8 +1524,8 @@ impl SE2Spec {
       }
       nextPhaseCnt /= rank;
       phaseCnt = 0;
-    }
-    return true;
+    //}
+    true
   }
 
   fn movePhase(&mut self, es : EnemyState) {
@@ -1585,7 +1588,7 @@ const SPEED_RATIO : f32 = 5.0;
 const INTERVAL_MAX : f32 = 90.0;
 
 struct TurretSpec {
-  ts : TokenSpec!(TurretState),
+  ts : TokenSpec<TurretState>,
   //mixin StaticRandImpl;
   bulletSpec : BulletSpec,
   bullets : BulletPool,
@@ -1681,13 +1684,13 @@ impl TurretSpec {
     let mut ir : f32;
     let intervalMax : f32 = INTERVAL_MAX;
     match gameState.mode {
-    GameState.Mode.CLASSIC => {
+    GameState::Mode::CLASSIC => {
       nr = 0;
       br = 0;
       ir = (rank * nsr).sqrt() * 2.0;
       burstInterval = 3 + rand.nextInt(2);
     },
-    GameState.Mode.BASIC => {
+    GameState::Mode::BASIC => {
       if isWide {
         nr = (rank * nsr * rr);
         br = 0;
@@ -1699,7 +1702,7 @@ impl TurretSpec {
       }
       burstInterval = 3 + rand.nextInt(2);
     },
-    GameState.Mode.MODERN => {
+    GameState::Mode::MODERN => {
       if isWide {
         nr = (rank * nsr * rr);
         br = 0;
@@ -1730,7 +1733,7 @@ impl TurretSpec {
     }
     //assert(speed > 0);
     match gameState.mode {
-    GameState.Mode.CLASSIC => {
+    GameState::Mode::CLASSIC => {
       speed *= 0.36;
       if speed < 0.05 {
         speed = 0.05;
@@ -1738,10 +1741,10 @@ impl TurretSpec {
         speed = (speed * 20).sqrt() / 20;
       }
     },
-    GameState.Mode.BASIC => {
+    GameState::Mode::BASIC => {
       speed *= 0.33;
     },
-    GameState.Mode.MODERN => {
+    GameState::Mode::MODERN => {
       speed *= 0.25;
       if speed < 0.04 {
         speed = 0.04;
@@ -1764,14 +1767,14 @@ impl TurretSpec {
     let mut nwayDegRatio : f32;
     let intervalMax : f32 = INTERVAL_MAX;
     match gameState.mode {
-      GameState.Mode.CLASSIC => {
+      GameState::Mode::CLASSIC => {
       nr = 0;
       br = 0;
       ir = (rank * (0.5 + rand.nextSignedFloat(0.3))).sqrt() * 2;
       nwayDegRatio = 0;
       burstInterval = 3 + rand.nextInt(2);
       },
-    GameState.Mode.BASIC => {
+    GameState::Mode::BASIC => {
       if rand.nextInt(3) == 0 {
         nr = 0;
         br = (rank * 0.4) * (1.0 + rand.nextSignedFloat(0.2));
@@ -1786,8 +1789,8 @@ impl TurretSpec {
       nwayDegRatio = 0.06;
       burstInterval = 3 + rand.nextInt(2);
     },
-    GameState.Mode.MODERN => {
-      let v = rand.nextInt(5) {
+    GameState::Mode::MODERN => {
+      let v = rand.nextInt(5);
       if v == 0 {
         rank *= 1.2;
         nr = 0;
@@ -1807,7 +1810,7 @@ impl TurretSpec {
       intervalMax = 120;
       burstInterval = 4 + rand.nextInt(8);
       },
-    }
+    };
     let acf : bool = false;
     burstNum = (br.sqrt() as i32) + 1;
     if (burstNum > 1) && (rand.nextInt(3) > 0) {
@@ -1832,7 +1835,7 @@ impl TurretSpec {
     }
     //assert(speed > 0);
     match gameState.mode {
-    GameState.Mode.CLASSIC => { 
+    GameState::Mode::CLASSIC => { 
       speed *= 0.36;
       if speed < 0.05 {
         speed = 0.05;
@@ -1840,10 +1843,10 @@ impl TurretSpec {
         speed = (speed * 20.0).sqrt / 20.0;
       }
     },
-    GameState.Mode.BASIC => {
+    GameState::Mode::BASIC => {
       speed *= 0.4;
     },
-    GameState.Mode.MODERN => {
+    GameState::Mode::MODERN => {
       speed *= 0.22;
       if speed < 0.04 {
         speed = 0.04;
@@ -1859,7 +1862,7 @@ impl TurretSpec {
         speedAccel *= -1;
       }
     }
-    if (gameState.mode == GameState.Mode.BASIC) && (nway > 1) && (rand.nextInt(3) == 0) {
+    if (gameState.mode == GameState::Mode::BASIC) && (nway > 1) && (rand.nextInt(3) == 0) {
       speed *= 0.9;
       nwaySpeedAccel = (speed * (0.2 + nway * 0.05 + rand.nextFloat(0.1))) / (nway - 1);
       if rand.nextInt(2) == 0 {
@@ -1875,7 +1878,8 @@ impl TurretSpec {
     minimumFireDist = 5;
   }
 
-  fn move(&mut self, ts : TurretState, time : f32 /* = 1*/, anger : f32 /*= 0*/) -> bool {
+ //was move()
+  fn move4(&mut self, ts : TurretState, time : f32 /* = 1*/, anger : f32 /*= 0*/) -> bool {
     if self._disabled {
       return true;
     }
@@ -1953,7 +1957,7 @@ impl TurretSpec {
   }
 
   fn isAbleToFire(&self, p : Vector) -> bool {
-    if gameState.mode != GameState.Mode.MODERN {
+    if gameState.mode != GameState::Mode::MODERN {
       return (p.y > 0);
     } else {
       return (p.y > 0 && p.dist(player.pos) > minimumFireDist);
