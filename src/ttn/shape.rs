@@ -80,26 +80,11 @@ trait Shape : Default {
         dl.call(0);
         glPopMatrix();
     }
-  //fn draw4(&mut self, pos : Vector3, cd : f32, deg : f32);
 }
 
 trait DisplayListShape : Shape {
-    //displayList : DisplayList, //implements .call() close(), *List()
-
-    //fn get_display_list(&mut self) -> &mut DisplayList;
-
     fn drawList(&self);
-/*
-    fn draw4(&mut self, pos : Vector3, cd : f32, deg : f32) {
-        let dl = self.get_display_list();
-        glPushMatrix();
-        Screen_glTranslate(pos);
-        glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
-        Screen_glRotate(deg);
-        dl.call();
-        glPopMatrix();
-    }
-*/
+
     fn new() -> Self {
         let mut inst : Self = Default::default(); 
         //let dl = inst.get_display_list();
@@ -1303,7 +1288,6 @@ impl DisplayListShape for Pillar4Shape {
     self.drawPillar(0.5, 0.4, 0.5, false);
   }
 }
-
 
 struct OutsidePillarShape {
     displayList : DisplayList,  
