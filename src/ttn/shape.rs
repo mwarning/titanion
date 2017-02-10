@@ -67,7 +67,7 @@ fn Screen_glRotate(deg : f32) {}
  * 3D shapes of a player, enemies, particles, etc.
  */
 
-trait Shape {
+trait Shape : Default {
 
     fn get_display_list(&mut self) -> &mut DisplayList;
 
@@ -100,15 +100,16 @@ trait DisplayListShape : Shape {
         glPopMatrix();
     }
 */
-    fn new(&mut self) {
-        let dl = self.get_display_list();
-        dl.beginNewList();
-        self.drawList();
-        dl.endNewList();
+    fn new() -> Self {
+        let mut inst : Self = Default::default(); 
+        //let dl = inst.get_display_list();
+        inst.get_display_list().beginNewList();
+        inst.drawList();
+        inst.get_display_list().endNewList();
+        inst
     }
 
     fn draw(&mut self) {
-        let dl = self.get_display_list();
         self.drawList()
     }
 
@@ -195,6 +196,10 @@ struct PlayerShape {
     displayList : DisplayList,
 }
 
+impl Default for PlayerShape {
+    fn default() -> PlayerShape { PlayerShape{ displayList: DisplayList::new(1) } }
+}
+
 impl Shape for PlayerShape {
     fn get_display_list(&mut self) -> &mut DisplayList {
         &mut self.displayList
@@ -251,6 +256,10 @@ struct PlayerLineShape {
     displayList : DisplayList,
 }
 
+impl Default for PlayerLineShape {
+    fn default() -> PlayerLineShape { PlayerLineShape{ displayList: DisplayList::new(1) } }
+}
+
 impl Shape for PlayerLineShape {
   fn get_display_list(&mut self) -> &mut DisplayList {
     &mut self.displayList
@@ -284,6 +293,10 @@ impl DisplayListShape for PlayerLineShape {
 
 struct ShotShape {
     displayList : DisplayList,
+}
+
+impl Default for ShotShape {
+    fn default() -> ShotShape { ShotShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for ShotShape {
@@ -344,6 +357,10 @@ struct TractorBeamShapeRed {
     displayList : DisplayList,
 }
 
+impl Default for TractorBeamShapeRed {
+    fn default() -> TractorBeamShapeRed { TractorBeamShapeRed{ displayList: DisplayList::new(1) } }
+}
+
 impl Shape for TractorBeamShapeRed {
   fn get_display_list(&mut self) -> &mut DisplayList {
     &mut self.displayList
@@ -361,6 +378,10 @@ impl DisplayListShape for TractorBeamShapeRed {
 
 struct TractorBeamShapeBlue {
     displayList : DisplayList, 
+}
+
+impl Default for TractorBeamShapeBlue {
+    fn default() -> TractorBeamShapeBlue { TractorBeamShapeBlue{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TractorBeamShapeBlue {
@@ -382,6 +403,10 @@ struct TractorBeamShapePurple {
     displayList : DisplayList,
 }
 
+impl Default for TractorBeamShapePurple {
+    fn default() -> TractorBeamShapePurple { TractorBeamShapePurple{ displayList: DisplayList::new(1) } }
+}
+
 impl Shape for TractorBeamShapePurple {
   fn get_display_list(&mut self) -> &mut DisplayList {
     &mut self.displayList
@@ -399,6 +424,10 @@ impl DisplayListShape for TractorBeamShapePurple {
 
 struct TractorBeamShapeDarkRed {
     displayList : DisplayList,
+}
+
+impl Default for TractorBeamShapeDarkRed {
+    fn default() -> TractorBeamShapeDarkRed { TractorBeamShapeDarkRed{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TractorBeamShapeDarkRed {
@@ -420,6 +449,10 @@ struct TractorBeamShapeDarkBlue {
     displayList : DisplayList,
 }
 
+impl Default for TractorBeamShapeDarkBlue {
+    fn default() -> TractorBeamShapeDarkBlue { TractorBeamShapeDarkBlue{ displayList: DisplayList::new(1) } }
+}
+
 impl Shape for TractorBeamShapeDarkBlue {
     fn get_display_list(&mut self) -> &mut DisplayList {
         &mut self.displayList
@@ -439,6 +472,10 @@ struct TractorBeamShapeDarkPurple {
     displayList : DisplayList,
 }
 
+impl Default for TractorBeamShapeDarkPurple {
+    fn default() -> TractorBeamShapeDarkPurple { TractorBeamShapeDarkPurple{ displayList: DisplayList::new(1) } }
+}
+
 impl Shape for TractorBeamShapeDarkPurple {
     fn get_display_list(&mut self) -> &mut DisplayList {
         &mut self.displayList
@@ -455,20 +492,23 @@ impl DisplayListShape for TractorBeamShapeDarkPurple {
 }
 
 trait BulletShapeBase : DisplayListShape {
-  fn draw5(&self, pos : Vector3, cd : f32, deg : f32, rd : f32) {
-    let dl = self.get_display_list();
+  fn draw5(&mut self, pos : Vector3, cd : f32, deg : f32, rd : f32) {
     glPushMatrix();
     Screen_glTranslate(pos);
     glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
     Screen_glRotate(deg);
     glRotatef(rd, 0.0, 1.0, 0.0);
-    dl.call(0);
+    self.get_display_list().call(0);
     glPopMatrix();
   }
 }
 
 struct BulletShape {
     displayList : DisplayList,
+}
+
+impl Default for BulletShape {
+    fn default() -> BulletShape { BulletShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for BulletShape {
@@ -515,6 +555,10 @@ struct BulletLineShape {
     displayList : DisplayList,
 }
 
+impl Default for BulletLineShape {
+    fn default() -> BulletLineShape { BulletLineShape{ displayList: DisplayList::new(1) } }
+}
+
 impl Shape for BulletLineShape {
     fn get_display_list(&mut self) -> &mut DisplayList {
         &mut self.displayList
@@ -542,6 +586,10 @@ impl DisplayListShape for BulletLineShape {
 
 struct MiddleBulletShape {
     displayList : DisplayList,
+}
+
+impl Default for MiddleBulletShape {
+    fn default() -> MiddleBulletShape { MiddleBulletShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for MiddleBulletShape {
@@ -609,6 +657,10 @@ struct MiddleBulletLineShape {
     displayList : DisplayList,
 }
 
+impl Default for MiddleBulletLineShape {
+    fn default() -> MiddleBulletLineShape { MiddleBulletLineShape{ displayList: DisplayList::new(1) } }
+}
+
 impl Shape for MiddleBulletLineShape {
     fn get_display_list(&mut self) -> &mut DisplayList {
         &mut self.displayList
@@ -640,19 +692,22 @@ impl DisplayListShape for MiddleBulletLineShape {
 }
 
 trait RollBulletShapeBase : BulletShapeBase {
-  fn draw5(&self, pos : Vector3, cd : f32, deg : f32, rd : f32) {
-    let dl = self.get_display_list();
+  fn draw5(&mut self, pos : Vector3, cd : f32, deg : f32, rd : f32) {
     glPushMatrix();
     Screen_glTranslate(pos);
     glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
     glRotatef(rd, 0.0, 0.0, 1.0);
-    dl.call(0);
+    self.get_display_list().call(0);
     glPopMatrix();
   }
 }
 
 struct CounterBulletShape {
     displayList : DisplayList,
+}
+
+impl Default for CounterBulletShape {
+    fn default() -> CounterBulletShape { CounterBulletShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for CounterBulletShape {
@@ -691,6 +746,10 @@ struct CounterBulletLineShape {
     displayList : DisplayList,
 }
 
+impl Default for CounterBulletLineShape {
+    fn default() -> CounterBulletLineShape { CounterBulletLineShape{ displayList: DisplayList::new(1) } }
+}
+
 impl Shape for CounterBulletLineShape {
     fn get_display_list(&mut self) -> &mut DisplayList {
         &mut self.displayList
@@ -721,25 +780,28 @@ impl DisplayListShape for CounterBulletLineShape {
 
 trait EnemyShape : DisplayListShape {
 
-  fn draw6(&self, pos : Vector3, cd : f32, deg : f32, cnt : f32, size : Vector) {
+  fn draw6(&mut self, pos : Vector3, cd : f32, deg : f32, cnt : f32, size : Vector) {
     self.draw7(pos, cd, deg, cnt, size.x, size.y);
   }
 
-  fn draw7(&self, pos : Vector3, cd : f32, deg : f32, cnt : f32, sx : f32, sy : f32) {
-    let dl = self.get_display_list();
+  fn draw7(&mut self, pos : Vector3, cd : f32, deg : f32, cnt : f32, sx : f32, sy : f32) {
     glPushMatrix();
     Screen_glTranslate(pos);
     glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
     Screen_glRotate(deg);
     glScalef(sx, sy, 1.0);
     glRotatef(cnt * 3.0, 0.0, 1.0, 0.0);
-    dl.call(0);
+    self.get_display_list().call(0);
     glPopMatrix();
   }
 }
 
 struct Enemy1Shape {
     displayList : DisplayList,
+}
+
+impl Default for Enemy1Shape {
+    fn default() -> Enemy1Shape { Enemy1Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Enemy1Shape {
@@ -800,6 +862,10 @@ struct Enemy1TrailShape {
    displayList : DisplayList,
 }
 
+impl Default for Enemy1TrailShape {
+    fn default() -> Enemy1TrailShape { Enemy1TrailShape{ displayList: DisplayList::new(1) } }
+}
+
 impl Shape for Enemy1TrailShape {
     fn get_display_list(&mut self) -> &mut DisplayList {
         &mut self.displayList
@@ -833,6 +899,10 @@ impl DisplayListShape for Enemy1TrailShape {
 
 struct Enemy2Shape {
     displayList : DisplayList,
+}
+
+impl Default for Enemy2Shape {
+    fn default() -> Enemy2Shape { Enemy2Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Enemy2Shape {
@@ -892,6 +962,10 @@ struct Enemy2TrailShape {
     displayList : DisplayList,
 }
 
+impl Default for Enemy2TrailShape {
+    fn default() -> Enemy2TrailShape { Enemy2TrailShape{ displayList: DisplayList::new(1) } }
+}
+
 impl Shape for Enemy2TrailShape {
     fn get_display_list(&mut self) -> &mut DisplayList {
         &mut self.displayList
@@ -925,6 +999,10 @@ impl DisplayListShape for Enemy2TrailShape {
 
 struct Enemy3Shape {
     displayList : DisplayList,
+}
+
+impl Default for Enemy3Shape {
+    fn default() -> Enemy3Shape { Enemy3Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Enemy3Shape {
@@ -985,6 +1063,10 @@ struct Enemy3TrailShape {
     displayList : DisplayList,
 }
 
+impl Default for Enemy3TrailShape {
+    fn default() -> Enemy3TrailShape { Enemy3TrailShape{ displayList: DisplayList::new(1) } }
+}
+
 impl Shape for Enemy3TrailShape {
     fn get_display_list(&mut self) -> &mut DisplayList {
         &mut self.displayList
@@ -1018,6 +1100,10 @@ impl DisplayListShape for Enemy3TrailShape {
 
 struct TriangleParticleShape {
     displayList : DisplayList,
+}
+
+impl Default for TriangleParticleShape {
+    fn default() -> TriangleParticleShape { TriangleParticleShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TriangleParticleShape {
@@ -1069,7 +1155,7 @@ trait PillarShape : DisplayListShape {
       Screen_setColor(r, g, b, 1.0);
       glBegin(GL_TRIANGLES);
       for i in 0..8 {
-        let d : f32 = PI * 2.0 * (i as f32) / 8.0;
+        let mut d : f32 = PI * 2.0 * (i as f32) / 8.0;
         glVertex3f(0.0, TICKNESS, 0.0);
         glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
                    TICKNESS,
@@ -1113,18 +1199,21 @@ trait PillarShape : DisplayListShape {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   }
 
-  fn draw3(&self, y : f32, deg : f32) {
-    let dl = self.get_display_list();
+  fn draw3(&mut self, y : f32, deg : f32) {
     glPushMatrix();
     glTranslatef(0.0, y, 0.0);
     glRotatef(deg * 180.0 / PI, 0.0, 1.0, 0.0);
-    dl.call(0);
+    self.get_display_list().call(0);
     glPopMatrix();
   }
 }
 
 struct Pillar1Shape {
     displayList : DisplayList,
+}
+
+impl Default for Pillar1Shape {
+    fn default() -> Pillar1Shape { Pillar1Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape  for Pillar1Shape {
@@ -1147,6 +1236,11 @@ struct Pillar2Shape {
     displayList : DisplayList,
 }
 
+impl Default for Pillar2Shape
+ {
+    fn default() -> Pillar2Shape { Pillar2Shape{ displayList: DisplayList::new(1) } }
+}
+
 impl Shape for Pillar2Shape {
     fn get_display_list(&mut self) -> &mut DisplayList {
         &mut self.displayList
@@ -1165,6 +1259,10 @@ impl DisplayListShape for Pillar2Shape {
 
 struct Pillar3Shape {
     displayList : DisplayList,
+}
+
+impl Default for Pillar3Shape {
+    fn default() -> Pillar3Shape { Pillar3Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Pillar3Shape {
@@ -1186,6 +1284,10 @@ struct Pillar4Shape {
     displayList : DisplayList,
 }
 
+impl Default for Pillar4Shape {
+    fn default() -> Pillar4Shape { Pillar4Shape{ displayList: DisplayList::new(1) } }
+}
+
 impl Shape for Pillar4Shape {
     fn get_display_list(&mut self) -> &mut DisplayList {
         &mut self.displayList
@@ -1205,6 +1307,10 @@ impl DisplayListShape for Pillar4Shape {
 
 struct OutsidePillarShape {
     displayList : DisplayList,  
+}
+
+impl Default for OutsidePillarShape {
+    fn default() -> OutsidePillarShape { OutsidePillarShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for OutsidePillarShape {
