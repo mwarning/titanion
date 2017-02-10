@@ -56,7 +56,7 @@ impl EnemyPool {
     let ne : Enemy = null;
     for e in self.actors {
       if e.exists && !e.isBeingCaptured {
-        if (e.spec as MiddleEnemySpec) {
+        if e.spec as MiddleEnemySpec {
           if self.self._field.calcCircularDist(e.pos, p) < dst {
             dst = self.self._field.calcCircularDist(e.pos, p);
             ne = e;
@@ -69,15 +69,15 @@ impl EnemyPool {
 
   fn checkShotHit(&self, p : Vector, deg : f32, widthRatio : f32 /*= 1.0*/) -> bool {
     let e : Enemy = self.getNearestEnemy(p);
-    if (e) {
+    if e {
       let ox : f32 = self.self._field.normalizeX(e.pos.x - p.x);
       let oy : f32 = e.pos.y - p.y;
-      if (ox.abs() < 1.0 * e.state.size.x && oy.abs() < 1.0 * e.state.size.y * widthRatio) {
+      if (ox.abs() < 1.0) * e.state.size.x && oy.abs() < (1.0 * e.state.size.y * widthRatio) {
         e.hitShot(deg);
-        return true;
+        return true
       }
     }
-    return false;
+    false
   }
 
   fn checkBulletHit(&self, p : Vector, pp : Vector) -> bool {
@@ -100,7 +100,7 @@ impl EnemyPool {
         let ox = self.self._field.normalizeX(e.pos.x - p.x);
         let oy = e.pos.y - p.y;
         if (ox.abs() < 0.5 * (e.state.size.x + size.x) &&
-            oy.abs() < 0.5 * (e.state.size.y + size.y)) {
+            oy.abs() < 0.5 * (e.state.size.y + size.y) {
           e.hitCaptured();
           hitf = true;
         }
@@ -112,9 +112,9 @@ impl EnemyPool {
   fn checkMiddleEnemyExists(&self, x : f32, px : f32) -> bool {
     for e in self.actors {
       if e.exists && !e.isBeingCaptured {
-        if (e.spec as MiddleEnemySpec) {
-          if (e.pos.x - x) * (e.pos.x - px) < 0 {
-            return true;
+        if e.spec as MiddleEnemySpec {
+          if ((e.pos.x - x) * (e.pos.x - px)) < 0.0 {
+            return true
           }
         }
       }
@@ -145,7 +145,7 @@ impl EnemyPool {
   fn numInScreen(&self) -> i32 {
     let mut n = 0;
     for e in self.actors {
-      if (e.exists && e.isInScreen) {
+      if e.exists && e.isInScreen {
         n += 1;
       }
     }
@@ -289,7 +289,7 @@ impl Enemy {
   }
 
   fn hitCaptured(&mut self) {
-    let ses : SmallEnemySpec = (spec as SmallEnemySpec);
+    let ses : SmallEnemySpec = spec as SmallEnemySpec;
     if ses {
       ses.hitCaptured(self.state);
     }
@@ -319,11 +319,11 @@ impl Enemy {
   }
 
   fn isCaptured(&self) -> bool {
-    let ges : GhostEnemySpec = (spec as GhostEnemySpec);
+    let ges : GhostEnemySpec = spec as GhostEnemySpec;
     if ges {
       return true;
     }
-    let ses : SmallEnemySpec = (spec as SmallEnemySpec);
+    let ses : SmallEnemySpec = spec as SmallEnemySpec;
     if !ses {
       return false;
     }
@@ -622,13 +622,13 @@ impl EnemySpec {
         let dst : f32 = field.calcCircularDist(cp, pos);
         speed += ((baseSpeed * (1 + dst * 0.1)) - speed) * 0.05;
         let mut av : f32 = angVel * rk;
-        let mut td : f32 = atan2(field.normalizeX(-(cp.x - pos.x)), cp.y - pos.y);
+        let mut td : f32 = (field.normalizeX(-(cp.x - pos.x)), cp.y - pos.y).atan2();
         let mut ad : f32 = Math.normalizeDeg(td - deg);
-        av *= (2.5 - er);
-        if (ad > av || ad < -PI * 0.8) {
+        av *= 2.5 - er;
+        if (ad > av) || (ad < (-PI * 0.8)) {
           deg += av;
         }
-        else if (ad < -av) {
+        else if ad < -av {
           deg -= av;
         } else {
           deg = td;
@@ -654,9 +654,9 @@ impl EnemySpec {
              turretDeg = ((((turretDeg + PI / 64.0) / (PI / 32.0)) as i32) as f32) * (PI / 32.0);
             },
             GameState::Mode::BASIC => {
-              if (turretDeg >= 0 && turretDeg < PI - PI / 4.0) {
+              if (turretDeg >= 0) && (turretDeg < (PI - PI / 4.0) {
                turretDeg = PI - PI / 4.0;
-              } else if (turretDeg < 0 && turretDeg > -PI + PI / 4.0) {
+              } else if (turretDeg < 0) && (turretDeg > (-PI + PI / 4.0)) {
                turretDeg = -PI + PI / 4.0;
               }
             },
@@ -712,9 +712,9 @@ impl EnemySpec {
 
   fn calcCapturePosX(idx : i32) -> f32 {
     if (idx % 2) == 0 {
-      return ((idx / 2) + 0.5) * PlayerSpec.CAPTURED_ENEMIES_INTERVAL_LENGTH * player.capturedEnemyWidth;
+      return ((idx / 2) + 0.5) * PlayerSpec::CAPTURED_ENEMIES_INTERVAL_LENGTH * player.capturedEnemyWidth;
     } else {
-      return -((idx / 2) + 0.5) * PlayerSpec.CAPTURED_ENEMIES_INTERVAL_LENGTH * player.capturedEnemyWidth;
+      return -((idx / 2) + 0.5) * PlayerSpec::CAPTURED_ENEMIES_INTERVAL_LENGTH * player.capturedEnemyWidth;
     }
   }
 
@@ -844,9 +844,9 @@ impl EnemySpec {
           }
         }
         player.addMultiplier(0.1);
-        if (stage.existsCounterBullet) {
+        if stage.existsCounterBullet {
           let blt : Bullet = bullets.getInstance();
-          if (blt)  {
+          if blt {
             blt.set(counterBulletSpec, pos,
                     turretStates[0].deg, turretSpecs[0].speed * TurretSpec.SPEED_RATIO);
           }
@@ -966,7 +966,7 @@ impl EnemySpec {
         phase = -50;
       },
       -49 => {
-        if (isGoingDownBeforeStandBy) {
+        if isGoingDownBeforeStandBy {
           centerPos.x = centerPos.x / 2;
           centerPos.y = 0;
           phase = -30;
@@ -1008,7 +1008,7 @@ impl EnemySpec {
     //with (es) {
       match phase {
       -200|-100 => {
-        if (pos.y < field.size.y * 1.5) {
+        if pos.y < (field.size.y * 1.5) {
           pos.y = field.size.y * 1.5;
         }
       },
@@ -1020,7 +1020,7 @@ impl EnemySpec {
         }
       },
       -50|-49|-10=> {
-        if (pos.y < -field.size.y * 0.5) {
+        if pos.y < (-field.size.y * 0.5) {
           pos.y += (-field.size.y * 0.5 - pos.y) * 0.2;
         }
       },
@@ -1219,7 +1219,7 @@ impl MiddleEnemySpec {
         }
         turretWidth = 1.0 + rand.nextFloat(1.0);
         turretNum = 3;
-        if (ptn == 4) {
+        if ptn == 4 {
           turretSpecs[0].setRankMiddle(tr * 2);
           turretSpecs[1].interval *= 4;
           turretSpecs[2].interval *= 4;
@@ -1230,7 +1230,7 @@ impl MiddleEnemySpec {
           turretSpecs[0].disabled = true;
           turretSpecs[1].interval *= 2;
           turretSpecs[2].interval *= 2;
-          if (rand.nextInt(2) == 0) {
+          if rand.nextInt(2) == 0 {
             turretSpecs[2].fireIntervalRatio = 0.5;
           }
         }
@@ -1268,13 +1268,13 @@ impl MiddleEnemySpec {
       }
       match phase {
       1 => {
-        if (gameState.mode != GameState::Mode::MODERN && !player.hasCollision) {
+        if (gameState.mode != GameState::Mode::MODERN) && !player.hasCollision {
           phase = 0;
           nextPhaseCnt = calcStandByTime(es);
           break;
         }
         Sound.playSe("flying_down.wav");
-        if (gameState.mode != GameState::Mode::MODERN) {
+        if gameState.mode != GameState::Mode::MODERN {
           centerPos.x = field.size.x * (0.6 + rand.nextSignedFloat(0.1));
           if rand.nextInt(2) == 0 {
             centerPos.x *= -1;
@@ -1289,7 +1289,7 @@ impl MiddleEnemySpec {
         }
       },
       2 => {
-        if (gameState.mode != GameState::Mode::MODERN) {
+        if gameState.mode != GameState::Mode::MODERN {
           centerPos.x *= -0.9;
           centerPos.y = field.size.y * (0.2 + rand.nextFloat(0.2));
           nextPhaseCnt = 60;
@@ -1431,7 +1431,7 @@ impl SE1Spec {
       }
       match phase {
       1 => {
-        if (!player.hasCollision || enemies.numInAttack > stage.attackSmallEnemyNum) {
+        if !player.hasCollision || (enemies.numInAttack > stage.attackSmallEnemyNum) {
           phase = 0;
           nextPhaseCnt = calcStandByTime(es);
           break;
@@ -1531,8 +1531,8 @@ impl SE2Spec {
   fn movePhase(&mut self, es : EnemyState) {
     self.super.movePhase(es);
     //with (es) {
-      if (phase == 3) {
-        if (centerPos.x < 0) {
+      if phase == 3 {
+        if centerPos.x < 0 {
           if pos.x > (-field.size.x * 1.2) {
             pos.x += (centerPos.x - pos.x) * 0.2;
           }
@@ -1692,25 +1692,25 @@ impl TurretSpec {
     },
     GameState::Mode::BASIC => {
       if isWide {
-        nr = (rank * nsr * rr);
+        nr = rank * nsr * rr;
         br = 0;
-        ir = (rank * nsr * (1 - rr));
+        ir = rank * nsr * (1 - rr);
       } else {
         nr = 0;
-        br = (rank * nsr * rr);
-        ir = (rank * nsr * (1 - rr));
+        br = rank * nsr * rr;
+        ir = rank * nsr * (1 - rr);
       }
       burstInterval = 3 + rand.nextInt(2);
     },
     GameState::Mode::MODERN => {
       if isWide {
-        nr = (rank * nsr * rr);
+        nr = rank * nsr * rr;
         br = 0;
-        ir = (rank * nsr * (1 - rr));
+        ir = rank * nsr * (1 - rr);
       } else {
         nr = 0;
-        br = (rank * nsr * rr);
-        ir = (rank * nsr * (1 - rr));
+        br = rank * nsr * rr;
+        ir = rank * nsr * (1 - rr);
       }
       intervalMax = 120;
       burstInterval = 4 + rand.nextInt(4);
@@ -1958,9 +1958,9 @@ impl TurretSpec {
 
   fn isAbleToFire(&self, p : Vector) -> bool {
     if gameState.mode != GameState::Mode::MODERN {
-      return (p.y > 0);
+      p.y > 0
     } else {
-      return (p.y > 0 && p.dist(player.pos) > minimumFireDist);
+      (p.y > 0 && p.dist(player.pos) > minimumFireDist)
     }
   }
 
