@@ -25,7 +25,7 @@ impl Actor {
   }
 }
 
-trait ActorTrait {
+pub trait ActorTrait {
   fn init(args : [Object]);
   fn move1();
   fn draw1();

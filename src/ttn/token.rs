@@ -17,6 +17,10 @@ private import src.ttn.shape;
 
 use util::actor::*;
 use util::vector::*;
+use ttn::shape::*;
+
+//dummy
+struct Field;
 
 /**
  * Tokens of a player, enemies, bullets, particles, etc.
@@ -29,45 +33,45 @@ pub struct Token<ST, SP> {
   spec : SP,
 }
 
-impl Actor for Token<ST, SP> {
+impl<ST, SP> ActorTrait for Token<ST, SP> {
   fn init(&self /*Object[] args*/) {
-    state = ST{};
+    //state = ST{};
   }
 }
 
-impl Token<ST, SP> {
-  fn set(&self, spec : SP, pos : Vector, deg : f32, speed : f32) {
+impl<ST, SP> Token<ST, SP> {
+  fn set55calcStandByTime(&self, spec : SP, pos : Vector, deg : f32, speed : f32) {
     self.set(spec, pos.x, pos.y, deg, speed);
   }
 
-  fn set(&self, spec : SP, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set6(&self, spec : SP, x : f32, y : f32, deg : f32, speed : f32) {
     self.spec = spec;
     self.set(x, y, deg, speed);
   }
 
-  fn set(&self, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
     self.state.clear();
     self.state.pos.x = x;
     self.state.pos.y = y;
     self.state.deg = deg;
     self.state.speed = speed;
-    self.spec.set(state);
+    self.spec.set(self.state);
     self.actor._exists = true;
   }
 
   fn move1(&self) {
-    if !self.spec.move(state) {
+    if !self.spec.move2(self.state) {
       self.remove();
     }
   }
 
   fn remove(&self) {
     self._exists = false;
-    self.spec.removed(state);
+    self.spec.removed(self.state);
   }
 
   fn draw(&self) {
-    self.spec.draw(state);
+    self.spec.draw(self.state);
   }
 
   fn pos(&self) -> Vector {
@@ -109,8 +113,8 @@ impl TokenState {
   }
 
   fn stepForward(&self) {
-    self.pos.x -= sin(self.deg) * self.speed;
-    self.pos.y += cos(self.deg) * self.speed;
+    self.pos.x -= self.deg.sin() * self.speed;
+    self.pos.y += self.deg.cos() * self.speed;
   }
 }
 
@@ -123,7 +127,7 @@ pub struct TokenSpec<T> {
   shape : Shape,
 }
 
-impl TokenSpec<T> {
+impl<T> TokenSpec<T> {
   fn set(&self, state : T) {}
   fn removed(&self, state : T) {}
 
