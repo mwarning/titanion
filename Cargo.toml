@@ -1,0 +1,6 @@
+[package]
+name = "titanion"
+version = "0.1.0"
+authors = ["Moritz Warning <moritzwarning@web.de>"]
+
+[dependencies]
