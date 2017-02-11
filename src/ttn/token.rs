@@ -15,33 +15,18 @@ private import src.ttn.field;
 private import src.ttn.shape;
 */
 
-//goes to utils/actor.d
-
-trait Actor {
-  fn exists() : bool;
-
-  fn exists(v : bool);
-
-  //fn init(Object[] args);
-  fn move();
-  fn draw();
-}
-
-struct Vector {
-  x : f32,
-  y : f32,
-}
+use util::actor;
+use util::vector::*;
 
 /**
  * Tokens of a player, enemies, bullets, particles, etc.
  * Handling these states (position, direction, speed, etc.) and
  *  specs (maneuver, method of attack, etc.).
  */
-
-fn Token<ST, SP> {
-  exits_ : bool;
-  state : ST;
-  spec : SP;
+pub struct Token<ST, SP> {
+  actor : Actor,
+  state : ST,
+  spec : SP,
 }
 
 impl Actor for Token<ST, SP> {
@@ -67,11 +52,10 @@ impl Token<ST, SP> {
     self.state.deg = deg;
     self.state.speed = speed;
     self.spec.set(state);
-    self._exists = true;
+    self.actor._exists = true;
   }
-}
 
-  fn move(&self) {
+  fn move1(&self) {
     if !self.spec.move(state) {
       self.remove();
     }
@@ -86,20 +70,20 @@ impl Token<ST, SP> {
     self.spec.draw(state);
   }
 
-  fn pos(&self) => Vector {
-    return self.state.pos;
+  fn pos(&self) -> Vector {
+    self.state.pos
   }
 }
 
 /**
  * Holding a state of a token.
  */
-struct TokenState {
+pub struct TokenState {
   isInitialized : bool, //init with false
   pos : Vector,
   deg : f32,
   speed : f32,
-};
+}
 
 impl TokenState {
 /*
@@ -112,8 +96,8 @@ impl TokenState {
     }
   }
 */
-  public this() {
-    pos = new Vector;
+  fn new() -> TokenState {
+    TokenState{isInitialized : false, deg : 0.0, speed : 0.0, pos : Vector::new() }
   }
   
   fn clear(&self) {
@@ -134,23 +118,23 @@ impl TokenState {
 /**
  * Base class of a token's specification.
  */
-struct TokenSpec<T> {
-  field : Field;
-  shape : Shape;
+pub struct TokenSpec<T> {
+  field : Field,
+  shape : Shape,
 }
 
 impl TokenSpec<T> {
   fn set(&self, state : T) {}
   fn removed(&self, state : T) {}
 
-  fn move(&self, state T) => bool {
+  fn move2(&self, state : T) -> bool {
     true
   }
 
   fn draw(&self, state : T) {
     //with (state) {
       let p : Vector3 = self.field.calcCircularPos(state.pos);
-      let cd : f32= slelf.field.calcCircularDeg(state.pos.x);
+      let cd : f32 = self.field.calcCircularDeg(state.pos.x);
       self.shape.draw(state.p, state.cd, state.deg);
     //}
   }

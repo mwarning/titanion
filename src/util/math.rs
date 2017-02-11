@@ -13,7 +13,7 @@ use std::f32::consts::PI;
  * Math utility methods.
  */
 
-fn math_normalize_deg(d : f32) -> f32 {
+pub fn normalize_deg(d : f32) -> f32 {
 	let mut rd : f32 = d;
 	if rd < -PI {
 	  rd = PI * 2.0 - (-rd % (PI * 2.0));
@@ -22,7 +22,7 @@ fn math_normalize_deg(d : f32) -> f32 {
 	(rd + PI) % (PI * 2.0) - PI
 }
 
-fn math_normalize_deg_360(d : f32) -> f32 {
+pub fn normalize_deg_360(d : f32) -> f32 {
 	let rd : f32 = d;
 	if rd < -180.0 {
 	 	360.0 - (((-rd as i32) % 360) as f32)

@@ -21,7 +21,6 @@ use std::f32::consts::PI;
 
 use util::vector::Vector;
 use util::vector::Vector3;
-
 use util::sdl::displaylist::DisplayList;
 
 /*
@@ -67,7 +66,7 @@ fn Screen_glRotate(deg : f32) {}
  * 3D shapes of a player, enemies, particles, etc.
  */
 
-trait Shape : Default {
+pub trait Shape : Default {
 
     fn get_display_list(&mut self) -> &mut DisplayList;
 
@@ -763,7 +762,7 @@ impl DisplayListShape for CounterBulletLineShape {
   }
 }
 
-trait EnemyShape : DisplayListShape {
+pub trait EnemyShape : DisplayListShape {
 
   fn draw6(&mut self, pos : Vector3, cd : f32, deg : f32, cnt : f32, size : Vector) {
     self.draw7(pos, cd, deg, cnt, size.x, size.y);
