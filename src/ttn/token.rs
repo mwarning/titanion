@@ -15,7 +15,7 @@ private import src.ttn.field;
 private import src.ttn.shape;
 */
 
-use util::actor;
+use util::actor::*;
 use util::vector::*;
 
 /**

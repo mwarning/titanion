@@ -10,16 +10,16 @@ struct Object;
 /**
  * Actor that has an interface to move and draw.
  */
-struct Actor {
+pub struct Actor {
   _exists : bool,
 }
 
 impl Actor {
-  fn exists(&self) -> bool {
+  fn exists1(&self) -> bool {
     self._exists;
   }
 
-  fn exists(&mut self, v : bool)-> bool {
+  fn exists2(&mut self, v : bool)-> bool {
     self._exists = v;
     v
   }
