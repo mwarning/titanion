@@ -30,8 +30,8 @@ use ttn::dummy::*;
 pub struct Token<ST, SP> {
   //actor : Actor,
   _exists : bool, //from Actor
-  state : ST,
-  spec : SP,
+  pub state : ST,
+  pub spec : SP,
 }
 
 impl<ST, SP> Actor for Token<ST, SP> {
@@ -91,10 +91,10 @@ impl<ST, SP> Token<ST, SP> {
  * Holding a state of a token.
  */
 pub struct TokenState {
-  isInitialized : bool, //init with false
-  pos : Vector,
-  deg : f32,
-  speed : f32,
+  pub isInitialized : bool, //init with false
+  pub pos : Vector,
+  pub deg : f32,
+  pub speed : f32,
 }
 
 impl TokenState {

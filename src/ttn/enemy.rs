@@ -43,7 +43,7 @@ use ttn::dummy::*;
  * Enemies and turrets.
  */
 
-static trailEffect : bool = false;
+static /*mut*/ trailEffect : bool = false;
 
 pub struct EnemyPool {
   ap : ActorPool<Enemy>,
@@ -82,11 +82,10 @@ impl EnemyPool {
   }
 
   fn checkShotHit(&self, p : Vector, deg : f32, widthRatio : f32 /*= 1.0*/) -> bool {
-    let e : Enemy = self.getNearestEnemy(p);
-    if e {
-      let ox : f32 = self.self._field.normalizeX(e.pos().x - p.x);
+    if let Some(e) = self.getNearestEnemy(p) {
+      let ox : f32 = self._field.normalizeX(e.pos().x - p.x);
       let oy : f32 = e.pos().y - p.y;
-      if (ox.abs() < 1.0) * e.state.size.x && oy.abs() < (1.0 * e.state.size.y * widthRatio) {
+      if ox.abs() < (1.0 * e.tok.state.size.x) && oy.abs() < (1.0 * e.tok.state.size.y * widthRatio) {
         e.hitShot(deg);
         return true
       }
@@ -96,9 +95,9 @@ impl EnemyPool {
 
   fn checkBulletHit(&self, p : Vector, pp : Vector) -> bool {
     let hitf : bool = false;
-    for e in self.actors {
-      if e.exists && e.isCaptured {
-        if self.self._field.checkHitDist(e.pos(), p, pp, EnemySpec::BULLET_HIT_WIDTH) {
+    for e in self.ap.actors {
+      if e.getExists() && e.isCaptured() {
+        if self._field.checkHitDist(e.pos(), p, pp, BULLET_HIT_WIDTH) {
           e.hitCaptured();
           hitf = true;
         }
@@ -108,13 +107,13 @@ impl EnemyPool {
   }
 
   fn checkEnemyHit(&self, p : Vector, size : Vector) -> bool {
-    let hitf : bool= false;
-    for e in self.actors {
+    let hitf = false;
+    for e in self.ap.actors {
       if e.getExists() && e.isCaptured() {
-        let ox = self.self._field.normalizeX(e.pos().x - p.x);
+        let ox = self._field.normalizeX(e.pos().x - p.x);
         let oy = e.pos().y - p.y;
-        if ox.abs() < 0.5 * (e.state.size.x + size.x) &&
-            oy.abs() < 0.5 * (e.state.size.y + size.y) {
+        if ox.abs() < 0.5 * (e.tok.state.size.x + size.x) &&
+            oy.abs() < 0.5 * (e.tok.state.size.y + size.y) {
           e.hitCaptured();
           hitf = true;
         }
@@ -124,8 +123,8 @@ impl EnemyPool {
   }
 
   fn checkMiddleEnemyExists(&self, x : f32, px : f32) -> bool {
-    for e in self.actors {
-      if e.exists && !e.isBeingCaptured {
+    for e in self.ap.actors {
+      if e.getExists() && !e.isBeingCaptured() {
         if e.spec as MiddleEnemySpec {
           if ((e.pos().x - x) * (e.pos().x - px)) < 0.0 {
             return true
@@ -138,8 +137,8 @@ impl EnemyPool {
 
   fn num(&self) -> i32 {
     let mut n : i32 = 0;
-    for e in self.actors {
-      if e.exists && !e.isCaptured {
+    for e in self.ap.actors {
+      if e.getExists() && !e.isCaptured() {
         n += 1;
       }
     }
@@ -148,8 +147,8 @@ impl EnemyPool {
 
   fn numInAttack(&self) -> i32 {
     let mut n = 0;
-    for e in self.actors {
-      if e.exists && e.isInAttack {
+    for e in self.ap.actors {
+      if e.getExists() && e.isInAttack() {
         n += 1;
       }
     }
@@ -158,8 +157,8 @@ impl EnemyPool {
 
   fn numInScreen(&self) -> i32 {
     let mut n = 0;
-    for e in self.actors {
-      if e.exists && e.isInScreen {
+    for e in self.ap.actors {
+      if e.getExists() && e.isInScreen() {
         n += 1;
       }
     }
@@ -168,8 +167,8 @@ impl EnemyPool {
 
   fn numBeforeAlign(&self) -> i32 {
     let mut n = 0;
-    for e in self.actors {
-      if e.exists && e.beforeAlign {
+    for e in self.ap.actors {
+      if e.getExists() && e.beforeAlign() {
         n += 1;
       }
     }
@@ -177,36 +176,36 @@ impl EnemyPool {
   }
 
   fn drawFront(&self) {
-    if self.trailEffect {
-      for a in self.actors {
-        if a.exists && (a.state.pos.y <= (self._field.size.y * 1.5)) {
+    if trailEffect {
+      for a in self.ap.actors {
+        if a.getExists() && (a.tok.state.pos.y <= (self._field.size().y * 1.5)) {
           a.drawTrails();
         }
       }
     }
-    for a in self.actors {
-      if a.exists && (a.state.pos.y <= (self._field.size.y * 1.5)) {
+    for a in self.ap.actors {
+      if a.getExists() && (a.tok.state.pos.y <= (self._field.size().y * 1.5)) {
         a.draw();
       }
     }
   }
 
   fn drawBack(&self) {
-    if self.trailEffect {
-      for a in self.actors {
-        if a.exists &&
-            a.state.pos.y > self._field.size.y * 1.5 &&
-            (a.state.pos.x <= self._field.circularDistance / 4 &&
-             a.state.pos.x >= -self._field.circularDistance / 4) {
+    if trailEffect {
+      for a in self.ap.actors {
+        if a.getExists() &&
+            a.tok.state.pos.y > self._field.size().y * 1.5 &&
+            (a.tok.state.pos.x <= self._field.circularDistance() / 4 &&
+             a.tok.state.pos.x >= -self._field.circularDistance() / 4) {
           a.drawTrails();
         }
       }
     }
-    for a in self.actors {
-      if a.exists &&
-          a.state.pos.y > self._field.size.y * 1.5 &&
-          (a.state.pos.x <= self._field.circularDistance / 4 &&
-           a.state.pos.x >= -self._field.circularDistance / 4) {
+    for a in self.ap.actors {
+      if a.getExists() &&
+          a.tok.state.pos.y > self._field.size().y * 1.5 &&
+          (a.tok.state.pos.x <= self._field.circularDistance() / 4 &&
+           a.tok.state.pos.x >= -self._field.circularDistance() / 4) {
         a.draw();
       }
     }
@@ -214,20 +213,20 @@ impl EnemyPool {
 
   fn drawPillarBack(&self) {
     if trailEffect {
-      for a in self.actors {
-        if a.exists &&
-            a.state.pos.y > self._field.size.y * 1.5 &&
-            (a.state.pos.x > self._field.circularDistance / 4 ||
-             a.state.pos.x < -self._field.circularDistance / 4) {
+      for a in self.ap.actors {
+        if a.getExists() &&
+            a.tok.state.pos.y > self._field.size().y * 1.5 &&
+            (a.tok.state.pos.x > self._field.circularDistance() / 4 ||
+             a.tok.state.pos.x < -self._field.circularDistance() / 4) {
           a.drawTrails();
         }
       }
     }
-    for a in self.actors {
-      if a.exists &&
-          a.state.pos.y > self._field.size.y * 1.5 &&
-          (a.state.pos.x > self._field.circularDistance / 4 ||
-           a.state.pos.x < -self._field.circularDistance / 4) {
+    for a in self.ap.actors {
+      if a.getExists() &&
+          a.tok.state.pos.y > self._field.size().y * 1.5 &&
+          (a.tok.state.pos.x > self._field.circularDistance() / 4 ||
+           a.tok.state.pos.x < -self._field.circularDistance() / 4) {
         a.draw();
       }
     }

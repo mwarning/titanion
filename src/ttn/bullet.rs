@@ -193,7 +193,7 @@ impl BulletSpec {
       }
       bs.cnt += 1;
       
-      (bs.cnt < DISAPPEAR_CNT)
+      (bs.cnt < (DISAPPEAR_CNT as i32))
   }
 
   fn draw(&mut self, bs : &BulletState) {
