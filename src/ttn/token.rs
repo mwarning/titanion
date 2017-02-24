@@ -29,7 +29,7 @@ use ttn::dummy::*;
  */
 pub struct Token<ST, SP> {
   //actor : Actor,
-  _exists : bool, //from Actor
+  pub _exists : bool, //from Actor
   pub state : ST,
   pub spec : SP,
 }
@@ -58,16 +58,16 @@ impl<ST, SP> Actor for Token<ST, SP> {
 }
 
 impl<ST, SP> Token<ST, SP> {
-  fn set5Vec(&self, spec : SP, pos : Vector, deg : f32, speed : f32) {
+  pub fn set5Vec(&self, spec : SP, pos : Vector, deg : f32, speed : f32) {
     self.set(spec, pos.x, pos.y, deg, speed);
   }
 
-  fn set6(&self, spec : SP, x : f32, y : f32, deg : f32, speed : f32) {
+  pub fn set6(&self, spec : SP, x : f32, y : f32, deg : f32, speed : f32) {
     self.spec = spec;
     self.set(x, y, deg, speed);
   }
 
-  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
+  pub fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
     self.state.clear();
     self.state.pos.x = x;
     self.state.pos.y = y;
@@ -77,12 +77,12 @@ impl<ST, SP> Token<ST, SP> {
     self.actor._exists = true;
   }
 
-  fn remove(&self) {
+  pub fn remove(&self) {
     self._exists = false;
     self.spec.removed(self.state);
   }
 
-  fn pos(&self) -> Vector {
+  pub fn pos(&self) -> Vector {
     self.state.pos
   }
 }

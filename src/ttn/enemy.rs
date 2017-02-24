@@ -178,14 +178,14 @@ impl EnemyPool {
   fn drawFront(&self) {
     if trailEffect {
       for a in self.ap.actors {
-        if a.getExists() && (a.tok.state.pos.y <= (self._field.size().y * 1.5)) {
+        if a.getExists() && (a.tok.state.ts.pos.y <= (self._field.size().y * 1.5)) {
           a.drawTrails();
         }
       }
     }
     for a in self.ap.actors {
-      if a.getExists() && (a.tok.state.pos.y <= (self._field.size().y * 1.5)) {
-        a.draw();
+      if a.getExists() && (a.tok.state.ts.pos.y <= (self._field.size().y * 1.5)) {
+        a.draw1();
       }
     }
   }
@@ -194,19 +194,19 @@ impl EnemyPool {
     if trailEffect {
       for a in self.ap.actors {
         if a.getExists() &&
-            a.tok.state.pos.y > self._field.size().y * 1.5 &&
-            (a.tok.state.pos.x <= self._field.circularDistance() / 4 &&
-             a.tok.state.pos.x >= -self._field.circularDistance() / 4) {
+            a.tok.state.ts.pos.y > self._field.size().y * 1.5 &&
+            (a.tok.state.ts.pos.x <= Field::circularDistance() / 4.0 &&
+             a.tok.state.ts.pos.x >= -Field::circularDistance() / 4.0) {
           a.drawTrails();
         }
       }
     }
     for a in self.ap.actors {
       if a.getExists() &&
-          a.tok.state.pos.y > self._field.size().y * 1.5 &&
-          (a.tok.state.pos.x <= self._field.circularDistance() / 4 &&
-           a.tok.state.pos.x >= -self._field.circularDistance() / 4) {
-        a.draw();
+          a.tok.state.ts.pos.y > self._field.size().y * 1.5 &&
+          (a.tok.state.ts.pos.x <= Field::circularDistance() / 4.0 &&
+           a.tok.state.ts.pos.x >= -Field::circularDistance() / 4.0) {
+        a.draw1();
       }
     }
   }
@@ -215,19 +215,19 @@ impl EnemyPool {
     if trailEffect {
       for a in self.ap.actors {
         if a.getExists() &&
-            a.tok.state.pos.y > self._field.size().y * 1.5 &&
-            (a.tok.state.pos.x > self._field.circularDistance() / 4 ||
-             a.tok.state.pos.x < -self._field.circularDistance() / 4) {
+            a.tok.state.ts.pos.y > self._field.size().y * 1.5 &&
+            (a.tok.state.ts.pos.x > Field::circularDistance() / 4.0 ||
+             a.tok.state.ts.pos.x < -Field::circularDistance() / 4.0) {
           a.drawTrails();
         }
       }
     }
     for a in self.ap.actors {
       if a.getExists() &&
-          a.tok.state.pos.y > self._field.size().y * 1.5 &&
-          (a.tok.state.pos.x > self._field.circularDistance() / 4 ||
-           a.tok.state.pos.x < -self._field.circularDistance() / 4) {
-        a.draw();
+          a.tok.state.ts.pos.y > self._field.size().y * 1.5 &&
+          (a.tok.state.ts.pos.x > Field::circularDistance() / 4.0 ||
+           a.tok.state.ts.pos.x < -Field::circularDistance() / 4.0) {
+        a.draw1();
       }
     }
   }
@@ -276,10 +276,10 @@ impl Enemy {
 
   fn setSmallEnemyState(&mut self, baseSpeed : f32, angVel : f32, waitCnt : i32, appPattern : i32,
                                 er : f32 /*= 0*/, ed : f32 /*= 0*/, gd : bool /*= false*/,
-                                fireIntervalRatio : f32 /*= 0*/, firstEnemy : Enemy /*= null*/) {
+                                fireIntervalRatio : f32 /*= 0*/, firstEnemy : Option<Enemy> /*= null*/) {
     self.tok.state.baseBaseSpeed = baseSpeed;
     self.tok.state.baseSpeed = baseSpeed;
-    self.tol.state.baseAngVel = angVel;
+    self.tok.state.baseAngVel = angVel;
     self.tok.state.angVel = angVel;
     self.tok.state.waitCnt = waitCnt;
     self.tok.state.ellipseRatio = er;
@@ -289,13 +289,13 @@ impl Enemy {
       0 => {
         self.tok.state.phase = -200;
       }
-      1 => {
+      _ /*1*/ => {
         self.tok.state.phase = -100;
       }
     }
 
-    if firstEnemy {
-      (self.tok.spec as SmallEnemySpec).init(self.tok.state, firstEnemy.state);
+    if let Some(e) = firstEnemy {
+      (self.tok.spec as SmallEnemySpec).init(self.tok.state, e.tok.state);
       self.tok.state.isFirstEnemy = false;
     } else {
       self.tok.spec.init(self.tok.state);
@@ -315,14 +315,14 @@ impl Enemy {
   }
 
   fn setGhostEnemyState(&mut self, x : f32, y : f32, deg : f32, cnt : i32) {
-    self.tok.state.pos.x = x;
-    self.tok.state.pos.y = y;
-    self.tok.state.deg = deg;
+    self.tok.state.ts.pos.x = x;
+    self.tok.state.ts.pos.y = y;
+    self.tok.state.ts.deg = deg;
     self.tok.state.cnt = cnt;
   }
 
   fn hitShot(&self, deg : f32 /*= 0*/) {
-    if self.tok.spec.hitShot(self.tok.state, deg) {
+    if self.tok.spec.hitShot(&self.tok.state, deg) {
       self.tok.remove();
     }
   }
@@ -330,31 +330,31 @@ impl Enemy {
   fn hitCaptured(&mut self) {
     let ses : SmallEnemySpec = self.tok.spec as SmallEnemySpec;
     if ses {
-      ses.hitCaptured(self.state);
+      ses.hitCaptured(&self.tok.state);
     }
   }
 
   fn destroyed(&mut self) {
-    self.tok.spec.destroyed(self.tok.state);
+    self.tok.spec.destroyed(&self.tok.state, 0.0);
     self.tok._exists = false;
   }
 
   fn isInAttack(&mut self) -> bool {
-    if self.tok.spec.isBeingCaptured(self.tok.state) {
+    if self.tok.spec.isBeingCaptured(&self.tok.state) {
       return false;
     }
-    self.tok.spec.isInAttack(self.tok.state)
+    self.tok.spec.isInAttack(&self.tok.state)
   }
 
   fn isInScreen(&self) -> bool {
-    if self.tok.spec.isBeingCaptured(self.tok.state) {
+    if self.tok.spec.isBeingCaptured(&self.tok.state) {
       return false;
     }
-    self.tok.spec.isInScreen(self.tok.state);
+    self.tok.spec.isInScreen(&self.tok.state);
   }
 
   fn isBeingCaptured(&self) -> bool {
-    self.tok.spec.isBeingCaptured(self.tok.state)
+    self.tok.spec.isBeingCaptured(&self.tok.state)
   }
 
   fn isCaptured(&self) -> bool {
@@ -370,14 +370,14 @@ impl Enemy {
   }
 
   fn beforeAlign(&self) -> bool {
-    if self.tok.spec.isBeingCaptured(self.tok.state) {
+    if self.tok.spec.isBeingCaptured(&self.tok.state) {
       return false;
     }
-    self.tok.spec.beforeAlign(self.tok.state)
+    self.tok.spec.beforeAlign(&self.tok.state)
   }
 
   fn drawTrails(&self) {
-    self.tok.spec.drawTrails(self.tok.state);
+    self.tok.spec.drawTrails(&self.tok.state);
   }
 
   fn pos(&self) -> Vector {
@@ -1907,18 +1907,18 @@ impl TurretSpec {
     if acf {
       self.speedAccel = (self.speed * (0.2 + self.burstNum * 0.05 + rand.nextFloat(0.1))) / (self.burstNum - 1);
       if rand.nextInt(2) == 0 {
-        self.speedAccel *= -1;
+        self.speedAccel *= -1.0;
       }
     }
     if (self.gameState.mode == GameState::Mode::BASIC) && (self.nway > 1) && (rand.nextInt(3) == 0) {
       self.speed *= 0.9;
-      self.nwaySpeedAccel = (self.speed * (0.2 + self.nway * 0.05 + rand.nextFloat(0.1))) / (self.nway - 1);
+      self.nwaySpeedAccel = (self.speed * (0.2 + (self.nway as f32) * 0.05 + rand.nextFloat(0.1))) / ((self.nway - 1) as f32);
       if rand.nextInt(2) == 0 {
-        self.nwaySpeedAccel *= -1;
+        self.nwaySpeedAccel *= -1.0;
       }
     }
     if self.nway > 1 {
-      self.nwayAngle = (1.66 + rand.nextFloat(0.33)) / (1 + self.nway * 0.7) * nwayDegRatio;
+      self.nwayAngle = (1.66 + rand.nextFloat(0.33)) / (1.0 + (self.nway as f32) * 0.7) * nwayDegRatio;
     }
     if rand.nextInt(3) == 0 {
       self.fireingAtATime = true;
@@ -1949,8 +1949,8 @@ impl TurretSpec {
         if self.isAbleToFire(ts.pos) {
           let sp : f32 = spd - self.speedAccel * (self.burstNum - 1) / 2;
           for i in 0..self.burstNum {
-            let d : f32 = ts.deg - self.nwayAngle * (self.nway - 1) / 2 + self.nwayBaseDeg;
-            let nsp : f32 = sp - self.nwaySpeedAccel * ts.nwaySpeedAccelDir * (self.nway - 1) / 2;
+            let d : f32 = ts.deg - self.nwayAngle * ((self.nway as f32) - 1.0) / 2.0 + self.nwayBaseDeg;
+            let nsp : f32 = sp - self.nwaySpeedAccel * ts.nwaySpeedAccelDir * ((self.nway as f32) - 1.0) / 2.0;
             for j in 0..self.nway {
               let b : Bullet = self.bullets.getInstance();
               if !b {
@@ -1985,8 +1985,8 @@ impl TurretSpec {
           ts.burstCnt = self.burstInterval;
           ts.burstNum -= 1;
           if self.isAbleToFire(ts.pos) {
-            let d : f32 = ts.deg - self.nwayAngle * (self.nway - 1) / 2 + self.nwayBaseDeg;
-            let nsp : f32 = ts.speed - self.nwaySpeedAccel * ts.nwaySpeedAccelDir * (self.nway - 1) / 2;
+            let d : f32 = ts.deg - self.nwayAngle * ((self.nway as f32) - 1) / 2.0 + self.nwayBaseDeg;
+            let nsp : f32 = ts.speed - self.nwaySpeedAccel * ts.nwaySpeedAccelDir * ((self.nway as f32) - 1.0) / 2.0;
             for i in 0..self.nway {
               let b : Bullet = self.bullets.getInstance();
               if !b {
