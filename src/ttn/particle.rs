@@ -409,9 +409,21 @@ struct Particle {
   lineParticleSpec : LineParticleSpec,
   quadParticleSpec : QuadParticleSpec,
   bonusParticleSpec : BonusParticleSpec,
+  _exists : bool, //inherited by Actor class
 }
 
-impl Particle {
+impl Actor for Particle {
+  fn getExists(&self) -> bool {
+    self._exists
+  }
+  fn setExists(&mut self, v : bool)-> bool {
+    self._exists = v;
+    v
+  }
+  /*
+  fn init(&mut self) { //, args : &[Object]) {
+    self.tok.init()
+  }*/
   fn init(&mut self, args : &Vec<Object>) {
     self.tok.init(args);
     self.triangleParticleSpec = args[0] as TriangleParticleSpec;
@@ -420,6 +432,16 @@ impl Particle {
     self.bonusParticleSpec = args[3] as BonusParticleSpec;
   }
 
+  fn move1(&self) {
+    self.tok.move1();
+  }
+
+  fn draw1(&self) {
+    self.tok.draw1();
+  }
+}
+
+impl Particle {
   fn set(&mut self,type : i32,
           x : f32, y : f32, deg : f32, speed : f32, sz : f32, r : f32, g : f32, b : f32,
           c : i32 /*= 60*/, ebg : bool /*= true*/, num : f32 /*= 0*/, waitCnt : i32 /*= 0*/) {

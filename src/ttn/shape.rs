@@ -18,10 +18,12 @@ private import src.ttn.field;
 */
 
 use std::f32::consts::PI;
+use std::marker::Sized;
 
 use util::vector::Vector;
 use util::vector::Vector3;
 use util::sdl::displaylist::DisplayList;
+use ttn::dummy::*;
 
 /*
 //Dummy
@@ -35,30 +37,6 @@ impl DisplayList {
     }
 }*/
 
-const Field_CIRCLE_RADIUS : f32 = 64.0;
-const GL_TRIANGLES : usize = 0;
-const GL_TRIANGLE_FAN : usize = 0;
-const GL_LINES : usize = 0;
-const GL_LINE_STRIP : usize = 0;
-const GL_SRC_ALPHA : usize = 0;
-const GL_ONE_MINUS_SRC_ALPHA : usize = 0;
-const GL_QUADS : usize = 0;
-const GL_ONE : usize = 0;
-const GL_LINE_LOOP : usize = 0;
-
-fn glPushMatrix() {}
-fn glPopMatrix() {}
-fn glRotatef(angle : f32, x : f32, y : f32, z : f32) {}
-fn glTranslatef(angle : f32, x : f32, y : f32) {}
-fn glBegin(mode : usize) {}
-fn glVertex3f(x : f32, y : f32, z : f32) {}
-fn glEnd() {}
-fn glBlendFunc(a : usize, b : usize) {}
-fn glScalef(a : f32, b : f32, c : f32) {}
-fn Screen_setColor(r : f32, g : f32, b : f32, a : f32) {}
-fn drawPillar(a : f32, b : f32, c : f32) {}
-fn Screen_glTranslate(v : Vector3) {}
-fn Screen_glRotate(deg : f32) {}
 
 //#############
 
@@ -66,7 +44,7 @@ fn Screen_glRotate(deg : f32) {}
  * 3D shapes of a player, enemies, particles, etc.
  */
 
-pub trait Shape : Default {
+pub trait Shape /*: Default*/ {
 
     fn get_display_list(&mut self) -> &mut DisplayList;
 
@@ -84,9 +62,11 @@ pub trait Shape : Default {
 trait DisplayListShape : Shape {
     fn drawList(&self);
 
-    fn new() -> Self {
-        let mut inst : Self = Default::default(); 
-        //let dl = inst.get_display_list();
+    //was this()
+    fn new() -> Self
+        where Self : Default
+    {
+        let mut inst : Self = Default::default();
         inst.get_display_list().beginNewList();
         inst.drawList();
         inst.get_display_list().endNewList();
@@ -475,7 +455,7 @@ impl DisplayListShape for TractorBeamShapeDarkPurple {
   }
 }
 
-trait BulletShapeBase : DisplayListShape {
+pub trait BulletShapeBase : DisplayListShape {
   fn draw5(&mut self, pos : Vector3, cd : f32, deg : f32, rd : f32) {
     glPushMatrix();
     Screen_glTranslate(pos);
@@ -487,7 +467,7 @@ trait BulletShapeBase : DisplayListShape {
   }
 }
 
-struct BulletShape {
+pub struct BulletShape {
     displayList : DisplayList,
 }
 

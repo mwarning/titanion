@@ -35,9 +35,32 @@ private import src.ttn.letter;
 struct Player {
   tok : Token!(PlayerState, PlayerSpec),
   hitOffset : Vector,
+  _exists : bool, //inherited by Actor class
 }
 
-impl Player {}
+impl Actor for Player {
+  fn getExists(&self) -> bool {
+    self._exists
+  }
+  fn setEexists(&mut self, v : bool)-> bool {
+    self._exists = v;
+    v
+  }
+
+  fn init(&mut self) { //, args : &[Object]) {
+    self.tok.init()
+  }
+
+  fn move1(&self) {
+    self.tok.move1();
+  }
+
+  fn draw1(&self) {
+    self.tok.draw1();
+  }
+}
+
+impl Player {
   fn this(&mut self, spec : PlayerSpec) {
     self.tok.state = PlayerState();
     self.tok.spec = spec;
@@ -840,7 +863,30 @@ impl ShotPool {
 }
 
 struct Shot {
- tok : Token!(ShotState, ShotSpec),
+  tok : Token!(ShotState, ShotSpec),
+  _exists : bool, //inherited by Actor class
+}
+
+impl Actor for Shot {
+  fn getExists(&self) -> bool {
+    self._exists
+  }
+  fn setExists(&mut self, v : bool)-> bool {
+    self._exists = v;
+    v
+  }
+
+  fn init(&mut self) { //, args : &[Object]) {
+    self.tok.init()
+  }
+
+  fn move1(&self) {
+    self.tok.move1();
+  }
+
+  fn draw1(&self) {
+    self.tok.draw1();
+  }
 }
 
 impl Shot {

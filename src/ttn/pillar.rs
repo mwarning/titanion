@@ -52,6 +52,29 @@ impl PillarPool {
 
 struct Pillar {
   tok : Token!(PillarState, PillarSpec),
+  _exists : bool, //inherited by Actor class
+}
+
+impl Actor for Pillar {
+  fn getExists(&self) -> bool {
+    self._exists
+  }
+  fn setExists(&mut self, v : bool)-> bool {
+    self._exists = v;
+    v
+  }
+
+  fn init(&mut self) { //, args : &[Object]) {
+    self.tok.init()
+  }
+
+  fn move1(&self) {
+    self.tok.move1();
+  }
+
+  fn draw1(&self) {
+    self.tok.draw1();
+  }
 }
 
 impl Pillar {

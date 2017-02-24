@@ -21,26 +21,39 @@ private import src.ttn.screen;
 private import src.ttn.frame;
 */
 
-/**
+use std::f32::consts::PI;
+use std::ptr;
+
+use util::vector::*;
+use ttn::token::*;
+use ttn::shape::*;
+use ttn::dummy::*;
+use ttn::enemy::*;
+use ttn::field::*;
+use util::actor::*;
+
+/*
  * Enemies' bullets.
  */
 
-let BULLET_REMOVED_RANGE : f32 = 2.0;
+const BULLET_REMOVED_RANGE : f32 = 2.0;
 
-struct BulletPool : ActorPool<Bullet> {
-  fn move() {
+pub struct BulletPool {
+  ap : ActorPool<Bullet>,
+}
+
+impl BulletPool {
+   fn move1(&self) {
     /*
     super.move();
     BulletState.move();
   */
   }
-}
 
-impl BulletPool {
-  fn removeAround(&self, cnt : &int, pos : Vector,
+  fn removeAround(&mut self, cnt : &i32, pos : Vector,
             particles : ParticlePool, bonusParticles : &ParticlePool,
             player : &Player) {
-    for b in self.actors) {
+    for b in self.actors {
       if b.exists {
         if b.pos.dist(pos) < BULLET_REMOVED_RANGE {
           b.remove();
@@ -53,12 +66,12 @@ impl BulletPool {
             wc = 50 + ((cnt - 50) as f32).sqrt() as i32
           }
           let mut bp : &Particle = bonusParticles.getInstanceForced();
-          bp.set(Particle.Shape.BONUS, b.state.pos.x, b.state.pos.y, 0, 0.2f,
+          bp.set(ParticleShape::BONUS, b.state.pos.x, b.state.pos.y, 0, 0.2,
                  0.5, 1, 1, 1, 60, false, cnt, wc);
           let mut p : &Particle = particles.getInstanceForced();
-          p.set(Particle.Shape.QUAD, b.state.pos.x, b.state.pos.y,
+          p.set(ParticleShape::QUAD, b.state.pos.x, b.state.pos.y,
                 b.state.deg, b.state.speed,
-                1.5, 0.5f, 0.75f, 1.0f, 60, false);
+                1.5, 0.5, 0.75, 1.0, 60, false);
           self.removeAround(cnt, b.pos, particles, bonusParticles, player);
         }
       }
@@ -66,33 +79,34 @@ impl BulletPool {
   }
 }
 
+static mut colorCnt : i32 = 0;
+static mut colorAlpha : f32 = 0.0;
+
 struct BulletState {
-  /*static*/ colorCnt : i32;
-  /*static*/ colorAlpha : f32;
-  ppos : Vector;
-  tailPos : Vector;
-  cnt : i32;
-  waitCnt : i32;
-  speedRatio : f32;
+  ts : TokenState,
+  ppos : Vector,
+  tailPos : Vector,
+  cnt : i32,
+  waitCnt : i32,
+  speedRatio : f32,
 }
 
-impl Default for BulletState {
-  fn default() -> BulletState {
-    colorCnt : 0,
-    colorAlpha : 0,
-    ppos : Vector(0.0, 0.0, 0.0),
-    tailPos : Vector(0.0, 0.0, 0.0),
-    cnt : 0,
-    waitCnt : 0,
-    speedRatio : 0.0,
+impl BulletState {
+  fn new() -> BulletState {
+    BulletState {
+      //colorCnt : 0,
+      //colorAlpha : 0,
+      ppos : Vector::new(0.0, 0.0),
+      tailPos : Vector::new(0.0, 0.0),
+      cnt : 0,
+      waitCnt : 0,
+      speedRatio : 0.0,
+    }
   } 
-}
 
-impl BulletState : TokenState {
-
-  fn move(&mut self) {
+  fn move1(&mut self) {
     self.colorCnt += 1;
-    let c : i32 = (self.colorCnt % 30);
+    let c : i32 = self.colorCnt % 30;
     if c < 15  {
       self.colorAlpha = (c / 15) as f32;
     } else {
@@ -112,71 +126,69 @@ impl BulletState : TokenState {
   }
 }
 
-let DISAPPEAR_CNT : f32 = 300;
+const DISAPPEAR_CNT : f32 = 300.0;
 
-struct BulletSpec {
-  player : &Player,
-  enemies : &EnemyPool,
-  particles : &ParticlePool,
-  lineShape : &Shape,
-  gameState : &GameState,
+pub struct BulletSpec {
+  ts : TokenSpec<BulletState>,
+  player : *mut Player,
+  enemies : *mut EnemyPool,
+  particles : *mut ParticlePool,
+  lineShape : *mut Shape,
+  gameState : *mut GameState,
 }
 
-impl Default for BulletSpec {
-  fn default(field : &Field, player : &Player, enemies : &EnemyPool, particles : &ParticlePool,
-              shape : &Shape, lineShape : &Shape, gameState : &GameState) {
+impl BulletSpec {
+  fn new(field : *mut Field, player : *mut Player, enemies : *mut EnemyPool, particles : *mut ParticlePool,
+              shape : *mut Shape, lineShape : *mut Shape, gameState : *mut GameState) {
     BulletSpec{
+      ts : TokenSpec::<BulletState>::new(field, shape),
       field : field, player : player, enemies : enemies,
       particles : particles, shape : shape, lineShape : lineShape,
       gameState : gameState
     }
   }
-}
-
-impl BulletSpec : TokenSpec<BulletState>
-{
 
   fn set(&mut self, bs : &BulletState) {
-    with (bs) {
-      ppos.x = pos.x;
-      ppos.y = pos.y;
-      tailPos.x = pos.x;
-      tailPos.y = pos.y;
+    //with bs {
+      bs.ppos.x = self.ts.pos.x;
+      bs.ppos.y = self.ts.pos.y;
+      bs.tailPos.x = self.ts.pos.x;
+      bs.tailPos.y = self.ts.pos.y;
       //assert(deg <>= 0);
-    }
+    //}
   }
 
-  fn move(&mut self, bs : &mut BulletState) -> bool {
+  fn move2(&mut self, bs : &mut BulletState) -> bool {
       if bs.waitCnt > 0 {
         bs.waitCnt -= 1;
         return true;
       }
-      bs.ppos.x = pos.x;
-      bs.ppos.y = pos.y;
-      let sp : f32 = speed;
-      if (gameState.mode != GameState.Mode.CLASSIC) && (cnt < 40) {
-        sp *= ((cnt + 10) as f32) / 50;
+      bs.ppos.x = bs.ts.pos.x;
+      bs.ppos.y = bs.ts.pos.y;
+      let sp : f32 = bs.ts.speed;
+      if (self.gameState.mode != GameStateMode::CLASSIC) && (bs.cnt < 40) {
+        sp *= ((bs.cnt + 10) as f32) / 50;
       }
-      bs.tailPos.x -= deg.cos()) * sp * 0.7;
-      bs.tailPos.y += deg.cos() * sp * 0.7;
-      pos.x -= deg.sin() * sp;
-      pos.y += deg.cos() * sp;
-      field.addSlowdownRatio(speed * 0.04);
-      pos.x = field.normalizeX(pos.x);
-      if !field.containsOuter(pos) {
+      bs.tailPos.x -= bs.ts.deg.cos() * sp * 0.7;
+      bs.tailPos.y += bs.ts.deg.cos() * sp * 0.7;
+      bs.ts.pos.pos.x -= bs.ts.deg.sin() * sp;
+      bs.ts.pos.y += bs.ts.deg.cos() * sp;
+      self.field.addSlowdownRatio(bs.ts.speed * 0.04);
+      bs.ts.pos.x = self.field.normalizeX(bs.ts.pos.x);
+      if !self.field.containsOuter(bs.ts.pos) {
         return false;
       }
-      if !field.contains(pos) || bs.cnt >= (DISAPPEAR_CNT * 0.9) {
-        tailPos.x += (pos.x - bs.tailPos.x) * 0.1;
-        tailPos.y += (pos.y - bs.tailPos.y) * 0.1;
+      if !self.field.contains(bs.ts.pos) || bs.cnt >= (DISAPPEAR_CNT * 0.9) {
+        bs.tailPos.x += (bs.ts.pos.x - bs.tailPos.x) * 0.1;
+        bs.tailPos.y += (bs.ts.pos.y - bs.tailPos.y) * 0.1;
       }
-      bs.tailPos.x = field.normalizeX(bs.tailPos.x);
-      if player.enemiesHasCollision() {
-        if enemies.checkBulletHit(pos, bs.ppos) {
+      bs.tailPos.x = self.field.normalizeX(bs.tailPos.x);
+      if self.player.enemiesHasCollision() {
+        if self.enemies.checkBulletHit(bs.ts.pos, bs.ppos) {
           return false;
         }
       }
-      if player.checkBulletHit(pos, bs.ppos) {
+      if self.player.checkBulletHit(bs.ts.pos, bs.ppos) {
         return false;
       }
       bs.cnt += 1;
@@ -190,34 +202,69 @@ impl BulletSpec : TokenSpec<BulletState>
       }
       let p : Vector3;
       glBegin(GL_LINES);
-      Screen.setColor(0.1, 0.4, 0.4, 0.5);
-      p = field.calcCircularPos(bs.tailPos);
-      Screen.glVertex(p);
-      Screen.setColor(0.2 * colorAlpha, 0.8 * colorAlpha, 0.8 * colorAlpha);
-      p = field.calcCircularPos(pos);
-      Screen.glVertex(p);
+      Screen_setColor(0.1, 0.4, 0.4, 0.5);
+      p = self.field.calcCircularPos(bs.tailPos);
+      Screen_glVertex(p);
+      Screen_setColor(0.2 * colorAlpha, 0.8 * colorAlpha, 0.8 * colorAlpha);
+      p = self.field.calcCircularPos(bs.ts.pos);
+      Screen_glVertex(p);
       glEnd();
-      p = field.calcCircularPos(pos);
-      let d : f32 = match gameState.mode {
-        GameState.Mode.CLASSIC => {
-          d = PI;
+      p = self.field.calcCircularPos(bs.ts.pos);
+      let d : f32 = match self.gameState.mode {
+        GameStateMode::CLASSIC => {
+          PI;
         }
-        case GameState.Mode.BASIC => {
-          d = deg;
+        GameStateMode::BASIC => {
+          bs.ts.deg;
         }
-        case GameState.Mode.MODERN => {
-          d = deg;
+        GameStateMode::MODERN => {
+          bs.ts.deg;
         }
-      }
-      let cd : f32 = field.calcCircularDeg(pos.x);
-      (shape as &BulletShapeBase).draw(p, cd, d, cnt * 3.0);
-      Screen.setColor(0.6 * colorAlpha, 0.9 * colorAlpha, 0.9 * colorAlpha);
-      (lineShape as &BulletShapeBase).draw(p, cd, d, bs.cnt * 3.0);
+      };
+      let cd : f32 = self.field.calcCircularDeg(bs.ts.pos.x);
+      (self.ts.shape as &BulletShapeBase).draw(p, cd, d, bs.cnt * 3.0);
+      Screen_setColor(0.6 * colorAlpha, 0.9 * colorAlpha, 0.9 * colorAlpha);
+      (self.lineShape as &BulletShapeBase).draw(p, cd, d, bs.cnt * 3.0);
     }
 }
 
-impl Bullet : Token<BulletState, BulletSpec> {
+pub struct Bullet {
+  tok : Token<BulletState, BulletSpec>,
+  _exists : bool, //inherited by Actor class
+}
+
+impl Actor for Bullet {
+  fn getExists(&self) -> bool {
+    self._exists
+  }
+
+  fn setExists(&mut self, v : bool)-> bool {
+    self._exists = v;
+    v
+  }
+
+  fn init(&mut self) { //, args : &[Object]) {
+    self.tok.init();
+  }
+
+  fn move1(&self) {
+    self.tok.move1();
+  }
+
+  fn draw1(&self) {
+    self.tok.draw1();
+  }
+
+}
+
+impl Bullet {
   fn setWaitCnt(&mut self, c : i32) {
-    self.state.waitCnt = c;
+    self.tok.state.waitCnt = c;
   }
 }
+
+/*
+impl Token<BulletState, BulletSpec> for Bullet
+{
+}
+*/

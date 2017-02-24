@@ -28,47 +28,13 @@ private import src.ttn.frame;
 use std::f32::consts::PI;
 
 use util::vector::*;
-use util::actor::ActorPool;
+use util::actor::*;
 use ttn::token::*;
 use ttn::shape::*;
 use util::math::*;
-
-
-//dummy
-struct Field;
-struct Object;
-trait BulletPool {  }
-struct Player;
-trait ParticlePool {}
-struct Stage;
-struct BulletSpec;
-struct GameState;
-struct Particle;
-struct Bullet;
-struct Rand {
-}
-
-impl Rand {
-  fn nextFloat(&mut self, n : f32 /*n = 1*/) -> f32 {
-    0.0
-  }
-
-  fn nextSignedFloat(&mut self, n : f32 /*= 1*/) -> f32 {
-    0.0
-  }
-}
-
-const TurretSpec_SPEED_RATIO : f32 = 0.0;
-
-
-static rand : Rand = Rand{};
-
-fn Sound_playSe(s : &str) {}
-
-fn Screen_setColor(a : f32, b : f32, c : f32, d : f32) {
-}
-
-const PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH : f32 = 1.2;
+use ttn::bullet::*;
+use ttn::field::*;
+use ttn::dummy::*;
 
 
 //######################
@@ -79,35 +45,35 @@ const PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH : f32 = 1.2;
 
 static trailEffect : bool = false;
 
-struct EnemyPool {
+pub struct EnemyPool {
   ap : ActorPool<Enemy>,
   _field : Field,
 }
 
 impl EnemyPool {
-  fn getNearestEnemy(&self, p : Vector) -> Enemy {
+  fn getNearestEnemy(&self, p : Vector) -> Option<&Enemy> {
     let dst : f32 = 99999.0;
-    let ne : Enemy = None;
+    let ne : Option<&Enemy> = None;
     for e in self.ap.actors {
-      if e.exists && !e.isBeingCaptured {
-        if self._field.calcCircularDist(e.pos, p) < dst {
-          dst = self._field.calcCircularDist(e.pos, p);
-          ne = e;
+      if e.getExists() && !e.isBeingCaptured() {
+        if self._field.calcCircularDist2(e.pos(), p) < dst {
+          dst = self._field.calcCircularDist2(e.pos(), p);
+          ne = Some(&e);
         }
       }
     }
     ne
   }
 
-  fn getNearestMiddleEnemy(&self, p: Vector) -> Enemy {
+  fn getNearestMiddleEnemy(&self, p: Vector) -> Option<&Enemy> {
     let dst : f32 = 99999.0;
-    let ne : Enemy = None;
-    for e in self.actors {
-      if e.exists && !e.isBeingCaptured {
+    let ne : Option<&Enemy> = None;
+    for e in self.ap.actors {
+      if e.getExists() && !e.isBeingCaptured() {
         if e.spec as MiddleEnemySpec {
-          if self.self._field.calcCircularDist(e.pos, p) < dst {
-            dst = self.self._field.calcCircularDist(e.pos, p);
-            ne = e;
+          if self._field.calcCircularDist2(e.pos(), p) < dst {
+            dst = self._field.calcCircularDist2(e.pos(), p);
+            ne = Some(&e);
           }
         }
       }
@@ -118,8 +84,8 @@ impl EnemyPool {
   fn checkShotHit(&self, p : Vector, deg : f32, widthRatio : f32 /*= 1.0*/) -> bool {
     let e : Enemy = self.getNearestEnemy(p);
     if e {
-      let ox : f32 = self.self._field.normalizeX(e.pos.x - p.x);
-      let oy : f32 = e.pos.y - p.y;
+      let ox : f32 = self.self._field.normalizeX(e.pos().x - p.x);
+      let oy : f32 = e.pos().y - p.y;
       if (ox.abs() < 1.0) * e.state.size.x && oy.abs() < (1.0 * e.state.size.y * widthRatio) {
         e.hitShot(deg);
         return true
@@ -132,7 +98,7 @@ impl EnemyPool {
     let hitf : bool = false;
     for e in self.actors {
       if e.exists && e.isCaptured {
-        if self.self._field.checkHitDist(e.pos, p, pp, EnemySpec::BULLET_HIT_WIDTH) {
+        if self.self._field.checkHitDist(e.pos(), p, pp, EnemySpec::BULLET_HIT_WIDTH) {
           e.hitCaptured();
           hitf = true;
         }
@@ -144,9 +110,9 @@ impl EnemyPool {
   fn checkEnemyHit(&self, p : Vector, size : Vector) -> bool {
     let hitf : bool= false;
     for e in self.actors {
-      if e.exists && e.isCaptured {
-        let ox = self.self._field.normalizeX(e.pos.x - p.x);
-        let oy = e.pos.y - p.y;
+      if e.getExists() && e.isCaptured() {
+        let ox = self.self._field.normalizeX(e.pos().x - p.x);
+        let oy = e.pos().y - p.y;
         if ox.abs() < 0.5 * (e.state.size.x + size.x) &&
             oy.abs() < 0.5 * (e.state.size.y + size.y) {
           e.hitCaptured();
@@ -161,7 +127,7 @@ impl EnemyPool {
     for e in self.actors {
       if e.exists && !e.isBeingCaptured {
         if e.spec as MiddleEnemySpec {
-          if ((e.pos.x - x) * (e.pos.x - px)) < 0.0 {
+          if ((e.pos().x - x) * (e.pos().x - px)) < 0.0 {
             return true
           }
         }
@@ -275,13 +241,39 @@ impl EnemyPool {
 
 struct Enemy {
   tok : Token<EnemyState, EnemySpec>,
+  _exists : bool, //inherited by Actor class
+}
+
+impl Actor for Enemy {
+  fn getExists(&self) -> bool {
+    self._exists
+  }
+  fn setExists(&mut self, v : bool)-> bool {
+    self._exists = v;
+    v
+  }
+
+  fn init(&mut self) { //, args : &[Object]) {
+    self.tok.init()
+  }
+
+  fn move1(&self) {
+    self.tok.move1();
+  }
+
+  fn draw1(&self) {
+    self.tok.draw1();
+  }
 }
 
 impl Enemy {
+  /*
+  //moved to Actor
   fn init(&mut self, args : &[Object]) {
     self.tok.init(args);
     self.tok.state.enemy = self;
   }
+  */
 
   fn setSmallEnemyState(&mut self, baseSpeed : f32, angVel : f32, waitCnt : i32, appPattern : i32,
                                 er : f32 /*= 0*/, ed : f32 /*= 0*/, gd : bool /*= false*/,
@@ -401,7 +393,7 @@ const TURRET_MAX_NUM2 : usize = 3;
 struct EnemyState {
   ts : TokenState,
   turretStates : [TurretState; TURRET_MAX_NUM2],
-  enemy : Enemy,
+  enemy : *mut Enemy,
   vel : Vector,
   centerPos : Vector,
   centerVel : Vector,
@@ -533,7 +525,7 @@ impl EnemyState {
     }
   }
 
-  fn fndrawTrails(&self, s : EnemyShape, r : f32, g : f32, b : f32, size : Vector, field : Field) {
+  fn drawTrails(&self, s : &EnemyShape, r : f32, g : f32, b : f32, size : Vector, field : Field) {
     let mut ti : i32 = self.trailIdx;
     let mut a : f32 = 1.0;
     for i in 0..(TRAIL_NUM / TRAIL_INTERVAL) {
@@ -562,19 +554,19 @@ const TURRET_MAX_NUM1 : usize = 3;
 struct EnemySpec {
   ts : TokenSpec<EnemyState>,
   //mixin StaticRandImpl;
-  bullets : BulletPool,
-  player : Player,
-  particles : ParticlePool,
-  bonusParticles : ParticlePool,
-  enemies : EnemyPool,
-  stage : Stage,
-  trailShape : EnemyShape,
-  bulletSpec : BulletSpec,
-  counterBulletSpec : BulletSpec,
+  bullets : *mut BulletPool,
+  player : *mut Player,
+  particles : *mut ParticlePool,
+  bonusParticles : *mut ParticlePool,
+  enemies : *mut EnemyPool,
+  stage : *mut Stage,
+  trailShape : *mut EnemyShape,
+  bulletSpec : *mut BulletSpec,
+  counterBulletSpec : *mut BulletSpec,
   turretSpecs : [TurretSpec; TURRET_MAX_NUM1],
   turretNum : i32,
   turretWidth : f32, //= 0;
-  gameState : GameState,
+  gameState : *mut GameState,
   shield : f32, // = 1;
   rank : f32, //= 0;
   capturable : bool,
@@ -592,36 +584,38 @@ struct EnemySpec {
   //public this() {}
 
 impl EnemySpec {
-  fn new(field : Field, bullets : BulletPool, player : Player,
-              particles : ParticlePool, bonusParticles : ParticlePool,
-              enemies : EnemyPool, stage : Stage,
-              shape : Shape, trailShape : EnemyShape,
-              bulletSpec : BulletSpec, counterBulletSpec : BulletSpec,
-              gameState : GameState) -> EnemySpec {
+  fn new(field : *mut Field, bullets : *mut BulletPool, player : *mut Player,
+              particles : *mut ParticlePool, bonusParticles : *mut ParticlePool,
+              enemies : *mut EnemyPool, stage : *mut Stage,
+              shape : *mut Shape, trailShape : *mut EnemyShape,
+              bulletSpec : *mut BulletSpec, counterBulletSpec : *mut BulletSpec,
+              gameState : *mut GameState) -> EnemySpec {
     EnemySpec {
-      field : field,
+      ts : TokenSpec::<EnemyState>::new(field, shape),
       bullets : bullets,
       player : player,
       particles : particles,
       bonusParticles : bonusParticles,
       enemies : enemies,
       stage : stage,
-      shape : shape,
       trailShape : trailShape,
       bulletSpec : bulletSpec,
       counterBulletSpec : counterBulletSpec,
       gameState : gameState,
+      turretWidth : 0,
+      shield : 1,
+      rank : 0,
     }
   }
 
-  fn set(&mut self , es : EnemyState) {
+  fn set(&mut self , es : &mut EnemyState) {
     es.shield = self.shield;
     for i in 0..self.turretNum {
       self.turretSpecs[i].set(es.turretStates[i]);
     }
   }
 
-  fn move2(&mut self, es : EnemyState) -> bool {
+  fn move2(&mut self, es : &mut EnemyState) -> bool {
     //with (es) {
       es.move();
       if self.isInScreen(es) && es.isFirstEnemy {
@@ -665,7 +659,7 @@ impl EnemySpec {
         let cp : Vector = es.centerPos;
         es.centerPos.x = self.field.normalizeX(es.centerPos.x);
         self.phaseCnt += 1;
-        if self.field.calcCircularDist(es.centerPos, es.ts.pos) < NEXT_PHASE_DIST {
+        if self.field.calcCircularDist2(es.centerPos, es.ts.pos) < NEXT_PHASE_DIST {
           es.nextPhaseCnt -= 1;
           if es.nextPhaseCnt <= 0 {
             es.phase += 1;
@@ -675,7 +669,7 @@ impl EnemySpec {
           }
         }
         cp.x = self.field.normalizeX(cp.x);
-        let dst : f32 = self.field.calcCircularDist(cp, es.ts.pos);
+        let dst : f32 = self.field.calcCircularDist2(cp, es.ts.pos);
         es.ts.speed += ((es.baseSpeed * (1 + dst * 0.1)) - es.ts.speed) * 0.05;
         let mut av : f32 = self.angVel * rk;
         let mut td : f32 = (self.field.normalizeX(-(cp.x - es.ts.pos.x)), cp.y - es.ts.pos.y).atan2();
@@ -730,7 +724,7 @@ impl EnemySpec {
     //}
   }
 
-  fn moveCaptured(&mut self, es : EnemyState) {
+  fn moveCaptured(&mut self, es : &mut EnemyState) {
     //with (es) {
       match es.captureState {
       1 => {
@@ -774,7 +768,7 @@ impl EnemySpec {
     }
   }
 
-  fn checkCaptured(&self, es : EnemyState) {
+  fn checkCaptured(&self, es : &mut EnemyState) {
     //with (es) {
       if self.player.isInTractorBeam(es.ts.pos) {
         if self.gameState.mode != GameState::Mode::MODERN {
@@ -790,23 +784,23 @@ impl EnemySpec {
     //}
   }
 
-  fn hitCaptured(&mut self, es : EnemyState) {
+  fn hitCaptured(&mut self, es : &EnemyState) {
     self.player.destroyCapturedEnemies(es.captureIdx);
   }
 
-  fn isBeingCaptured(&self, es : EnemyState) -> bool {
+  fn isBeingCaptured(&self, es : &EnemyState) -> bool {
     (es.captureState > 0)
   }
 
-  fn isCaptured(es : EnemyState) -> bool {
+  fn isCaptured(es : &EnemyState) -> bool {
     (es.captureState == 3)
   }
 
-  fn beforeAlign(es : EnemyState) -> bool {
+  fn beforeAlign(es : &EnemyState) -> bool {
     (es.phase < -10)
   }
 
-  fn hitShot(&mut self, es : EnemyState, dd : f32 /* = 0*/) -> bool {
+  fn hitShot(&mut self, es : &mut EnemyState, dd : f32 /* = 0*/) -> bool {
     //with (es) {
       es.shield -= 1;
       let r : f32 = 0.5 + rand.nextFloat(0.5);
@@ -846,7 +840,7 @@ impl EnemySpec {
     //}
   }
 
-  fn destroyed(&mut self, es : EnemyState, dd : f32 /*= 0*/) {
+  fn destroyed(&mut self, es : &mut EnemyState, dd : f32 /*= 0*/) {
     //with (es) {
       let r : f32 = 0.5 + rand.nextFloat(0.5);
       let g : f32 = 0.1 + rand.nextFloat(0.5);
@@ -912,7 +906,7 @@ impl EnemySpec {
     }
   }
 
-  fn provacated(&mut self, es : EnemyState) {
+  fn provacated(&mut self, es : &mut EnemyState) {
     //with (es) {
       es.anger += (1 - es.anger) * 0.05;
       if es.sizeVel.dist < 0.1 {
@@ -933,7 +927,7 @@ impl EnemySpec {
     //}
   }
 
-  fn gotoNextPhaseInAppearing(&mut self, es : EnemyState) -> bool {
+  fn gotoNextPhaseInAppearing(&mut self, es : &mut EnemyState) -> bool {
     //with (es) {
       match es.phase {
       -300 => {
@@ -1060,7 +1054,7 @@ impl EnemySpec {
     true;
   }
 
-  fn movePhase(&mut self, es : EnemyState) {
+  fn movePhase(&mut self, es : &mut EnemyState) {
     //with (es) {
       match es.phase {
       -200|-100 => {
@@ -1092,7 +1086,7 @@ impl EnemySpec {
     //}
   }
 
-  fn isInScreen(&self, es : EnemyState) -> bool {
+  fn isInScreen(&self, es : &EnemyState) -> bool {
     self.field.size.contains(es.pos);
   }
 /*
@@ -1102,7 +1096,7 @@ impl EnemySpec {
   public abstract bool isInAttack(EnemyState es);
   protected abstract int calcStandByTime(EnemyState es);
 */
-  fn draw(&self, es : EnemyState) {
+  fn draw(&self, es : &EnemyState) {
     let mut p : Vector3 = self.field.calcCircularPos(es.ts.pos);
     let mut cd : f32 = self.field.calcCircularDeg(es.ts.pos.x);
     (self.ts.shape as EnemyShape).draw(p, cd, es.deg, es.cnt, es.size);
@@ -1123,7 +1117,7 @@ impl EnemySpec {
     }
   }
 
-  fn drawTrails(&self, es : EnemyState) {
+  fn drawTrails(&self, es : &EnemyState) {
     if es.captureState > 0 {
       return;
     }
@@ -1163,11 +1157,11 @@ struct GhostEnemySpec {
 }
 
 impl GhostEnemySpec {
-  fn new(&mut self, field : Field, shape : Shape) -> GhostEnemySpec {
+  fn new(&mut self, field : *mut Field, shape : *mut Shape) -> GhostEnemySpec {
     GhostEnemySpec{ field: field, shape: shape}
   }
 
-  fn draw(&self, es : EnemyState) {
+  fn draw(&self, es : &EnemyState) {
     //with (es) {
       let p : Vector3 = self.field.calcCircularPos(es.ts.pos);
       let cd : f32 = self.field.calcCircularDeg(es.ts.pos.x);
@@ -1176,16 +1170,16 @@ impl GhostEnemySpec {
     //}
   }
 
-  fn set(&mut self, es : EnemyState) {}
-  fn move2(&mut self, es : EnemyState) -> bool { true }
-  fn destroyed(&mut self, es : EnemyState, dd : f32 /*= 0*/) {}
+  fn set(&mut self, es : &EnemyState) {}
+  fn move2(&mut self, es : &EnemyState) -> bool { true }
+  fn destroyed(&mut self, es : &EnemyState, dd : f32 /*= 0*/) {}
   fn setRank(&mut self, rank : f32) {}
-  fn init(&mut self, es : EnemyState) {}
-  fn gotoNextPhase(&mut self, es : EnemyState) -> bool { false }
-  fn isInAttack(&mut self, ses : EnemyState) -> bool { false }
-  fn calcStandByTime(&mut self, es : EnemyState) -> i32 { 0 }
-  fn isBeingCaptured(&mut self, es : EnemyState) -> bool { true }
-  fn isCaptured(&mut self, es : EnemyState) -> bool { true }
+  fn init(&mut self, es : &EnemyState) {}
+  fn gotoNextPhase(&mut self, es : &EnemyState) -> bool { false }
+  fn isInAttack(&mut self, ses : &EnemyState) -> bool { false }
+  fn calcStandByTime(&mut self, es : &EnemyState) -> i32 { 0 }
+  fn isBeingCaptured(&mut self, es : &EnemyState) -> bool { true }
+  fn isCaptured(&mut self, es : &EnemyState) -> bool { true }
 }
 
 
@@ -1194,12 +1188,12 @@ struct MiddleEnemySpec {
 }
 
 impl MiddleEnemySpec {
-  fn new(field : Field, bullets : BulletPool, player : Player,
-              particles :  ParticlePool, bonusParticles : ParticlePool,
-              enemies : EnemyPool, stage : Stage,
-              shape : Shape, trailShape : EnemyShape,
-              bulletSpec : BulletSpec, counterBulletSpec : BulletSpec,
-              gameState : GameState) -> MiddleEnemySpec {
+  fn new(field : *mut Field, bullets : *mut BulletPool, player : *mut Player,
+              particles :  *mut ParticlePool, bonusParticles : *mut ParticlePool,
+              enemies : *mut EnemyPool, stage : *mut Stage,
+              shape : *mut Shape, trailShape : *mut EnemyShape,
+              bulletSpec : *mut BulletSpec, counterBulletSpec : *mut BulletSpec,
+              gameState : *mut GameState) -> MiddleEnemySpec {
     let mut inst = MiddleEnemySpec{es : EnemySpec {
       field : field, bullets: bullets, player : player, particles : particles, bonusParticles : bonusParticles, enemies : enemies, stage : stage,
           shape : shape, trailShape: trailShape, bulletSpec : bulletSpec, counterBulletSpec : counterBulletSpec, gameState : gameState}};
@@ -1228,7 +1222,7 @@ impl MiddleEnemySpec {
     inst
   }
 
-  fn init(&mut self, es : EnemyState) {
+  fn init(&mut self, es : &mut EnemyState) {
     //with (es) {
       self.es.size.x = 1.33;
       self.es.size.y = 1.33;
@@ -1316,7 +1310,7 @@ impl MiddleEnemySpec {
     }
   }
 
-  fn gotoNextPhase(&mut self, es : EnemyState) -> bool {
+  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool {
     //with (es) {
       if es.phase < 0 {
         return self.es.gotoNextPhaseInAppearing(es);
@@ -1378,11 +1372,11 @@ impl MiddleEnemySpec {
     true
   }
 
-  fn isInAttack(&mut self, es : EnemyState) -> bool {
+  fn isInAttack(&mut self, es : &EnemyState) -> bool {
     (es.phase == 1) || (es.phase == 2)
   }
 
-  fn calcStandByTime(&mut self, es : EnemyState) -> i32 {
+  fn calcStandByTime(&mut self, es : &EnemyState) -> i32 {
     if (es.phase < 0) || (self.es.gameState.mode == GameState::Mode::MODERN) {
       return 30 + rand.nextInt(30);
     } else {
@@ -1396,12 +1390,12 @@ struct SmallEnemySpec {
 }
 
 impl SmallEnemySpec {
-  fn new(field : Field, bullets : BulletPool, player : Player,
-              particles : ParticlePool, bonusParticles : ParticlePool,
-              enemies :  EnemyPool, stage : Stage,
-              shape : Shape, trailShape : EnemyShape,
-              bulletSpec :  BulletSpec, counterBulletSpec : BulletSpec,
-              gameState : GameState) -> SmallEnemySpec {
+  fn new(field : *mut Field, bullets : *mut BulletPool, player : *mut Player,
+              particles : *mut ParticlePool, bonusParticles : *mut ParticlePool,
+              enemies : *mut EnemyPool, stage : *mut Stage,
+              shape : *mut Shape, trailShape : *mut EnemyShape,
+              bulletSpec : *mut BulletSpec, counterBulletSpec : *mut BulletSpec,
+              gameState : *mut GameState) -> SmallEnemySpec {
     let mut inst = SmallEnemySpec{ es : EnemySpec{
       field : field, bullets: bullets, player : player, particles : particles, bonusParticles : bonusParticles, enemies : enemies, stage : stage,
           shape : shape, trailShape : trailShape, bulletSpec : bulletSpec, counterBulletSpec : counterBulletSpec, gameState : gameState}};
@@ -1417,11 +1411,11 @@ impl SmallEnemySpec {
     inst
   }
 
-  fn init2(&mut self, es : EnemyState) {
+  fn init2(&mut self, es : &mut EnemyState) {
     self.es.gotoNextPhaseInAppearing(es);
   }
 
-  fn init3(&mut self, es : EnemyState, fes : EnemyState) {
+  fn init3(&mut self, es : &mut EnemyState, fes : &EnemyState) {
     //with (es) {
       es.centerPos.x = fes.centerPos.x;
       es.centerPos.y = fes.centerPos.y;
@@ -1469,19 +1463,19 @@ struct SE1Spec {
 }
 
 impl SE1Spec {
-  fn new(field : Field, bullets : BulletPool, player : Player,
-              particles : ParticlePool, bonusParticles : ParticlePool,
-              enemies : EnemyPool, stage : Stage,
-              shape : Shape, trailShape : EnemyShape,
-              bulletSpec : BulletSpec, counterBulletSpec : BulletSpec,
-              gameState : GameState) -> SE1Spec {
+  fn new(field : *mut Field, bullets : *mut BulletPool, player : *mut Player,
+              particles : *mut ParticlePool, bonusParticles : *mut ParticlePool,
+              enemies : *mut EnemyPool, stage : *mut Stage,
+              shape : *mut Shape, trailShape : *mut EnemyShape,
+              bulletSpec : *mut BulletSpec, counterBulletSpec : *mut BulletSpec,
+              gameState : *mut GameState) -> SE1Spec {
     let mut inst = SE1Spec {ses : SmallEnemySpec::new(field, bullets, player, particles, bonusParticles, enemies, stage,
           shape, trailShape, bulletSpec, counterBulletSpec, gameState)};
     inst.ses.es.explosionSeName = "explosion1.wav";
     inst
   }
 
-  fn gotoNextPhase(&mut self, es : EnemyState) -> bool {
+  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool {
     //with (es) {
       if es.phase < 0 {
         return self.ses.es.gotoNextPhaseInAppearing(es);
@@ -1516,7 +1510,7 @@ impl SE1Spec {
     true
   }
 
-  fn isInAttack(es : EnemyState) -> bool {
+  fn isInAttack(es : &EnemyState) -> bool {
     (es.phase < -10 || es.phase == 1 || es.phase == 2)
   }
 }
@@ -1526,19 +1520,19 @@ struct SE2Spec {
 }
 
 impl SE2Spec {
-  fn new(field : Field, bullets : BulletPool, player : Player,
-              particles : ParticlePool, bonusParticles : ParticlePool,
-              enemies : EnemyPool, stage : Stage,
-              shape : Shape, trailShape : EnemyShape,
-              bulletSpec : BulletSpec, counterBulletSpec : BulletSpec,
-              gameState : GameState) -> SE2Spec {
+  fn new(field : *mut Field, bullets : *mut BulletPool, player : *mut Player,
+              particles : *mut ParticlePool, bonusParticles : *mut ParticlePool,
+              enemies : *mut EnemyPool, stage : *mut Stage,
+              shape : *mut Shape, trailShape : *mut EnemyShape,
+              bulletSpec : *mut BulletSpec, counterBulletSpec : *mut BulletSpec,
+              gameState : *mut GameState) -> SE2Spec {
     let mut inst = SE2Spec{ ses : SE2Spec::new(field, bullets, player, particles, bonusParticles, enemies, stage,
           shape, trailShape, bulletSpec, counterBulletSpec, gameState) };
     inst.ses.explosionSeName = "explosion2.wav";
     inst
   }
 
-  fn gotoNextPhase(&mut self, es : EnemyState) -> bool {
+  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool {
     //with (es) {
       if es.phase < 0 {
         return self.ses.gotoNextPhaseInAppearing(es);
@@ -1586,7 +1580,7 @@ impl SE2Spec {
     true
   }
 
-  fn movePhase(&mut self, es : EnemyState) {
+  fn movePhase(&mut self, es : &mut EnemyState) {
     self.ses.movePhase(es);
     //with (es) {
       if es.phase == 3 {
@@ -1603,7 +1597,7 @@ impl SE2Spec {
     //}
   }
   
-  fn isInAttack(&mut self, es : EnemyState) -> bool {
+  fn isInAttack(&mut self, es : &EnemyState) -> bool {
     (es.phase < -10 || es.phase == 1 || es.phase == 2 || es.phase == 3)
   }
 }
@@ -1684,9 +1678,9 @@ struct TurretSpec {
 */
 
 impl TurretSpec {
-  fn new(field : Field, bullets : BulletPool, player : Player,
-              enemies : EnemyPool, particles : ParticlePool,
-              stage : Stage, bulletSpec : BulletSpec, gameState : GameState) {
+  fn new(field : *mut Field, bullets : *mut BulletPool, player : *mut Player,
+              enemies : *mut EnemyPool, particles : *mut ParticlePool,
+              stage : *mut Stage, bulletSpec : *mut BulletSpec, gameState : *mut GameState) {
     let mut inst = TurretSpec{bulletSpec : bulletSpec,
       field : field, bullets : bullets, player : player, stage : stage, gameState : gameState,};
     inst.initParam();
@@ -1709,7 +1703,7 @@ impl TurretSpec {
     self.minimumFireDist = 0;
   }
 
-  fn copy(&mut self, ts : TurretSpec) {
+  fn copy(&mut self, ts : &TurretSpec) {
     self.interval = ts.interval;
     self.speed = ts.speed;
     self.speedAccel = ts.speedAccel;
@@ -1722,11 +1716,11 @@ impl TurretSpec {
     self.fireingAtATime = ts.fireingAtATime;
   }
 
-  fn set(&mut self, ts : TurretState) {
+  fn set(&mut self, ts : &TurretState) {
     self.setFireIntervalRatio(ts, self.fireIntervalRatio);
   }
 
-  fn setFireIntervalRatio(&mut self, ts : TurretState, fir : f32) {
+  fn setFireIntervalRatio(&mut self, ts : &TurretState, fir : f32) {
     ts.fireCnt = fir * self.interval;
   }
 
@@ -1934,7 +1928,7 @@ impl TurretSpec {
   }
 
  //was move()
-  fn move4(&mut self, ts : TurretState, time : f32 /* = 1*/, anger : f32 /*= 0*/) -> bool {
+  fn move4(&mut self, ts : &TurretState, time : f32 /* = 1*/, anger : f32 /*= 0*/) -> bool {
     if self._disabled {
       return true;
     }
@@ -2015,7 +2009,7 @@ impl TurretSpec {
     if self.gameState.mode != GameState::Mode::MODERN {
       p.y > 0
     } else {
-      (p.y > 0 && p.dist(self.player.pos) > self.minimumFireDist)
+      (p.y > 0) && (p.dist(self.player.pos) > self.minimumFireDist)
     }
   }
 

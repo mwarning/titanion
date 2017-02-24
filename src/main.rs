@@ -18,8 +18,10 @@ mod ttn {
 	pub mod shape;
 	pub mod enemy;
 	pub mod token;
+	pub mod bullet;
+	pub mod field;
+	pub mod dummy; //skeleton dummies
 }
-
 
 fn main() {
 	//call boot...

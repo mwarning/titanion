@@ -5,48 +5,40 @@
  */
 //module src.util.actor;
 
-struct Object;
+use ttn::dummy::*;
 
-/**
+/*
  * Actor that has an interface to move and draw.
  */
+ /*
 pub struct Actor {
   _exists : bool,
-}
+}*/
 
-impl Actor {
-  fn exists1(&self) -> bool {
-    self._exists;
-  }
-
-  fn exists2(&mut self, v : bool)-> bool {
-    self._exists = v;
-    v
-  }
-}
-
-pub trait ActorTrait {
-  fn init(args : [Object]);
-  fn move1();
-  fn draw1();
+pub trait Actor {
+  fn getExists(&self) -> bool;
+  fn setExists(&mut self, v : bool)-> bool;
+  fn init(&mut self); //, args : [Object]);
+  fn move1(&self) {}
+  fn draw1(&self) {}
 }
 
 /**
  * Object pool for actors.
  */
 
-pub struct ActorPool<T> {
-  actors : Vec<T>,
-  actorIdx : i32,
+pub struct ActorPool<T : Actor> {
+  pub actors : Vec<T>,
+  actorIdx : usize, //was i32
   hasNoActor : bool,
 }
 
-impl<T> ActorPool<T> {
+impl<T : Default + Actor> ActorPool<T> {
   // init() replacement
   pub fn new(n : i32) -> ActorPool<T> {
-   let actors = Vec::with_capacity(10);
+   let mut actors = Vec::with_capacity(10);
    for i in 0..n {
-    actors.push(T::new());
+    actors.push(T::default());
    }
    ActorPool{actorIdx : 0, hasNoActor : false, actors : actors}
   }
@@ -75,48 +67,48 @@ impl<T> ActorPool<T> {
     self.hasNoActor = false;
   }*/
 
-  fn getInstance(&mut self) -> &T {
+  fn getInstance(&mut self) -> Option<&mut T> {
     if self.hasNoActor {
       return None;
     }
 
-    for i in 0..self.actors {
+    for i in 0..self.actors.len() {
       self.actorIdx -= 1;
       if self.actorIdx < 0 {
         self.actorIdx = self.actors.len() - 1;
       }
-      if !self.actors[self.actorIdx].exists() {
-        return self.actors[self.actorIdx];
+      if !self.actors[self.actorIdx].getExists() {
+        return Some(&mut self.actors[self.actorIdx]);
       }
     }
     self.hasNoActor = true;
     None
   }
 
-  fn getInstanceForced(&mut self) -> T {
+  fn getInstanceForced(&mut self) -> &mut T {
     self.actorIdx -= 1;
     if self.actorIdx < 0 {
       self.actorIdx = self.actors.len() - 1;
     }
-    return self.actors[self.actorIdx];
+    &self.actors[self.actorIdx];
   }
 
   fn getMultipleInstances(&self, n : i32) -> Vec<T> {
     if self.hasNoActor {
-      return None;
+      return Vec::new();
     }
 
-    let rsl : Vec<T>;
-    for _ in 0..n { //(int i = 0; i < n; i++) {
-      let inst : &T = self.getInstance();
-      if !inst {
-        for r in &rsl {
+    let mut rsl : Vec<T>;
+    for _ in 0..n {
+      if let Some(inst) = self.getInstance() {
+        inst.setExists(true);
+        rsl.push(inst);
+      } else {
+        for r in rsl {
           r.setExists(false);
         }
-        return None;
+        return Vec::new();
       }
-      inst.setExists(true);
-      rsl.push(inst);
     }
     for r in &rsl {
       r.setExists(false);
@@ -125,26 +117,26 @@ impl<T> ActorPool<T> {
   }
 
   //was move()
-  fn moveActor(&mut self) {
+  fn move1(&mut self) {
     self.hasNoActor = false;
     for a in &self.actors {
-      if a.exists() {
-        a.move();
+      if a.getExists() {
+        a.move1();
       }
     }
   }
 
   //was draw()
-  fn drawActor(&mut self) {
+  fn draw1(&mut self) {
     for a in self.actors {
-      if a.exists() {
-        a.drawActor();
+      if a.getExists() {
+        a.draw1();
       }
     }
   }
 
   // was clear()
-  fn clearActor(&mut self) {
+  fn clear1(&mut self) {
     for a in self.actors {
       a.setExists(false);
     }

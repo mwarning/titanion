@@ -17,10 +17,10 @@ private import src.ttn.shape;
 
 use util::actor::*;
 use util::vector::*;
+use ttn::bullet::*;
 use ttn::shape::*;
-
-//dummy
-struct Field;
+use ttn::field::*;
+use ttn::dummy::*;
 
 /**
  * Tokens of a player, enemies, bullets, particles, etc.
@@ -28,19 +28,37 @@ struct Field;
  *  specs (maneuver, method of attack, etc.).
  */
 pub struct Token<ST, SP> {
-  actor : Actor,
+  //actor : Actor,
+  _exists : bool, //from Actor
   state : ST,
   spec : SP,
 }
 
-impl<ST, SP> ActorTrait for Token<ST, SP> {
-  fn init(&self /*Object[] args*/) {
-    //state = ST{};
+impl<ST, SP> Actor for Token<ST, SP> {
+  fn getExists(&self) -> bool {
+    self._exists
+  }
+  fn setExists(&mut self, v : bool)-> bool {
+    self._exists = v;
+    v
+  }
+  fn init(&mut self /*Object[] args*/) {
+    self.state = ST::new();
+  }
+
+  fn move1(&self) {
+    if !self.spec.move2(self.state) {
+      self.remove();
+    }
+  }
+
+  fn draw1(&self) {
+    self.spec.draw(self.state);
   }
 }
 
 impl<ST, SP> Token<ST, SP> {
-  fn set55calcStandByTime(&self, spec : SP, pos : Vector, deg : f32, speed : f32) {
+  fn set5Vec(&self, spec : SP, pos : Vector, deg : f32, speed : f32) {
     self.set(spec, pos.x, pos.y, deg, speed);
   }
 
@@ -59,19 +77,9 @@ impl<ST, SP> Token<ST, SP> {
     self.actor._exists = true;
   }
 
-  fn move1(&self) {
-    if !self.spec.move2(self.state) {
-      self.remove();
-    }
-  }
-
   fn remove(&self) {
     self._exists = false;
     self.spec.removed(self.state);
-  }
-
-  fn draw(&self) {
-    self.spec.draw(self.state);
   }
 
   fn pos(&self) -> Vector {
@@ -118,16 +126,22 @@ impl TokenState {
   }
 }
 
+use std::marker::PhantomData;
 
 /**
  * Base class of a token's specification.
  */
-pub struct TokenSpec<T> {
-  field : Field,
-  shape : Shape,
+pub struct TokenSpec<T> { //<T>
+  field : *mut Field,
+  shape : *mut Shape,
+  phantom: PhantomData<T>,
 }
 
 impl<T> TokenSpec<T> {
+  fn new(field : *mut Field, shape : *mut Shape) -> Self {
+    Self{field : field, shape : shape}
+  }
+
   fn set(&self, state : T) {}
   fn removed(&self, state : T) {}
 
