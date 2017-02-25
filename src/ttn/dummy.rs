@@ -38,12 +38,30 @@ pub struct Particle;
 pub struct Rand {
 }
 
+struct Sound;
+
+impl Sound {
+	fn fadeBgm() {}
+	fn playSe(s : &str) {}
+	fn playMarkedSes() {}
+}
+
+struct Letter;
+
+impl Letter {
+	fn drawString(name : &str, lx : f32, y : f32, s : f32,
+                                d : i32 /*= Direction.TO_RIGHT,*/
+                                bool rev : bool /*= false*/, od : f32 /*= 0*/,
+                                r : f32 /*= 1*/, g : f32 /* = 1*/, b : f32 /*= 1*/) {
+	}
+}
+
 impl Rand {
-  fn nextFloat(&mut self, n : f32 /*n = 1*/) -> f32 {
+  pub fn nextFloat(&mut self, n : f32 /*n = 1*/) -> f32 {
     0.0
   }
 
-  fn nextSignedFloat(&mut self, n : f32 /*= 1*/) -> f32 {
+  pub fn nextSignedFloat(&mut self, n : f32 /*= 1*/) -> f32 {
     0.0
   }
 }
@@ -52,8 +70,6 @@ pub const TurretSpec_SPEED_RATIO : f32 = 0.0;
 
 
 pub static rand : Rand = Rand{};
-
-pub fn Sound_playSe(s : &str) {}
 
 
 pub const PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH : f32 = 1.2;

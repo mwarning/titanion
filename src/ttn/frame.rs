@@ -34,22 +34,22 @@ private import src.ttn.shape;
 static LAST_REPLAY_FILE_NAME = "last.rpl";
 
 struct Frame {
-  pad : Pad,
-  screen :  Screen,
-  field : Field,
-  player : Player,
-  playerSpec PlayerSpec,
-  enemies EnemyPool,
-  bullets BulletPool,
-  particles ParticlePool,
-  bonusParticles ParticlePool,
-  pillars : PillarPool,
-  stage : Stage,
-  title : Title,
-  preference : Preference,
-  gameState : GameState,
-  replayData : ReplayData,
-  rand : Rand,
+  pad : *mut Pad,
+  screen :  *mut Screen,
+  field : *mut Field,
+  player : *mut Player,
+  playerSpec : *mut PlayerSpec,
+  enemies : *mut EnemyPool,
+  bullets : *mut BulletPool,
+  particles : *mut ParticlePool,
+  bonusParticles : *mut ParticlePool,
+  pillars : *mut PillarPool,
+  stage : *mut Stage,
+  title : *mut Title,
+  preference : *mut Preference,
+  gameState : *mut GameState,
+  replayData : *mut ReplayData,
+  rand : *mut Rand,
 }
 
 /**
@@ -124,8 +124,8 @@ impl Frame {
     self.field.set();
     self.player.set();
     self.stage.start(replayData.seed);
-    Sound.clearMarkedSes();
-    Sound.playBgm();
+    Sound::clearMarkedSes();
+    Sound::playBgm();
   }
 
   fn startTitle(&mut self) {
@@ -151,8 +151,8 @@ impl Frame {
     } else {
       self.field.setEyePos(Vector(0.0, 0.0));
     }
-    Sound.clearMarkedSes();
-    Sound.haltBgm();
+    Sound::clearMarkedSes();
+    Sound::haltBgm();
   }
 
   fn clearAll(&mut self) {
@@ -187,7 +187,7 @@ impl Frame {
   }
 
   fn handleSound() {
-    Sound.playMarkedSes();
+    Sound::playMarkedSes();
   }
 
   fn addSlowdownRatio(&mut self, sr : f32) {
@@ -248,7 +248,7 @@ impl Frame {
     //} catch (Throwable o) {}
   }
 
-  public void loadLastReplay(&mut self) {
+  fn loadLastReplay(&mut self) {
     //try {
       self.loadReplay(LAST_REPLAY_FILE_NAME);
       self.gameState.lastGameScore = self.replayData.score;
@@ -277,7 +277,7 @@ enum Mode {
   CLASSIC, BASIC, MODERN,
 };
 
-static MODE_NUM : i32 = 3;
+const MODE_NUM : i32 = 3;
 const MODE_NAME: &'static [ &'static str ] = &["CLASSIC", " BASIC ", "MODERN"];
 static stageRandomized : bool = false;
 
@@ -285,13 +285,13 @@ enum Scene {
   TITLE, IN_GAME,
 };
 
-static MAX_LEFT : i32 = 4;
+const MAX_LEFT : i32 = 4;
 
 struct GameState {
-  frame : Frame,
-  preference : Preference,
-  scene : Scene,
-  stage : Stage,
+  frame : *mut Frame,
+  preference : *mut Preference,
+  scene : *mut Scene,
+  stage : *mut Stage,
    score : i32,
   _lastGameScore : i32,
   _lastGameMode : i32,
@@ -315,7 +315,7 @@ struct GameState {
 
 impl GameState {
 
-  fn this(&mut self, frame : Frame, preference : Preference) {
+  fn this(&mut self, frame : *mut Frame, preference : *mut Preference) {
     self.frame = frame;
     self.preference = preference;
     self.playerShape = PlayerShape();
@@ -382,7 +382,7 @@ impl GameState {
     }
     self._isGameOver = true;
     self.gameOverCnt = 0;
-    Sound.fadeBgm();
+    Sound::fadeBgm();
     self._lastGameScore = score;
     self._lastGameMode = mode;
     self.preference.recordResult(self.score, self._mode);
@@ -395,7 +395,7 @@ impl GameState {
     }
     self._isGameOver = true;
     self.gameOverCnt = 0;
-    Sound.fadeBgm();
+    Sound::fadeBgm();
   }
 
   fn backToTitle(&mut self) {
@@ -414,7 +414,7 @@ impl GameState {
     if self.isInGameAndNotGameOver {
       self.handlePauseKey();
       if self._paused {
-        pauseCnt += 1;
+        self.pauseCnt += 1;
         return;
       }
     }
@@ -424,15 +424,15 @@ impl GameState {
       } else {
         self.gameOverCnt += 1;
         if (self.gameOverCnt < 60 {
-          frame.handleSound();
+          self.frame.handleSound();
         }
         if self.gameOverCnt > 1000 {
-          backToTitle();
+          self.backToTitle();
         }
       }
     } else {
       if self._inReplay {
-        frame.handleSound();
+        self.frame.handleSound();
       }
       if self._isGameOver {
         self.gameOverCnt += 1;
@@ -444,7 +444,7 @@ impl GameState {
         }
       }
     }
-    if pmDispCnt > 0 {
+    if self.pmDispCnt > 0 {
       self.pmDispCnt -= 1;
     }
   }
@@ -488,7 +488,7 @@ impl GameState {
       if self.score >= self.nextExtendScore {
         if self.left < MAX_LEFT {
           self.left += 1;
-          Sound.playSe("extend.wav");
+          Sound::playSe("extend.wav");
         }
         self.nextExtendScore += self.extendScore;
         if self._mode == Mode.MODERN {
@@ -538,13 +538,13 @@ impl GameState {
   }
 
   fn draw(&self mut) {
-    Letter.drawNum(self.score, 132, 5, 7);
-    Letter.drawNum(self.nextExtendScore, 134, 25, 5);
+    Letter::drawNum(self.score, 132, 5, 7);
+    Letter::drawNum(self.nextExtendScore, 134, 25, 5);
     if self._lastGameScore >= 0 {
       Letter.drawNum(self._lastGameScore, 360, 5, 7);
       //Letter.drawString(GameState.MODE_NAME[_lastGameMode], 292, 24, 5);
     }
-    Letter.drawNum((_multiplier * 100) as i32, 626, 4, 9, 3, 33, 2);
+    Letter::drawNum((_multiplier * 100) as i32, 626, 4, 9, 3, 33, 2);
     if self.pmDispCnt > 0 {
       Letter.drawNum(proximityMultiplier, 626, 30, 7, 0, 33);
     }
@@ -560,10 +560,10 @@ impl GameState {
         }
       } else if self._paused {
         if (self.pauseCnt % 120) < 60 {
-          Letter.drawString("PAUSE", 290, 420, 7);
+          Letter::drawString("PAUSE", 290, 420, 7);
         }
       }
-      Letter.drawString(GameState.MODE_NAME[mode], 540, 400, 5);
+      Letter::drawString(GameState.MODE_NAME[mode], 540, 400, 5);
     }
   }
 
@@ -573,7 +573,7 @@ impl GameState {
       glTranslatef(-10.2 + (i as f32), -7.5, -10.0);
       glScalef(0.6, 0.6, 0.6);
       playerShape.draw();
-      Screen.setColor(0, 0, 0);
+      Screen::setColor(0, 0, 0);
       playerLineShape.draw();
       glPopMatrix();
     }

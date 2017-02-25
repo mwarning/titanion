@@ -15,14 +15,14 @@ private import src.util.sdl.displaylist;
 private import src.ttn.screen;
 */
 
-let LETTER_WIDTH : f32 = 2.1;
-let LETTER_HEIGHT : f32 = 3.0;
+const LETTER_WIDTH : f32 = 2.1;
+const LETTER_HEIGHT : f32 = 3.0;
 enum Direction {
   TO_RIGHT, TO_DOWN, TO_LEFT, TO_UP,
 };
 
-let LETTER_NUM : i32  = 44;
-let  DISPLAY_LIST_NUM : i32 = LETTER_NUM * 3;
+const LETTER_NUM : i32  = 44;
+const DISPLAY_LIST_NUM : i32 = LETTER_NUM * 3;
 enum Shape {
   NORMAL, POLYGON, LINE,
 };

@@ -131,10 +131,10 @@ use std::marker::PhantomData;
 /**
  * Base class of a token's specification.
  */
-pub struct TokenSpec<T> { //<T>
+pub struct TokenSpec<T> {
   field : *mut Field,
   shape : *mut Shape,
-  phantom: PhantomData<T>,
+  phantom: PhantomData<T>, //dummy
 }
 
 impl<T> TokenSpec<T> {
