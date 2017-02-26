@@ -38,20 +38,20 @@ pub struct Particle;
 pub struct Rand {
 }
 
-struct Sound;
+pub struct Sound;
 
 impl Sound {
-	fn fadeBgm() {}
-	fn playSe(s : &str) {}
-	fn playMarkedSes() {}
+	pub fn fadeBgm() {}
+	pub fn playSe(s : &str) {}
+	pub fn playMarkedSes() {}
 }
 
-struct Letter;
+pub struct Letter;
 
 impl Letter {
-	fn drawString(name : &str, lx : f32, y : f32, s : f32,
-                                d : i32 /*= Direction.TO_RIGHT,*/
-                                bool rev : bool /*= false*/, od : f32 /*= 0*/,
+	pub fn drawString(name : &str, lx : f32, y : f32, s : f32,
+                                d : i32 /*= Direction.TO_RIGHT*/,
+                                rev : bool /*= false*/, od : f32 /*= 0*/,
                                 r : f32 /*= 1*/, g : f32 /* = 1*/, b : f32 /*= 1*/) {
 	}
 }

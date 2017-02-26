@@ -70,7 +70,7 @@ impl EnemyPool {
     let ne : Option<&Enemy> = None;
     for e in self.ap.actors {
       if e.getExists() && !e.isBeingCaptured() {
-        if e.spec as MiddleEnemySpec {
+        if e.tok.spec as MiddleEnemySpec {
           if self._field.calcCircularDist2(e.pos(), p) < dst {
             dst = self._field.calcCircularDist2(e.pos(), p);
             ne = Some(&e);
@@ -125,7 +125,7 @@ impl EnemyPool {
   fn checkMiddleEnemyExists(&self, x : f32, px : f32) -> bool {
     for e in self.ap.actors {
       if e.getExists() && !e.isBeingCaptured() {
-        if e.spec as MiddleEnemySpec {
+        if e.tok.spec as MiddleEnemySpec {
           if ((e.pos().x - x) * (e.pos().x - px)) < 0.0 {
             return true
           }
@@ -1868,8 +1868,8 @@ impl TurretSpec {
       rank *= 0.9;
     }
     self.nway = (nr.sqrt() as i32) + 1;
-    self.interval = ((intervalMax / ((ir + 1).sqrt())) as i32) + 1;
-    let sr : f32 = rank - self.burstNum + 1 - self.nway + 1 - ir;
+    self.interval = ((intervalMax / ((ir + 1.0).sqrt())) as i32) + 1;
+    let sr : f32 = (rank - self.burstNum + 1 - self.nway + 1) as f32 - ir;
     if sr < 0.01 {
       sr = 0.01;
     }
@@ -1952,14 +1952,14 @@ impl TurretSpec {
             let d : f32 = ts.deg - self.nwayAngle * ((self.nway as f32) - 1.0) / 2.0 + self.nwayBaseDeg;
             let nsp : f32 = sp - self.nwaySpeedAccel * ts.nwaySpeedAccelDir * ((self.nway as f32) - 1.0) / 2.0;
             for j in 0..self.nway {
-              let b : Bullet = self.bullets.getInstance();
-              if !b {
+              if Some(b) = self.bullets.getInstance() {
+                b.set(self.bulletSpec, ts.pos, d, nsp * SPEED_RATIO);
+                b.setWaitCnt(i * self.burstInterval);
+                d += self.nwayAngle;
+                nsp += self.nwaySpeedAccel * ts.nwaySpeedAccelDir;
+              } else {
                 break;
               }
-              b.set(self.bulletSpec, ts.pos, d, nsp * SPEED_RATIO);
-              b.setWaitCnt(i * self.burstInterval);
-              d += self.nwayAngle;
-              nsp += self.nwaySpeedAccel * ts.nwaySpeedAccelDir;
             }
             sp += self.speedAccel;
           }
@@ -1976,7 +1976,7 @@ impl TurretSpec {
           }
           ts.burstNum = self.burstNum;
           ts.burstCnt = 0;
-          ts.speed = spd - self.speedAccel * (ts.burstNum - 1) / 2;
+          ts.speed = spd - self.speedAccel * ((ts.burstNum as f32) - 1.0) / 2.0;
         }
       }
       if ts.burstNum > 0 {
