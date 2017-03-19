@@ -100,28 +100,28 @@ impl Default for Stage {
       bonusParticles : bonusParticles,
       pillars : pillars,
       gameState : gameState,
-      rand : new Rand,
-      enemy1Shape : new Enemy1Shape,
-      enemy2Shape : new Enemy2Shape,
-      enemy3Shape : new Enemy3Shape,
-      enemy1TrailShape : new Enemy1TrailShape,
-      enemy2TrailShape : new Enemy2TrailShape,
-      enemy3TrailShape : new Enemy3TrailShape,
-      bulletShape : new BulletShape,
-      bulletLineShape : new BulletLineShape,
-      middleBulletShape : new MiddleBulletShape,
-      middleBulletLineShape : new MiddleBulletLineShape,
-      counterBulletShape : new CounterBulletShape,
-      counterBulletLineShape : new CounterBulletLineShape,
-      bulletSpec : new BulletSpec(field, player, enemies, particles,
+      rand : Rand::new(),
+      enemy1Shape : Enemy1Shape::new(),
+      enemy2Shape : Enemy2Shape::new(),
+      enemy3Shape : Enemy3Shape::new(),
+      enemy1TrailShape : Enemy1TrailShape::new(),
+      enemy2TrailShape : Enemy2TrailShape::new(),
+      enemy3TrailShape : Enemy3TrailShape::new(),
+      bulletShape : BulletShape::new(),
+      bulletLineShape : BulletLineShape::new(),
+      middleBulletShape : MiddleBulletShape::new(),
+      middleBulletLineShape : MiddleBulletLineShape::new(),
+      counterBulletShape : CounterBulletShape::new(),
+      counterBulletLineShape : CounterBulletLineShape::new(),
+      bulletSpec : BulletSpec::new(field, player, enemies, particles,
                                   bulletShape, bulletLineShape, gameState),
-      middleBulletSpec : new BulletSpec(field, player, enemies, particles,
+      middleBulletSpec : BulletSpec::new(field, player, enemies, particles,
                                         middleBulletShape, middleBulletLineShape, gameState),
-      counterBulletSpec : new BulletSpec(field, player, enemies, particles,
+      counterBulletSpec : BulletSpec::new(field, player, enemies, particles,
                                          counterBulletShape, counterBulletLineShape, gameState),
-      pillarSpec : new PillarSpec(field),
-      pillarShapes :  [new Pillar1Shape, new Pillar2Shape, new Pillar3Shape, new Pillar4Shape],
-      outsidePillarShape : new OutsidePillarShape,
+      pillarSpec : PillarSpec::new(field),
+      pillarShapes :  [Pillar1Shape::new(), Pillar2Shape::new(), Pillar3Shape::new(), Pillar4Shape::new()],
+      outsidePillarShape : OutsidePillarShape::new(),
     }
   }
 
@@ -268,17 +268,17 @@ impl Default for Stage {
       }
     }
     smallEnemyFormationNum = ((en / smallEnemyNum) + 1) as i32;
-    self.middleEnemySpec = new MiddleEnemySpec
+    self.middleEnemySpec = MiddleEnemySpec::new
       (field, bullets, player, particles, bonusParticles, enemies,
        self, enemy3Shape, enemy3TrailShape,
        middleBulletSpec, counterBulletSpec, gameState);
     middleEnemySpec.setRank(rank * 0.15);
-    smallEnemy1Spec = new SE1Spec
+    smallEnemy1Spec = SE1Spec::new
       (field, bullets, player, particles, bonusParticles, enemies,
        self, enemy1Shape, enemy1TrailShape,
        bulletSpec, counterBulletSpec, gameState);
     (smallEnemy1Spec as SE1Spec).setRank(rank * 0.22);
-    smallEnemy2Spec = new SE2Spec
+    smallEnemy2Spec = SE2Spec::new
       (field, bullets, player, particles, bonusParticles, enemies,
        self, enemy2Shape, enemy2TrailShape,
        bulletSpec, counterBulletSpec, gameState);
