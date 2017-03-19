@@ -379,12 +379,10 @@ impl Stage {
           gd = true;
         }
         if !fe {
-          e.setSmallEnemyState(sp, av, (i * (dst / sp)) as i32, self.appPattern,
-                               er, ed, gd);
+          e.setSmallEnemyState(sp, av, (i * (dst / sp)) as i32, self.appPattern, er, ed, gd);
           fe = e;
         } else {
-          e.setSmallEnemyState(sp, av, (i * (dst / sp)) as i32, self.appPattern,
-                               er, ed, gd, fir, fe);
+          e.setSmallEnemyState(sp, av, (i * (dst / sp)) as i32, self.appPattern, er, ed, gd, fir, fe);
         }
         fir += (1.0 / self.smallEnemyNum);
       }
@@ -394,7 +392,7 @@ impl Stage {
         self.stageStarted = true;
         self.appCnt = 9999999;
       } else {
-        self.appCnt += self.appCntInterval * (1 - 1 / (self.enemies.num + 1));
+        self.appCnt += (self.appCntInterval * (1.0 - 1.0 / (self.enemies.num as f32 + 1.0))) as i32;
       }
     }
     self.appCnt -= 1;
@@ -417,7 +415,7 @@ impl Stage {
     if (self.cnt % 120) == 0 {
       let p : &Pillar = self.pillars.getInstance();
       if p {
-        p.set(self.pillarSpec, 180, 0, null, self.outsidePillarShape, (((cnt / 120) as i32) % 2 * 2 - 1) * 0.003, true);
+        p.set(self.pillarSpec, 180, 0, None, self.outsidePillarShape, (((cnt / 120) as i32) % 2 * 2 - 1) * 0.003, true);
       }
     }
   }

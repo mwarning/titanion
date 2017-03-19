@@ -59,44 +59,42 @@ struct Frame {
 impl Frame {
   fn init(&mut self) {
     Sound.load();
-    self.preference = cast(Preference) abstractPreference;
+    self.preference = abstractPreference as &Preference;
     self.preference.load();
     Letter.init();
     self.pad = abstractInput as &Pad;
     pad.openJoystick();
     self.screen = abstractScreen as &Screen;
-    self.field = Field(this, screen);
-    self.enemies = EnemyPool();
+    self.field = Field::new(self., screen);
+    self.enemies = EnemyPool::new();
     self.enemies.field = field;
-    self.bullets = BulletPool;
-    self.particles = ParticlePool();
-    self.bonusParticles = ParticlePool();
-    self.pillars = new PillarPool;
+    self.bullets = BulletPool::new();
+    self.particles = ParticlePool::new();
+    self.bonusParticles = ParticlePool::new();
+    self.pillars = PillarPool::new();
     self.enemies.init(128);
     self.bullets.init(1024);
-    let triangleParticleSpec = TriangleParticleSpec(field);
-    let lineParticleSpec = LineParticleSpec(field);
-    let quadParticleSpec = QuadParticleSpec(field);
-    let bonusParticleSpec = BonusParticleSpec(field);
-    self.particles.init(1024, triangleParticleSpec, lineParticleSpec,
-                   quadParticleSpec, bonusParticleSpec);
-    self.bonusParticles.init(256, triangleParticleSpec, lineParticleSpec,
-                        quadParticleSpec, bonusParticleSpec);
+    let triangleParticleSpec = TriangleParticleSpec::new(field);
+    let lineParticleSpec = LineParticleSpec::new(field);
+    let quadParticleSpec = QuadParticleSpec::new(field);
+    let bonusParticleSpec = BonusParticleSpec::new(field);
+    self.particles.init(1024, triangleParticleSpec, lineParticleSpec, quadParticleSpec, bonusParticleSpec);
+    self.bonusParticles.init(256, triangleParticleSpec, lineParticleSpec, quadParticleSpec, bonusParticleSpec);
     self.triangleParticleSpec.setParticles(particles);
     self.pillars.init(48);
-    self.gameState = GameState(this, preference);
-    self.title = Title(preference, pad, this);
+    self.gameState = GameState::new(this, preference);
+    self.title = Title::new(preference, pad, this);
     self.title.setMode(preference.lastMode);
     self.title.init();
-    self.playerSpec = PlayerSpec(pad, gameState, field, enemies, bullets, particles);
-    self.player = new Player(playerSpec);
+    self.playerSpec = PlayerSpec::new(pad, gameState, field, enemies, bullets, particles);
+    self.player = Player::new(playerSpec);
     self.triangleParticleSpec.setPlayer(player);
     self.lineParticleSpec.setPlayer(player);
     self.quadParticleSpec.setPlayer(player);
     self.bonusParticleSpec.setPlayer(player);
-    self.stage = new Stage(field, enemies, bullets, player, particles, bonusParticles, pillars, gameState);
+    self.stage = Stage::new(field, enemies, bullets, player, particles, bonusParticles, pillars, gameState);
     self.gameState.setStage(stage);
-    self.rand = Rand();
+    self.rand = Rand::new();
     self.loadLastReplay();
   }
 

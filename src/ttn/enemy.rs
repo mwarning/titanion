@@ -285,13 +285,9 @@ impl Enemy {
     self.tok.state.ellipseRatio = er;
     self.tok.state.ellipseDeg = ed;
     self.tok.state.isGoingDownBeforeStandBy = gd;
-    match appPattern {
-      0 => {
-        self.tok.state.phase = -200;
-      }
-      _ /*1*/ => {
-        self.tok.state.phase = -100;
-      }
+    self.tok.state.phase = match appPattern {
+      0 =>  -200,
+      _ /*1*/ => -100,
     }
 
     if let Some(e) = firstEnemy {
@@ -1602,7 +1598,7 @@ impl SE2Spec {
 }
 
 struct TurretState {
- ts : TokenState,
+  ts : TokenState,
   fireCnt : f32,
   burstCnt : f32,
   burstNum : i32,
