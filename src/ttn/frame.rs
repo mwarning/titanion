@@ -165,7 +165,7 @@ impl Frame {
     self.mainLoop.breakLoop();
   }
 
-  fn move(&mut self) {
+  fn move1(&mut self) {
     self.gameState.move();
     self.field.move();
     if self.gameState.isInGame || replayData {
@@ -502,7 +502,7 @@ impl GameState {
     }
   }
 
-  fn mulMultiplier(mp : f32) {
+  fn mulMultiplier(&mut mp : f32) {
     if !self._isGameOver {
       self._multiplier *= mp;
       if self._multiplier < 1.0 {
