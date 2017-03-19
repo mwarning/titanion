@@ -219,7 +219,7 @@ impl Default for Stage {
     if r > 1.0 {
       r = 1.0;
     }
-    self.hitRatioBonus = cast(int) (10000.0f * r * r * r * r);
+    self.hitRatioBonus = (10000.0 * r * r * r * r) as i32;
     if (self.gameState.mode == GameState.Mode.MODERN) {
       return;
     }
@@ -233,7 +233,7 @@ impl Default for Stage {
     self.rankTrg += 1.25;
     self.rank += (self.rankTrg - self.rank) * 0.33;
     if (self.phaseNum % 10) == 0 {
-      self.rank *= 0.1f;
+      self.rank *= 0.1;
     }
     if !self.randomized {
       let rs : i64 = self.phaseNum;
@@ -250,19 +250,19 @@ impl Default for Stage {
     let en : i32;
     match self.gameState.mode {
       GameState.Mode.CLASSIC => {
-        en = 24 + cast(int) ((50 + rand.nextInt(10)) * rank.sqrt() * 0.2f);
+        en = 24 + ((50 + rand.nextInt(10)) * rank.sqrt() * 0.2) as i32;
         self.smallEnemyNum = 4 + rand.nextInt(2);
         if (rank > 10)
           _self.existsCounterBullet = true;
         self.middleEnemyAppInterval = 6 + rand.nextInt(2);
       },
       GameState.Mode.BASIC => {
-        en = 32 + cast(int) ((50 + rand.nextInt(10)) * rank.sqrt() * 0.33f);
+        en = 32 + ((50 + rand.nextInt(10)) * rank.sqrt() * 0.33) as i32;
         self.smallEnemyNum = 7 + rand.nextInt(4);
         self.middleEnemyAppInterval = 5 + rand.nextInt(2);
       },
       GameState.Mode.MODERN >= {
-        en = 24 + cast(int) ((50 + rand.nextInt(10)) * rank.sqrt() * 0.5);
+        en = 24 + ((50 + rand.nextInt(10)) * rank.sqrt() * 0.5) as i32;
         self.smallEnemyNum = 4 + rand.nextInt(2);
         self.middleEnemyAppInterval = 7 + rand.nextInt(3);
       }
@@ -283,12 +283,12 @@ impl Default for Stage {
        self, enemy2Shape, enemy2TrailShape,
        bulletSpec, counterBulletSpec, gameState);
     (smallEnemy2Spec as SE2Spec).setRank(rank * 0.22);
-    _attackSmallEnemyNum = cast(int) sqrt(rank + 2);
-    goingDownBeforeStandByRatio = 0;
-    if rand.nextFloat(rank + 1) > 2 {
+    _attackSmallEnemyNum = sqrt(rank + 2.0) as i32;
+    goingDownBeforeStandByRatio = 0.0;
+    if rand.nextFloat(rank + 1.0) > 2.0 {
       goingDownBeforeStandByRatio = rand.nextFloat(0.2) + 0.1;
     }
-    appCntInterval = 48 + rand.nextSignedInt(10);
+    appCntInterval = (48.0 + rand.nextSignedInt(10)) as f32;
     appCntInterval *= (0.5 + 0.5 / rank.sqrt());
     if gameState.mode == GameState.Mode.MODERN {
       appCntInterval *= 0.75;
@@ -305,7 +305,7 @@ impl Default for Stage {
     let pp : Pillar = null;
     let mut pln : i32 = 0;
     let pn = phaseNum;
-    int[] pshapes;
+    let mut pshapes = Vec::new();
     while true {
       if pn <= 0 {
         break;
@@ -331,7 +331,7 @@ impl Default for Stage {
       if !p {
         break;
       }
-      p.set(pillarSpec, -80 - i * 10, maxY, pp, self.pillarShapes[pshapes[i]], (pln - i) * 0.03f);
+      p.set(pillarSpec, -80 - i * 10, maxY, pp, self.pillarShapes[pshapes[i]], (pln - i) * 0.03);
       pp = p;
     }
   }
@@ -440,15 +440,15 @@ impl Default for Stage {
     if (self.gameState.mode != GameState.Mode.MODERN) &&
         (self.phaseTime < PHASE_RESULT_SHOW_CNT) && (self.phaseNum > 1) {
       Letter.drawString("SHOTS FIRED", 152, 250, 6, Letter.Direction.TO_RIGHT,
-                        false, 0, 1, 1, 0.33f);
+                        false, 0, 1, 1, 0.33);
       Letter.drawNum(self.shotFiredNumRsl, 480, 250, 6);
       Letter.drawString("NUMBER OF HITS", 152, 280, 6, Letter.Direction.TO_RIGHT,
-                        false, 0, 1, 1, 0.33f);
+                        false, 0, 1, 1, 0.33);
       Letter.drawNum(self.shotHitNumRsl, 480, 280, 6);
       Letter.drawString("HIT-MISS RATIO", 152, 310, 6);
       Letter.drawNum((self.hitRatio * 10000) as i32, 480, 310, 6, 3, -1, 2);
       Letter.drawString("BONUS", 200, 350, 6, Letter.Direction.TO_RIGHT,
-                        false, 0, 1, 0.33f, 0.33f);
+                        false, 0, 1, 0.33, 0.33);
       Letter.drawNum(self.hitRatioBonus, 440, 350, 6);
     } else if (phaseTime < PHASE_RESULT_SHOW_CNT + PHASE_START_SHOW_CNT) {
       Letter.drawNum(self.phaseNum, 392, 200, 10);
@@ -466,10 +466,10 @@ impl Default for Stage {
       hr = (self.shotHitNumTotal as f32) / (self.shotFiredNumTotal as f32);
     }
     Letter.drawString("SHOTS FIRED", 152, 250, 6, Letter.Direction.TO_RIGHT,
-                      false, 0, 1, 1, 0.33f);
+                      false, 0, 1, 1, 0.33);
     Letter.drawNum(self.shotFiredNumTotal, 480, 250, 6);
     Letter.drawString("NUMBER OF HITS", 152, 280, 6, Letter.Direction.TO_RIGHT,
-                      false, 0, 1, 1, 0.33f);
+                      false, 0, 1, 1, 0.33);
     Letter.drawNum(self.shotHitNumTotal, 480, 280, 6);
     Letter.drawString("HIT-MISS RATIO", 152, 310, 6);
     Letter.drawNum((hr * 10000) as i32, 480, 310, 6, 3, -1, 2);
