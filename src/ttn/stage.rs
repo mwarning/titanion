@@ -43,7 +43,7 @@ struct Stage {
   appCnt : i32,
   middleEnemySpec : &EnemySpec,
   smallEnemy1Spec : &EnemySpec,
-  SmallEnemySpec : &EnemySpec,
+  smallEnemy2Spec : &EnemySpec,
   enemy1Shape : &EnemySpec,
   enemy2Shape : &EnemySpec,
   enemy3Shape : &EnemySpec,
@@ -87,8 +87,8 @@ struct Stage {
   _existsCounterBullet : bool,
 }
 
-impl Default for Stage {
-  fn default(field : &Field, enemies : &EnemyPool, bullets : &BulletPool,
+impl Stage {
+  fn new(field : &Field, enemies : &EnemyPool, bullets : &BulletPool,
             player : &Player, particles : &ParticlePool,
             bonusParticles : ParticlePool, pillars : &PillarPool, gameState : &GameState) -> Stage {
     Stage{
@@ -267,42 +267,42 @@ impl Default for Stage {
         self.middleEnemyAppInterval = 7 + rand.nextInt(3);
       }
     }
-    smallEnemyFormationNum = ((en / smallEnemyNum) + 1) as i32;
+    self.smallEnemyFormationNum = ((en / smallEnemyNum) + 1) as i32;
     self.middleEnemySpec = MiddleEnemySpec::new
-      (field, bullets, player, particles, bonusParticles, enemies,
-       self, enemy3Shape, enemy3TrailShape,
-       middleBulletSpec, counterBulletSpec, gameState);
-    middleEnemySpec.setRank(rank * 0.15);
-    smallEnemy1Spec = SE1Spec::new
-      (field, bullets, player, particles, bonusParticles, enemies,
-       self, enemy1Shape, enemy1TrailShape,
-       bulletSpec, counterBulletSpec, gameState);
-    (smallEnemy1Spec as SE1Spec).setRank(rank * 0.22);
-    smallEnemy2Spec = SE2Spec::new
-      (field, bullets, player, particles, bonusParticles, enemies,
-       self, enemy2Shape, enemy2TrailShape,
-       bulletSpec, counterBulletSpec, gameState);
-    (smallEnemy2Spec as SE2Spec).setRank(rank * 0.22);
-    _attackSmallEnemyNum = sqrt(rank + 2.0) as i32;
-    goingDownBeforeStandByRatio = 0.0;
-    if rand.nextFloat(rank + 1.0) > 2.0 {
-      goingDownBeforeStandByRatio = rand.nextFloat(0.2) + 0.1;
+      (self.field, self.bullets, self.player, self.particles, self.bonusParticles, self.enemies,
+       self, self.enemy3Shape, self.enemy3TrailShape,
+       self.middleBulletSpec, self.counterBulletSpec, self.gameState);
+    self.middleEnemySpec.setRank(rank * 0.15);
+    self.smallEnemy1Spec = SE1Spec::new
+      (self.field, self.bullets, self.player, self.particles, self.bonusParticles, self.enemies,
+       self, self.enemy1Shape, self.enemy1TrailShape,
+       self.bulletSpec, self.counterBulletSpec, gameState);
+    (self.smallEnemy1Spec as SE1Spec).setRank(rank * 0.22);
+    self.smallEnemy2Spec = SE2Spec::new
+      (self.field, self.bullets, self.player, self.particles, self.bonusParticles, self.enemies,
+       self, self.enemy2Shape, self.enemy2TrailShape,
+       self.bulletSpec, self.counterBulletSpec, self.gameState);
+    (self.smallEnemy2Spec as SE2Spec).setRank(rank * 0.22);
+    self._attackSmallEnemyNum = sqrt(rank + 2.0) as i32;
+    self.goingDownBeforeStandByRatio = 0.0;
+    if self.rand.nextFloat(rank + 1.0) > 2.0 {
+      self.goingDownBeforeStandByRatio = rand.nextFloat(0.2) + 0.1;
     }
-    appCntInterval = (48.0 + rand.nextSignedInt(10)) as f32;
-    appCntInterval *= (0.5 + 0.5 / rank.sqrt());
-    if gameState.mode == GameState.Mode.MODERN {
-      appCntInterval *= 0.75;
-      _attackSmallEnemyNum *= 2;
+    self.appCntInterval = (48.0 + rand.nextSignedInt(10)) as f32;
+    self.appCntInterval *= (0.5 + 0.5 / rank.sqrt());
+    if self.gameState.mode == GameState.Mode.MODERN {
+      self.appCntInterval *= 0.75;
+      self._attackSmallEnemyNum *= 2;
     }
     self.appCnt = 0;
     self.formationIdx = 0;
     self.stageStarted = false;
-    waitNextFormationPhase = false;
+    self.waitNextFormationPhase = false;
   }
 
   fn initPillars(&mut self) {
     self.pillars.setEnd();
-    let pp : Pillar = null;
+    let mut pp /*: Pillar*/ = None;
     let mut pln : i32 = 0;
     let pn = phaseNum;
     let mut pshapes = Vec::new();
@@ -369,13 +369,13 @@ impl Default for Stage {
 
         let appPattern : i32 = self.formationIdx % 2;
         let ses : &SmallEnemySpec = match self.formationIdx % 3 {
-          0 => { ses = smallEnemy1Spec as SmallEnemySpec; },
-          1 => { ses = smallEnemy1Spec as SmallEnemySpec; },
-          2 => { ses = smallEnemy2Spec as SmallEnemySpec; },
+          0 => { ses = self.smallEnemy1Spec as SmallEnemySpec; },
+          1 => { ses = self.smallEnemy1Spec as SmallEnemySpec; },
+          2 => { ses = self.smallEnemy2Spec as SmallEnemySpec; },
         }
-        e.set(ses, x, field.size.y * Field.PIT_SIZE_Y_RATIO + i * dst, PI, sp);
+        e.set(ses, x, self.field.size.y * Field.PIT_SIZE_Y_RATIO + i * dst, PI, sp);
         let mut gd : bool = false;
-        if rand.nextFloat(1) < goingDownBeforeStandByRatio {
+        if self.rand.nextFloat(1) < self.goingDownBeforeStandByRatio {
           gd = true;
         }
         if !fe {
