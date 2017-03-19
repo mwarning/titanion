@@ -93,12 +93,12 @@ impl<T : Default + Actor> ActorPool<T> {
     &self.actors[self.actorIdx];
   }
 
-  fn getMultipleInstances(&self, n : i32) -> Vec<T> {
+  fn getMultipleInstances(&self, n : i32) -> Vec<&mut T> {
     if self.hasNoActor {
       return Vec::new();
     }
 
-    let mut rsl : Vec<T>;
+    let mut rsl : Vec<&mut T>;
     for _ in 0..n {
       if let Some(inst) = self.getInstance() {
         inst.setExists(true);

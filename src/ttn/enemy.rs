@@ -1952,7 +1952,7 @@ impl TurretSpec {
             let d : f32 = ts.deg - self.nwayAngle * ((self.nway as f32) - 1.0) / 2.0 + self.nwayBaseDeg;
             let nsp : f32 = sp - self.nwaySpeedAccel * ts.nwaySpeedAccelDir * ((self.nway as f32) - 1.0) / 2.0;
             for j in 0..self.nway {
-              if Some(b) = self.bullets.getInstance() {
+              if let Some(b) = self.bullets.getInstance() {
                 b.set(self.bulletSpec, ts.pos, d, nsp * SPEED_RATIO);
                 b.setWaitCnt(i * self.burstInterval);
                 d += self.nwayAngle;
