@@ -12,8 +12,8 @@ struct Screen {
   height : i32,
 }
 
-impl Default for Screen {
-  fn default () -> Screen {
+impl Screen {
+  fn new () -> Screen {
     Screen {window_mode: false, width: 800, height: 600, brightness: 0.0}
   }
 }
@@ -33,8 +33,8 @@ struct Sound {
   seVol : i32,
 }
 
-impl Default for Sound {
-  fn default () -> Sound {
+impl Sound {
+  fn new() -> Sound {
     Sound {noSound: false, bgmVol: 100, setVol: 600}
   }
 }
@@ -47,8 +47,7 @@ struct MainLoop {
 }
 
 impl MainLoop {
-
-  fn run_loop(&self) {
+  fn loop1(&self) {
 
   }
 }
@@ -152,16 +151,16 @@ enum EXIT {
 }
 
 fn boot() -> i32 {
-	let mut screen = Screen::default();
-	let mut input = RecordablePad{};
-	let mut frame = Frame{};
-	let mut preference = Preference{};
-	let mut main_loop = MainLoop{screen : screen, input : input, frame : frame, preference : preference};
+	let mut screen = Screen::new();
+	let mut input = RecordablePad::new();
+	let mut frame = Frame::new();
+	let mut preference = Preference::new();
+	let mut main_loop = MainLoop::new(screen, input, frame, preference);
 
   let mut args = env::args();
 	parse_args(&mut args, &mut main_loop);
 
-	main_loop.run_loop();
+	main_loop.loop1();
 
   std::process::exit(EXIT::SUCCESS as i32)
 }

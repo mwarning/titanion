@@ -16,15 +16,14 @@ private import src.util.sdl.input;
  * Lifecycle of the game.
  */
 struct Frame {
- protected:
-  MainLoop mainLoop;
-  Screen abstractScreen;
-  Input abstractInput;
-  Preference abstractPreference;
+  mainLoop: MainLoop,
+  abstractScreen: Screen,
+  abstractInput: Input,
+  abstractPreference: Preference,
 }
 
-impl Default for Frame {
-  fn default(
+impl Frame {
+  fn new(
     mainloop : MainLoop,
     abstractScreen : abstractScreen,
     abstractInput : abstractInput,
@@ -37,9 +36,7 @@ impl Default for Frame {
       abstractPreference : abstractPreference
     }
   }
-}
 
-impl Frame {
   fn setMainLoop(&mut self, mainLoop : MainLoop) {
     self.mainLoop = mainLoop;
   }
@@ -55,9 +52,9 @@ impl Frame {
 }
 
 trait Frame {
-  def init();
-  def start();
-  def quit();
-  def move();
-  def draw();
+  fn init();
+  fn start();
+  fn quit();
+  fn move1();
+  fn draw();
 }

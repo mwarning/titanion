@@ -63,7 +63,7 @@ impl Frame {
     self.preference.load();
     Letter.init();
     self.pad = abstractInput as &Pad;
-    pad.openJoystick();
+    self.pad.openJoystick();
     self.screen = abstractScreen as &Screen;
     self.field = Field::new(self., screen);
     self.enemies = EnemyPool::new();
@@ -115,7 +115,7 @@ impl Frame {
     self.player.replayMode = false;
     let rp : RecordablePad= pad as &RecordablePad;
     rp.startRecord();
-    let replayData = ReplayData();
+    let replayData = ReplayData::new();
     replayData.inputRecord = rp.inputRecord;
     replayData.seed = rand.nextInt32();
     self.clearAll();
