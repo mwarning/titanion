@@ -9,7 +9,7 @@
 /**
  * SDL screen handler interface.
  */
-trait Screen {
+trait SdlScreen { //was Screen
   fn initSDL();
   fn closeSDL();
   fn flip();

@@ -160,8 +160,8 @@ struct PlayerShape {
     displayList : DisplayList,
 }
 
-impl Default for PlayerShape {
-    fn default() -> PlayerShape { PlayerShape{ displayList: DisplayList::new(1) } }
+impl PlayerShape {
+    fn new() -> PlayerShape { PlayerShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for PlayerShape {
@@ -220,8 +220,8 @@ struct PlayerLineShape {
     displayList : DisplayList,
 }
 
-impl Default for PlayerLineShape {
-    fn default() -> PlayerLineShape { PlayerLineShape{ displayList: DisplayList::new(1) } }
+impl PlayerLineShape {
+    fn new() -> PlayerLineShape { PlayerLineShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for PlayerLineShape {
@@ -259,8 +259,8 @@ struct ShotShape {
     displayList : DisplayList,
 }
 
-impl Default for ShotShape {
-    fn default() -> ShotShape { ShotShape{ displayList: DisplayList::new(1) } }
+impl ShotShape {
+    fn new() -> ShotShape { ShotShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for ShotShape {
@@ -321,8 +321,8 @@ struct TractorBeamShapeRed {
     displayList : DisplayList,
 }
 
-impl Default for TractorBeamShapeRed {
-    fn default() -> TractorBeamShapeRed { TractorBeamShapeRed{ displayList: DisplayList::new(1) } }
+impl TractorBeamShapeRed {
+    fn new() -> TractorBeamShapeRed { TractorBeamShapeRed{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TractorBeamShapeRed {
@@ -344,8 +344,8 @@ struct TractorBeamShapeBlue {
     displayList : DisplayList, 
 }
 
-impl Default for TractorBeamShapeBlue {
-    fn default() -> TractorBeamShapeBlue { TractorBeamShapeBlue{ displayList: DisplayList::new(1) } }
+impl TractorBeamShapeBlue {
+    fn new() -> TractorBeamShapeBlue { TractorBeamShapeBlue{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TractorBeamShapeBlue {
@@ -367,8 +367,8 @@ struct TractorBeamShapePurple {
     displayList : DisplayList,
 }
 
-impl Default for TractorBeamShapePurple {
-    fn default() -> TractorBeamShapePurple { TractorBeamShapePurple{ displayList: DisplayList::new(1) } }
+impl TractorBeamShapePurple {
+    fn new() -> TractorBeamShapePurple { TractorBeamShapePurple{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TractorBeamShapePurple {
@@ -390,8 +390,8 @@ struct TractorBeamShapeDarkRed {
     displayList : DisplayList,
 }
 
-impl Default for TractorBeamShapeDarkRed {
-    fn default() -> TractorBeamShapeDarkRed { TractorBeamShapeDarkRed{ displayList: DisplayList::new(1) } }
+impl TractorBeamShapeDarkRed {
+    fn new() -> TractorBeamShapeDarkRed { TractorBeamShapeDarkRed{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TractorBeamShapeDarkRed {
@@ -413,8 +413,8 @@ struct TractorBeamShapeDarkBlue {
     displayList : DisplayList,
 }
 
-impl Default for TractorBeamShapeDarkBlue {
-    fn default() -> TractorBeamShapeDarkBlue { TractorBeamShapeDarkBlue{ displayList: DisplayList::new(1) } }
+impl TractorBeamShapeDarkBlue {
+    fn new() -> TractorBeamShapeDarkBlue { TractorBeamShapeDarkBlue{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TractorBeamShapeDarkBlue {
@@ -436,8 +436,8 @@ struct TractorBeamShapeDarkPurple {
     displayList : DisplayList,
 }
 
-impl Default for TractorBeamShapeDarkPurple {
-    fn default() -> TractorBeamShapeDarkPurple { TractorBeamShapeDarkPurple{ displayList: DisplayList::new(1) } }
+impl TractorBeamShapeDarkPurple {
+    fn new() -> TractorBeamShapeDarkPurple { TractorBeamShapeDarkPurple{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TractorBeamShapeDarkPurple {
@@ -471,8 +471,8 @@ pub struct BulletShape {
     displayList : DisplayList,
 }
 
-impl Default for BulletShape {
-    fn default() -> BulletShape { BulletShape{ displayList: DisplayList::new(1) } }
+impl BulletShape {
+    fn new() -> BulletShape { BulletShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for BulletShape {
@@ -519,8 +519,8 @@ struct BulletLineShape {
     displayList : DisplayList,
 }
 
-impl Default for BulletLineShape {
-    fn default() -> BulletLineShape { BulletLineShape{ displayList: DisplayList::new(1) } }
+impl BulletLineShape {
+    fn new() -> BulletLineShape { BulletLineShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for BulletLineShape {
@@ -552,8 +552,8 @@ struct MiddleBulletShape {
     displayList : DisplayList,
 }
 
-impl Default for MiddleBulletShape {
-    fn default() -> MiddleBulletShape { MiddleBulletShape{ displayList: DisplayList::new(1) } }
+impl MiddleBulletShape {
+    fn new() -> MiddleBulletShape { MiddleBulletShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for MiddleBulletShape {
@@ -621,8 +621,8 @@ struct MiddleBulletLineShape {
     displayList : DisplayList,
 }
 
-impl Default for MiddleBulletLineShape {
-    fn default() -> MiddleBulletLineShape { MiddleBulletLineShape{ displayList: DisplayList::new(1) } }
+impl MiddleBulletLineShape {
+    fn new() -> MiddleBulletLineShape { MiddleBulletLineShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for MiddleBulletLineShape {
@@ -670,8 +670,8 @@ struct CounterBulletShape {
     displayList : DisplayList,
 }
 
-impl Default for CounterBulletShape {
-    fn default() -> CounterBulletShape { CounterBulletShape{ displayList: DisplayList::new(1) } }
+impl CounterBulletShape {
+    fn new() -> CounterBulletShape { CounterBulletShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for CounterBulletShape {
@@ -710,8 +710,8 @@ struct CounterBulletLineShape {
     displayList : DisplayList,
 }
 
-impl Default for CounterBulletLineShape {
-    fn default() -> CounterBulletLineShape { CounterBulletLineShape{ displayList: DisplayList::new(1) } }
+impl CounterBulletLineShape {
+    fn new() -> CounterBulletLineShape { CounterBulletLineShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for CounterBulletLineShape {
@@ -764,8 +764,8 @@ struct Enemy1Shape {
     displayList : DisplayList,
 }
 
-impl Default for Enemy1Shape {
-    fn default() -> Enemy1Shape { Enemy1Shape{ displayList: DisplayList::new(1) } }
+impl Enemy1Shape {
+    fn new() -> Enemy1Shape { Enemy1Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Enemy1Shape {
@@ -826,8 +826,8 @@ struct Enemy1TrailShape {
    displayList : DisplayList,
 }
 
-impl Default for Enemy1TrailShape {
-    fn default() -> Enemy1TrailShape { Enemy1TrailShape{ displayList: DisplayList::new(1) } }
+impl Enemy1TrailShape {
+    fn new() -> Enemy1TrailShape { Enemy1TrailShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Enemy1TrailShape {
@@ -865,8 +865,8 @@ struct Enemy2Shape {
     displayList : DisplayList,
 }
 
-impl Default for Enemy2Shape {
-    fn default() -> Enemy2Shape { Enemy2Shape{ displayList: DisplayList::new(1) } }
+impl Enemy2Shape {
+    fn new() -> Enemy2Shape { Enemy2Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Enemy2Shape {
@@ -926,8 +926,8 @@ struct Enemy2TrailShape {
     displayList : DisplayList,
 }
 
-impl Default for Enemy2TrailShape {
-    fn default() -> Enemy2TrailShape { Enemy2TrailShape{ displayList: DisplayList::new(1) } }
+impl Enemy2TrailShape {
+    fn new() -> Enemy2TrailShape { Enemy2TrailShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Enemy2TrailShape {
@@ -965,8 +965,8 @@ struct Enemy3Shape {
     displayList : DisplayList,
 }
 
-impl Default for Enemy3Shape {
-    fn default() -> Enemy3Shape { Enemy3Shape{ displayList: DisplayList::new(1) } }
+impl Enemy3Shape {
+    fn new() -> Enemy3Shape { Enemy3Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Enemy3Shape {
@@ -1027,8 +1027,8 @@ struct Enemy3TrailShape {
     displayList : DisplayList,
 }
 
-impl Default for Enemy3TrailShape {
-    fn default() -> Enemy3TrailShape { Enemy3TrailShape{ displayList: DisplayList::new(1) } }
+impl Enemy3TrailShape {
+    fn new() -> Enemy3TrailShape { Enemy3TrailShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Enemy3TrailShape {
@@ -1066,8 +1066,8 @@ struct TriangleParticleShape {
     displayList : DisplayList,
 }
 
-impl Default for TriangleParticleShape {
-    fn default() -> TriangleParticleShape { TriangleParticleShape{ displayList: DisplayList::new(1) } }
+impl TriangleParticleShape {
+    fn new() -> TriangleParticleShape { TriangleParticleShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TriangleParticleShape {
@@ -1176,8 +1176,8 @@ struct Pillar1Shape {
     displayList : DisplayList,
 }
 
-impl Default for Pillar1Shape {
-    fn default() -> Pillar1Shape { Pillar1Shape{ displayList: DisplayList::new(1) } }
+impl Pillar1Shape {
+    fn new() -> Pillar1Shape { Pillar1Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape  for Pillar1Shape {
@@ -1200,9 +1200,9 @@ struct Pillar2Shape {
     displayList : DisplayList,
 }
 
-impl Default for Pillar2Shape
- {
-    fn default() -> Pillar2Shape { Pillar2Shape{ displayList: DisplayList::new(1) } }
+impl Pillar2Shape
+{
+    fn new() -> Pillar2Shape { Pillar2Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Pillar2Shape {
@@ -1225,8 +1225,8 @@ struct Pillar3Shape {
     displayList : DisplayList,
 }
 
-impl Default for Pillar3Shape {
-    fn default() -> Pillar3Shape { Pillar3Shape{ displayList: DisplayList::new(1) } }
+impl Pillar3Shape {
+    fn new() -> Pillar3Shape { Pillar3Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Pillar3Shape {
@@ -1248,8 +1248,8 @@ struct Pillar4Shape {
     displayList : DisplayList,
 }
 
-impl Default for Pillar4Shape {
-    fn default() -> Pillar4Shape { Pillar4Shape{ displayList: DisplayList::new(1) } }
+impl Pillar4Shape {
+    fn new() -> Pillar4Shape { Pillar4Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Pillar4Shape {
@@ -1272,8 +1272,8 @@ struct OutsidePillarShape {
     displayList : DisplayList,  
 }
 
-impl Default for OutsidePillarShape {
-    fn default() -> OutsidePillarShape { OutsidePillarShape{ displayList: DisplayList::new(1) } }
+impl OutsidePillarShape {
+    fn new() -> OutsidePillarShape { OutsidePillarShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for OutsidePillarShape {

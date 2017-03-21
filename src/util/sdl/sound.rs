@@ -25,21 +25,18 @@ struct Sound {
   /*static*/ seVol : i32;
 }
 
-impl Default for Sound {
-  fn default() -> Sound {
-      Sound{noSound : false, bgmVol : 100, seVol : 100}
+impl DSound {
+  fn new() -> Sound {
+    Sound{noSound : false, bgmVol : 100, seVol : 100}
   }
-}
 
-impl Sound {
-
-    fn init(&mut self) {
+  fn init(&mut self) {
     if self.noSound {
       return;
     }
 
     //derelict specific
-    DerelictSDLMixer.load(); 
+    DerelictSDLMixer::load(); 
 
     if SDL_InitSubSystem(SDL_INIT_AUDIO) < 0 {
       self.noSound = true;
@@ -75,25 +72,22 @@ impl Sound {
 struct Music {
   /*static*/ fadeOutSpeed : i32,
   /*static*/ dir : String,
-  Mix_Music &music,
+  Mix_Music : &music,
 }
-
-impl Default for Music {
-  fn default() -> Music {
-    Music{fadeOutSpeed : 1280, dir : "sounds/music"}
-  }
-}
-
 
 impl Music {
-  fn load(name : &String) {
-    if Sound.noSound {
+  fn new() -> Music {
+    Music{fadeOutSpeed : 1280, dir : "sounds/music"}
+  }
+
+  fn load(&mut self, name : &String) {
+    if Sound::noSound {
       return;
     }
     let fileName : String = dir + "/" + name;
-    music = Mix_LoadMUS(fileName);
-    if !music) 
-      Sound.noSound = true;
+    self.music = Mix_LoadMUS(fileName);
+    if !self.music {
+      Sound::noSound = true;
       panic!("Couldn't load: {} ({})", fileName, Mix_GetError);
     }
   }
@@ -105,26 +99,26 @@ impl Music {
     }
   }
 
-  fn play() {
-    if !Sound.noSound {
+  fn play(&self) {
+    if !Sound::noSound {
      Mix_PlayMusic(music, -1);
     }
   }
 
-  fn playOnce() {
-    if !Sound.noSound {
+  fn playOnce(&self) {
+    if !Sound::noSound {
      Mix_PlayMusic(music, 1);
    }
   }
 
-  fn fade() {
-    if Sound.noSound {
+  fn fade(&self) {
+    if Sound::noSound {
       Mix_FadeOutMusic(fadeOutSpeed);
     }
   }
 
-  fn halt() {
-    if !Sound.noSound && Mix_PlayingMusic() {
+  fn halt(&self) {
+    if !Sound::noSound && Mix_PlayingMusic() {
       Mix_HaltMusic();
     }
   }
@@ -142,13 +136,13 @@ let dir = "sounds/chunks";
 
 impl Chunk {
   fn load(&mut self, name : &String, ch : i32) {
-    if Sound.noSound {
+    if Sound::noSound {
       return;
     }
     let fileName : String = dir ~ "/" ~ name;
     self.chunk = Mix_LoadWAV(fileName);
     if !self.chunk) {
-      Sound.noSound = true;
+      Sound::noSound = true;
       panic!("Couldn't load: {} ({}", fileName, Mix_GetError());
     }
     self.chunkChannel = ch;
@@ -156,20 +150,20 @@ impl Chunk {
 
   fn free(&self) {
     if self.chunk {
-      halt();
+      self.halt();
       Mix_FreeChunk(self.chunk);
     }
   }
 
   fn play(&self) {
-    if Sound.noSound {
+    if Sound::noSound {
       return;
     }
     Mix_PlayChannel(self.chunkChannel, self.chunk, 0);
   }
 
   fn halt(&self) {
-    if Sound.noSound {
+    if Sound::noSound {
       return;
     }
     Mix_HaltChannel(self.chunkChannel);

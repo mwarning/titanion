@@ -12,14 +12,14 @@ private import src.util.preference;
 
 fn read(T)(fd : File, dst &T)
 {
-    let count = fd.read ((cast(void*) &dst)[0..int.sizeof]);
-    //assert (count is int.sizeof);
-}
+  let count = fd.read ((cast(void*) &dst)[0..int.sizeof]);
+  //assert (count is int.sizeof);
+  }
 
 fn write(T)(File fd, T* dst)
 {
-    let count = fd.write ((cast(void*) &dst)[0..int.sizeof]);
-    //assert (count is int.sizeof);
+  let count = fd.write ((cast(void*) &dst)[0..int.sizeof]);
+  //assert (count is int.sizeof);
 }
 
 
@@ -41,7 +41,7 @@ impl Preference {
   fn load() {
     let fd : File;
     //try {
-      fd = new File(PREF_FILE_NAME, File.ReadExisting);
+      fd = File::new(PREF_FILE_NAME, File.ReadExisting);
       let mut ver : i32;
       .read(fd, &ver);
       if ver != VERSION_NUM {
@@ -63,23 +63,23 @@ impl Preference {
   }
 
   fn init(&mut self) {
-	self._lastMode = 2;
-	for j in 0..MODE_NUM {
-		for i in 0..RANKING_NUM {
-			_highScore[j][i] = (10 - i) * 10000;
-		}
-	}
+    self._lastMode = 2;
+    for j in 0..MODE_NUM {
+      for i in 0..RANKING_NUM {
+        _highScore[j][i] = (10 - i) * 10000;
+      }
+    }
   }
 
   fn save(&mut self) {
-    let fd : File = new File(PREF_FILE_NAME, File.WriteCreate);
-    .write(fd, &VERSION_NUM);
-    .write(fd, &_lastMode);
+    let fd = File::new(PREF_FILE_NAME, File.WriteCreate);
+    self.write(fd, &VERSION_NUM);
+    self.write(fd, &_lastMode);
     for j in 0..MODE_NUM {
-     	for i in 0..RANKING_NUM {
-        	.write(fd, &_highScore[j][i]);
-    	}
-	}
+      for i in 0..RANKING_NUM {
+        self.write(fd, &_highScore[j][i]);
+      }
+    }
     fd.close();
   }
 

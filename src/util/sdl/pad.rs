@@ -23,22 +23,21 @@ private import src.util.sdl.recordableinput;
 
 let JOYSTICK_AXIS : i32 = 16384;
 
-struct  Pad: Input {
+struct Pad: Input {
   keys : &u8;
   buttonsExchanged : bool;
   stick : &SDL_Joystick, //= null;
   state : PadState;
 }
 
-impl Default for Pad {
-  fn default() -> Pad{
+impl Pad {
+  fn new() -> Pad {
     Pad{keys : SDL_GetKeyState(null),
       buttonsExchanged : false,
       stick : SDL_JoystickOpen(0),
       state : PadState::default(),
     }
   }
-}
 
   fn openJoystick(&mut self, st &SDL_Joystick /*= null*/) -> &SDL_Joystick {
     if st == null {
@@ -66,21 +65,25 @@ impl Default for Pad {
     }
     if (self.keys[SDLK_RIGHT] == SDL_PRESSED || self.keys[SDLK_KP6] == SDL_PRESSED || 
         self.keys[SDLK_d] == SDL_PRESSED || self.keys[SDLK_l] == SDL_PRESSED ||
-        x > JOYSTICK_AXIS)
-      state.dir |= PadState.Dir.RIGHT;
+        x > JOYSTICK_AXIS) {
+      self.state.dir |= PadState.Dir.RIGHT;
+    }
     if (self.keys[SDLK_LEFT] == SDL_PRESSED || self.keys[SDLK_KP4] == SDL_PRESSED ||
         self.keys[SDLK_a] == SDL_PRESSED || self.keys[SDLK_j] == SDL_PRESSED ||
-        x < -JOYSTICK_AXIS)
-      state.dir |= PadState.Dir.LEFT;
+        x < -JOYSTICK_AXIS) {
+      self.state.dir |= PadState.Dir.LEFT;
+    }
     if (self.keys[SDLK_DOWN] == SDL_PRESSED || self.keys[SDLK_KP2] == SDL_PRESSED ||
         self.keys[SDLK_s] == SDL_PRESSED || self.keys[SDLK_k] == SDL_PRESSED ||
-        y > JOYSTICK_AXIS)
-      state.dir |= PadState.Dir.DOWN;
+        y > JOYSTICK_AXIS) {
+      self.state.dir |= PadState.Dir.DOWN;
+    }
     if (self.keys[SDLK_UP] == SDL_PRESSED ||  self.keys[SDLK_KP8] == SDL_PRESSED ||
         self.keys[SDLK_w] == SDL_PRESSED || self.keys[SDLK_i] == SDL_PRESSED ||
-        y < -JOYSTICK_AXIS)
-      state.dir |= PadState.Dir.UP;
-    state.button = 0;
+        y < -JOYSTICK_AXIS) {
+      self.state.dir |= PadState.Dir.UP;
+    }
+    self.state.button = 0;
     let btn1 : i32 = 0;
     let btn2 : i32 = 0;
     let leftTrigger : f32 = 0.0;
@@ -96,10 +99,10 @@ impl Default for Pad {
     if self.keys[SDLK_z] == SDL_PRESSED || self.keys[SDLK_PERIOD] == SDL_PRESSED ||
         self.keys[SDLK_LCTRL] == SDL_PRESSED || self.keys[SDLK_RCTRL] == SDL_PRESSED || 
         btn1 {
-      if !buttonsExchanged {
-        state.button |= PadState.Button.A;
+      if !self.buttonsExchanged {
+        self.state.button |= PadState.Button.A;
       } else {
-        state.button |= PadState.Button.B;
+        self.state.button |= PadState.Button.B;
       }
     }
     if self.keys[SDLK_x] == SDL_PRESSED || self.keys[SDLK_SLASH] == SDL_PRESSED ||
@@ -107,13 +110,13 @@ impl Default for Pad {
         self.keys[SDLK_LSHIFT] == SDL_PRESSED || self.keys[SDLK_RSHIFT] == SDL_PRESSED ||
         self.keys[SDLK_RETURN] == SDL_PRESSED ||
         btn2 {
-      if !buttonsExchanged {
-        state.button |= PadState.Button.B;
+      if !self.buttonsExchanged {
+        self.state.button |= PadState.Button.B;
       } else {
-        state.button |= PadState.Button.A;
+        self.state.button |= PadState.Button.A;
       }
     }
-    state;
+    self.state
   }
 
   fn getNullState(&mut self) -> &self {
@@ -139,16 +142,14 @@ enum Button {
 
 
 struct PadState {
-  let dir : Dir,
-  let button : Button,
+  dir : Dir,
+  button : Button,
 }
 
-impl Default for PadState {
-
-  fn default() -> PadState {
+impl PadState {
+  fn new() -> PadState {
     PadState{dir : Dir::NONE, button : Button::NONE}
   }
-}
 
 /*
   public static PadState newInstance() {
@@ -168,7 +169,6 @@ impl Default for PadState {
   }
 */
 
-impl PadState {
   fn set(&mut self, s : &PadState) {
     self.dir = s.dir;
     self.button = s.button;
@@ -191,8 +191,8 @@ impl PadState {
     fd.write(s);
   }
 
-  fn equals(s : PadState) -> bool {
-    (dir == s.dir && button == s.button)
+  fn equals(&self, s : &PadState) -> bool {
+    (self.dir == s.dir && self.button == s.button)
   }
 }
 
@@ -200,10 +200,10 @@ impl PadState {
 trait RecordablePad : Pad {
   //mixin RecordableInput!(PadState);
 
-  fn getState(bool doRecord /*= true*/) -> PadState {
+  fn getState(&self, bool doRecord /*= true*/) -> PadState {
     let s : PadState = super.getState();
     if doRecord {
-      record(s);
+      self.record(s);
     }
     s
   }

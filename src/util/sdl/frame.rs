@@ -17,7 +17,7 @@ private import src.util.sdl.input;
  */
 struct Frame {
   mainLoop: MainLoop,
-  abstractScreen: Screen,
+  abstractScreen: SdlScreen,
   abstractInput: Input,
   abstractPreference: Preference,
 }
@@ -25,9 +25,9 @@ struct Frame {
 impl Frame {
   fn new(
     mainloop : MainLoop,
-    abstractScreen : abstractScreen,
-    abstractInput : abstractInput,
-    abstractPreference : abstractPreference
+    abstractScreen : SdlScreen,
+    abstractInput : Input,
+    abstractPreference : Preference
     ) {
     Frame{
       mainLoop : mainloop,
@@ -41,9 +41,9 @@ impl Frame {
     self.mainLoop = mainLoop;
   }
 
-  fn setUIs(&mut self, screen : Screen, input : Input) {
+  fn setUIs(&mut self, screen : SdlScreen, input : Input) {
     self.abstractScreen = screen;
-    self. abstractInput = input;
+    self.abstractInput = input;
   }
 
   fn setPreference(&mut self, preference : Preference) {

@@ -26,13 +26,13 @@ struct Screen {
 	field : &Field;
 }
 
-impl Screen : Screen3D {
+impl SdlScreen3D for Screen { //was Screen3D
 
   fn setIcon() {
     SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE_NAME), null);
   }
 
- fn init() {
+  fn init() {
     setCaption(CAPTION);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glEnable(GL_BLEND);
@@ -57,7 +57,7 @@ impl Screen : Screen3D {
     let lw : f32 = ((self.width as f32) / 640.0 + (self.height as f32) / 480.0) / 2.0;
     if (lw < 1.0) {
       lw = 1.0;
-    }  else if (lw > 4.0) {
+    }  else if lw > 4.0 {
       lw = 4.0;
     }
     glLineWidth(lw);

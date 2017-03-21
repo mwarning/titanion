@@ -93,7 +93,7 @@ impl MainLoop {
 	      if SDL_PollEvent(&event) == 0 {
 	        self.event.type = SDL_USEREVENT;
 	      }
-	      slef.input.handleEvent(&event);
+	      self.input.handleEvent(&event);
 	      if self.event.type == SDL_QUIT {
 	        self.breakLoop();
 	  	  }
@@ -138,7 +138,7 @@ impl MainLoop {
   fn calcInterval(&self) {
     if self.slowdownRatio > self._slowdownStartRatio {
       let sr : f32 = self.slowdownRatio / self._slowdownStartRatio;
-      if (sr > self._slowdownMaxRatio) {
+      if sr > self._slowdownMaxRatio {
         sr = self._slowdownMaxRatio;
       }
       self.interval += (sr * INTERVAL_BASE - self.interval) * 0.1;

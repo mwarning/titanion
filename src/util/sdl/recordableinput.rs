@@ -22,25 +22,25 @@ struct RecordableInput<T> {
 }
 
 impl RecordableInput<T> {
-  fn startRecord() {
-    inputRecord = new InputRecord!(T);
-    inputRecord.clear();
+  fn startRecord(&mut self) {
+    self.inputRecord = InputRecord::<T>::new();
+    self.inputRecord.clear();
   }
 
-  fn record(T d : T) {
-    inputRecord.add(d);
+  fn record(&mut self, d : T) {
+    self.inputRecord.add(d);
   }
 
-  fn startReplay(pr : InputRecord<T>) {
-    inputRecord = pr;
-    inputRecord.reset();
+  fn startReplay(&mut self, pr : InputRecord<T>) {
+    self.inputRecord = pr;
+    self.inputRecord.reset();
   }
 
-  fn replay() -> T {
-    if !inputRecord.hasNext() {
+  fn replay(&mut self) -> T {
+    if !self.inputRecord.hasNext() {
       panic!("No record data.");
     }
-    return inputRecord.next();
+    self.inputRecord.next()
   }
 }
 
@@ -53,7 +53,7 @@ public class NoRecordDataException: Exception {
 
 struct Record<T> {
   series : i32,
-  data : T
+  data : T,
 }
 
 struct InputRecord<T> {
@@ -78,7 +78,7 @@ impl InputRecord<T> {}
       self.record[record.length - 1].series += 1;
     } else {
       self.record.push(
-         Record{series : 1, data : T(d)}
+         Record{series : 1, data : T::new(d)}
       );
     }
   }
@@ -93,16 +93,16 @@ impl InputRecord<T> {}
   }
 
   fn next(&mut self) -> T {
-    if idx >= record.length {
+    if self.idx >= self.record.length {
       panic!("No more items");
     }
     if self.series <= 0 {
       self.series = self.record[idx].series;
     }
     self.replayData.set(record[idx].data);
-    series -= 1;
+    self.series -= 1;
     if self.series <= 0 {
-      idx += 1;
+      self.idx += 1;
     }
     self.replayData;
   }
@@ -125,7 +125,7 @@ impl InputRecord<T> {}
       fd.read(s);
       d = T.newInstance();
       d.read(fd);
-      record ~= Record(series : s, data : d);
+      record.push_back(Record{series : s, data : d});
     }
   }
 }

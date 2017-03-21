@@ -87,7 +87,7 @@ impl Sound {
     if !self._bgmEnabled {
       return;
     }
-    Music.halt();
+    Music::halt();
     if self.bgm.contains(name) {
         bgm[name].play();
     } else {
@@ -118,11 +118,11 @@ impl Sound {
   }
 
   fn fadeBgm(&self) {
-    Music.fade();
+    Music::fade();
   }
 
   fn void haltBgm(&self) {
-    Music.halt();
+    Music::halt();
   }
 
   fn playSe(&mut self, name : String) {

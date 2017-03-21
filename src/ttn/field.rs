@@ -219,7 +219,7 @@ impl Field {
 
   pub fn drawSidewall() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    Screen.setColor(0.25, 0.25, 0.25, 0.5);
+    Screen::setColor(0.25, 0.25, 0.25, 0.5);
     glBegin(GL_TRIANGLE_FAN);
     glVertex3f(0.0, 0.0, 0.0);
     glVertex3f(SIDEWALL_WIDTH, 0.0, 0.0);
@@ -232,7 +232,7 @@ impl Field {
     glVertex3f(640.0 - SIDEWALL_WIDTH, 480.0, 0.0);
     glVertex3f(640.0, 480.0, 0.0);
     glEnd();
-    Screen.setColor(1.0, 1.0, 1.0, 0.8);
+    Screen::setColor(1.0, 1.0, 1.0, 0.8);
     glBegin(GL_LINES);
     glVertex3f(SIDEWALL_WIDTH, 0.0, 0.0);
     glVertex3f(SIDEWALL_WIDTH, 480.0, 0.0);
@@ -277,17 +277,17 @@ impl Field {
         cp.x = d1.sin() * torusRad;
         cp.z = d1.cos() * torusRad;
         Field::createRingOffset(&ringOfs, cp, ringRad, d1, d2);
-        Screen.setColor(0.3, 0.3, 0.3, 0.8);
-        Screen.glVertex(ringOfs);
+        Screen::setColor(0.3, 0.3, 0.3, 0.8);
+        Screen::glVertex(ringOfs);
         Field::createRingOffset(&ringOfs, cp, ringRad, d1, d2 + PI * 2.0 / 16.0);
-        Screen.glVertex(ringOfs);
+        Screen::glVertex(ringOfs);
         cp.x = (d1 + PI * 2.0 / 32.0).sin() * torusRad;
         cp.z = (d1 + PI * 2.0 / 32.0).cos() * torusRad;
         Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0, d2 + PI * 2.0 / 16.0);
-        Screen.glVertex(ringOfs);
+        Screen::glVertex(ringOfs);
         Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0, d2);
-        Screen.setColor(0.3, 0.3, 0.3, 0.2);
-        Screen.glVertex(ringOfs);
+        Screen::setColor(0.3, 0.3, 0.3, 0.2);
+        Screen::glVertex(ringOfs);
         d2 += PI * 2.0 / 16.0
       }
       d1 += PI * 2.0 / 32.0;
@@ -296,23 +296,23 @@ impl Field {
     glEnd();
     glBegin(GL_LINE_STRIP);
     ringRad = CIRCLE_RADIUS * 0.3;
-    Screen.setColor(0.1, 0.1, 0.1);
+    Screen::setColor(0.1, 0.1, 0.1);
     d1 = d1s;
     for _ in 0..16 {
         let d2 : f32 = self.cnt * 0.003;
         for _ in 0..16 {
           cp.x = (d1 + PI * 2.0 / 32.0 * 0.1).sin() * torusRad;
           cp.z = (d1 + PI * 2.0 / 32.0 * 0.1).cos() * torusRad;
-          Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2 / 32 * 0.1, d2 + PI * 2.0 / 16.0 * 0.1);
-          Screen.glVertex(ringOfs);
-          Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2 / 32 * 0.1, d2 + PI * 2.0 / 16.0 * 0.9);
-          Screen.glVertex(ringOfs);
+          Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.1, d2 + PI * 2.0 / 16.0 * 0.1);
+          Screen::glVertex(ringOfs);
+          Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.1, d2 + PI * 2.0 / 16.0 * 0.9);
+          Screen::glVertex(ringOfs);
           cp.x = (d1 + PI * 2.0 / 32.0 * 0.9).sin() * torusRad;
           cp.z = (d1 + PI * 2.0 / 32.0 * 0.9).cos() * torusRad;
           Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.9, d2 + PI * 2.0 / 32.0 * 0.1);
-          Screen.glVertex(ringOfs);
+          Screen::glVertex(ringOfs);
           Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.9, d2 + PI * 2.0 / 16.0 * 0.9);
-          Screen.glVertex(ringOfs);
+          Screen::glVertex(ringOfs);
           d2 += PI * 2.0 / 16.0
         }
       d1 += PI * 2.0 / 32.0
@@ -322,8 +322,7 @@ impl Field {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   }
 
-  pub fn createRingOffset(ringOfs : &mut Vector3, centerPos : Vector3,
-                              rad : f32, d1 : f32, d2 : f32) {
+  pub fn createRingOffset(ringOfs : &mut Vector3, centerPos : Vector3, rad : f32, d1 : f32, d2 : f32) {
     ringOfs.x = 0.0;
     ringOfs.y = 0.0;
     ringOfs.z = rad;
@@ -333,10 +332,10 @@ impl Field {
   }
 
   pub fn eyePos(&self) -> Vector3 {
-    self._eyePos;
+    self._eyePos
   }
 
   pub fn size(&self) -> Vector {
-    self._size;
+    self._size
   }
 }
