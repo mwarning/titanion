@@ -3,7 +3,10 @@
  *
  * Copyright 2005 Kenta Cho. Some rights reserved.
  */
- /*
+
+//######### Moved to ttn/screen.rs #########
+
+/*
 module src.util.sdl.screen3d;
 
 
@@ -30,6 +33,8 @@ string fromStringz(char* str) {
  * SDL screen handler (3D, OpenGL).
  */
 
+
+/*
 // was Screen3D
 struct SdlScreen3D {
   /*static*/ _brightness : f32,
@@ -199,3 +204,5 @@ impl SdlScreen3D {
     v
   }
 }
+*/
+

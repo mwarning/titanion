@@ -17,7 +17,7 @@ trait SdlScreen { //was Screen
 }
 
 trait SizableScreen {
-  fn windowMode() -> bool;
-  fn width() -> i32;
-  fn height() -> i32;
+  fn windowMode1(&self) -> bool;
+  fn width(&self) -> i32;
+  fn height(&self) -> i32;
 }
