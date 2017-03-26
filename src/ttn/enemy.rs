@@ -288,7 +288,7 @@ impl Enemy {
     self.tok.state.phase = match appPattern {
       0 =>  -200,
       _ /*1*/ => -100,
-    }
+    };
 
     if let Some(e) = firstEnemy {
       (self.tok.spec as SmallEnemySpec).init(self.tok.state, e.tok.state);
@@ -299,8 +299,7 @@ impl Enemy {
     }
   }
 
-  fn setMiddleEnemyState(&mut self, baseSpeed : f32, angVel : f32,
-                                er : f32 /* = 0*/, ed : f32 /*= 0*/) {
+  fn setMiddleEnemyState(&mut self, baseSpeed : f32, angVel : f32, er : f32 /* = 0*/, ed : f32 /*= 0*/) {
     self.tok.state.baseBaseSpeed = baseSpeed;
     self.tok.state.baseSpeed = baseSpeed;
     self.tok.state.baseAngVel = angVel;
@@ -533,7 +532,7 @@ impl EnemyState {
         }
       }
       let t = self.trails[ti];
-      Screen_setColor(r * a, g * a, b * a, a * 0.66);
+      Screen::setColor(r * a, g * a, b * a, a * 0.66);
       let p : Vector3 = field.calcCircularPos(t.pos);
       let cd : f32 = field.calcCircularDeg(t.pos.x);
       s.draw(p, cd, t.deg, t.cnt, size);
@@ -672,8 +671,7 @@ impl EnemySpec {
         av *= 2.5 - er;
         if (ad > av) || (ad < (-PI * 0.8)) {
           es.ts.deg += av;
-        }
-        else if ad < -av {
+        } else if ad < -av {
           es.ts.deg -= av;
         } else {
           es.ts.deg = td;
@@ -684,7 +682,7 @@ impl EnemySpec {
           let tx : f32 = es.ts.pos.x;
           let ty : f32 = es.ts.pos.y;
           match i {
-          0 =>  {},
+          _ /*0*/ =>  {},
           1 => { tx -= self.turretWidth; },
           2 => { tx += self.turretWidth; },
           }
@@ -1107,7 +1105,7 @@ impl EnemySpec {
       }
       p = self.field.calcCircularPos(x, es.ts.pos.y);
       cd = self.field.calcCircularDeg(x);
-      Screen_setColor(0.5, 0.5, 1);
+      Screen::setColor(0.5, 0.5, 1);
       (self.trailShape as EnemyShape).draw(p, cd, es.deg, es.cnt, es.size.x * 0.5, es.size.y * 0.5);
     }
   }
@@ -1160,7 +1158,7 @@ impl GhostEnemySpec {
     //with (es) {
       let p : Vector3 = self.field.calcCircularPos(es.ts.pos);
       let cd : f32 = self.field.calcCircularDeg(es.ts.pos.x);
-      Screen_setColor(0.5, 0.5, 1, 0.8);
+      Screen::setColor(0.5, 0.5, 1, 0.8);
       (self.ts.shape as EnemyShape).draw(p, cd, es.ts.deg, self.cnt, es.size);
     //}
   }
@@ -1287,7 +1285,7 @@ impl MiddleEnemySpec {
         self.es.turretSpecs[1].interval *= 2;
         self.es.turretSpecs[2].copy(self.es.turretSpecs[1]);
         if (ts.nway > 1) && (rand.nextInt(2) == 0) {
-          let nsa : f32 = (ts.speed * (0.2 + ts.nway * 0.05 + rand.nextFloat(0.1))) / (ts.nway - 1);
+          let nsa : f32 = (ts.speed * (0.2 + ts.nway * 0.05 + rand.nextFloat(0.1))) / ((ts.nway - 1) as f32);
           if rand.nextInt(2) == 0 {
             nsa *= -1;
           }
@@ -1373,9 +1371,9 @@ impl MiddleEnemySpec {
 
   fn calcStandByTime(&mut self, es : &EnemyState) -> i32 {
     if (es.phase < 0) || (self.es.gameState.mode == GameState::Mode::MODERN) {
-      return 30 + rand.nextInt(30);
+      30 + rand.nextInt(30)
     } else {
-      return 200 + rand.nextInt(150);
+      200 + rand.nextInt(150)
     }
   }
 }
@@ -1579,7 +1577,7 @@ impl SE2Spec {
     self.ses.movePhase(es);
     //with (es) {
       if es.phase == 3 {
-        if es.centerPos.x < 0 {
+        if es.centerPos.x < 0.0 {
           if es.ts.pos.x > (-self.ses.field.size.x * 1.2) {
             es.ts.pos.x += (es.centerPos.x - es.ts.pos.x) * 0.2;
           }
