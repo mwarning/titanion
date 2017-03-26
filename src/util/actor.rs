@@ -90,7 +90,7 @@ impl<T : Default + Actor> ActorPool<T> {
     if self.actorIdx < 0 {
       self.actorIdx = self.actors.len() - 1;
     }
-    &self.actors[self.actorIdx];
+    &mut self.actors[self.actorIdx]
   }
 
   fn getMultipleInstances(&self, n : i32) -> Vec<&mut T> {

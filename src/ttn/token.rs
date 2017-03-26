@@ -30,8 +30,8 @@ use ttn::dummy::*;
 pub struct Token<ST, SP> {
   //actor : Actor,
   pub _exists : bool, //from Actor
-  pub state : ST,
-  pub spec : SP,
+  pub state : *mut ST,
+  pub spec : *mut SP,
 }
 
 impl<ST, SP> Actor for Token<ST, SP> {
