@@ -27,21 +27,27 @@ use ttn::dummy::*;
  * Handling these states (position, direction, speed, etc.) and
  *  specs (maneuver, method of attack, etc.).
  */
+
+ /*
+ //inlined
 pub struct Token<ST, SP> {
   //actor : Actor,
   pub _exists : bool, //from Actor
   pub state : *mut ST,
   pub spec : *mut SP,
 }
+*/
 
-impl<ST, SP> Actor for Token<ST, SP> {
+pub trait Token<ST : ?Sized, SP : ?Sized> : Actor {
   fn getExists(&self) -> bool {
     self._exists
   }
+
   fn setExists(&mut self, v : bool)-> bool {
     self._exists = v;
     v
   }
+
   fn init(&mut self /*Object[] args*/) {
     self.state = ST::new();
   }
@@ -55,19 +61,17 @@ impl<ST, SP> Actor for Token<ST, SP> {
   fn draw1(&self) {
     self.spec.draw(self.state);
   }
-}
 
-impl<ST, SP> Token<ST, SP> {
-  pub fn set5Vec(&self, spec : SP, pos : Vector, deg : f32, speed : f32) {
-    self.set(spec, pos.x, pos.y, deg, speed);
+  fn set5Vec(&self, spec : &SP, pos : Vector, deg : f32, speed : f32) {
+    self.set6(spec, pos.x, pos.y, deg, speed);
   }
 
-  pub fn set6(&self, spec : SP, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set6(&self, spec : &SP, x : f32, y : f32, deg : f32, speed : f32) {
     self.spec = spec;
-    self.set(x, y, deg, speed);
+    self.set5(x, y, deg, speed);
   }
 
-  pub fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
     self.state.clear();
     self.state.pos.x = x;
     self.state.pos.y = y;
@@ -77,12 +81,12 @@ impl<ST, SP> Token<ST, SP> {
     self.actor._exists = true;
   }
 
-  pub fn remove(&self) {
+  fn remove(&self) {
     self._exists = false;
     self.spec.removed(self.state);
   }
 
-  pub fn pos(&self) -> Vector {
+  fn pos(&self) -> Vector {
     self.state.pos
   }
 }

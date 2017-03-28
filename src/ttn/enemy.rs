@@ -45,16 +45,16 @@ use ttn::dummy::*;
 
 static /*mut*/ trailEffect : bool = false;
 
-pub struct EnemyPool {
-  ap : ActorPool<Enemy>,
+pub struct EnemyPool<'a> {
+  ap : ActorPool<Enemy<'a>>,
   _field : Field,
 }
 
-impl EnemyPool {
+impl<'a> EnemyPool<'a> {
   fn getNearestEnemy(&self, p : Vector) -> Option<&Enemy> {
     let dst : f32 = 99999.0;
     let ne : Option<&Enemy> = None;
-    for e in self.ap.actors {
+    for e in &self.ap.actors {
       if e.getExists() && !e.isBeingCaptured() {
         if self._field.calcCircularDist2(e.pos(), p) < dst {
           dst = self._field.calcCircularDist2(e.pos(), p);
@@ -68,9 +68,9 @@ impl EnemyPool {
   fn getNearestMiddleEnemy(&self, p: Vector) -> Option<&Enemy> {
     let dst : f32 = 99999.0;
     let ne : Option<&Enemy> = None;
-    for e in self.ap.actors {
+    for e in &self.ap.actors {
       if e.getExists() && !e.isBeingCaptured() {
-        if e.tok.spec as MiddleEnemySpec {
+        if e.tok.spec.get_type() == EnemySpecType::MiddleEnemySpec {
           if self._field.calcCircularDist2(e.pos(), p) < dst {
             dst = self._field.calcCircularDist2(e.pos(), p);
             ne = Some(&e);
@@ -108,7 +108,7 @@ impl EnemyPool {
 
   fn checkEnemyHit(&self, p : Vector, size : Vector) -> bool {
     let hitf = false;
-    for e in self.ap.actors {
+    for e in &self.ap.actors {
       if e.getExists() && e.isCaptured() {
         let ox = self._field.normalizeX(e.pos().x - p.x);
         let oy = e.pos().y - p.y;
@@ -123,9 +123,9 @@ impl EnemyPool {
   }
 
   fn checkMiddleEnemyExists(&self, x : f32, px : f32) -> bool {
-    for e in self.ap.actors {
+    for e in &self.ap.actors {
       if e.getExists() && !e.isBeingCaptured() {
-        if e.tok.spec as MiddleEnemySpec {
+        if e.tok.spec.get_type() == EnemySpecType::MiddleEnemySpec {
           if ((e.pos().x - x) * (e.pos().x - px)) < 0.0 {
             return true
           }
@@ -137,7 +137,7 @@ impl EnemyPool {
 
   fn num(&self) -> i32 {
     let mut n : i32 = 0;
-    for e in self.ap.actors {
+    for e in &self.ap.actors {
       if e.getExists() && !e.isCaptured() {
         n += 1;
       }
@@ -147,7 +147,7 @@ impl EnemyPool {
 
   fn numInAttack(&self) -> i32 {
     let mut n = 0;
-    for e in self.ap.actors {
+    for e in &self.ap.actors {
       if e.getExists() && e.isInAttack() {
         n += 1;
       }
@@ -157,7 +157,7 @@ impl EnemyPool {
 
   fn numInScreen(&self) -> i32 {
     let mut n = 0;
-    for e in self.ap.actors {
+    for e in &self.ap.actors {
       if e.getExists() && e.isInScreen() {
         n += 1;
       }
@@ -167,7 +167,7 @@ impl EnemyPool {
 
   fn numBeforeAlign(&self) -> i32 {
     let mut n = 0;
-    for e in self.ap.actors {
+    for e in &self.ap.actors {
       if e.getExists() && e.beforeAlign() {
         n += 1;
       }
@@ -177,13 +177,13 @@ impl EnemyPool {
 
   fn drawFront(&self) {
     if trailEffect {
-      for a in self.ap.actors {
+      for a in &self.ap.actors {
         if a.getExists() && (a.tok.state.ts.pos.y <= (self._field.size().y * 1.5)) {
           a.drawTrails();
         }
       }
     }
-    for a in self.ap.actors {
+    for a in &self.ap.actors {
       if a.getExists() && (a.tok.state.ts.pos.y <= (self._field.size().y * 1.5)) {
         a.draw1();
       }
@@ -192,7 +192,7 @@ impl EnemyPool {
 
   fn drawBack(&self) {
     if trailEffect {
-      for a in self.ap.actors {
+      for a in &self.ap.actors {
         if a.getExists() &&
             a.tok.state.ts.pos.y > self._field.size().y * 1.5 &&
             (a.tok.state.ts.pos.x <= Field::circularDistance() / 4.0 &&
@@ -201,7 +201,7 @@ impl EnemyPool {
         }
       }
     }
-    for a in self.ap.actors {
+    for a in &self.ap.actors {
       if a.getExists() &&
           a.tok.state.ts.pos.y > self._field.size().y * 1.5 &&
           (a.tok.state.ts.pos.x <= Field::circularDistance() / 4.0 &&
@@ -213,7 +213,7 @@ impl EnemyPool {
 
   fn drawPillarBack(&self) {
     if trailEffect {
-      for a in self.ap.actors {
+      for a in &self.ap.actors {
         if a.getExists() &&
             a.tok.state.ts.pos.y > self._field.size().y * 1.5 &&
             (a.tok.state.ts.pos.x > Field::circularDistance() / 4.0 ||
@@ -222,7 +222,7 @@ impl EnemyPool {
         }
       }
     }
-    for a in self.ap.actors {
+    for a in &self.ap.actors {
       if a.getExists() &&
           a.tok.state.ts.pos.y > self._field.size().y * 1.5 &&
           (a.tok.state.ts.pos.x > Field::circularDistance() / 4.0 ||
@@ -238,45 +238,37 @@ impl EnemyPool {
   }
 }
 
-struct Enemy {
-  tok : Token<EnemyState, EnemySpec>,
+struct Enemy<'a> {
+  //tok : Token<EnemyState, EnemySpec>, //inlined
+  state : &'a mut EnemyState,
+  spec : &'a mut EnemySpec,
   _exists : bool, //inherited by Actor class
 }
 
-impl Actor for Enemy {
+impl<'a> Actor for Enemy<'a> {
   fn getExists(&self) -> bool {
     self._exists
   }
+
   fn setExists(&mut self, v : bool)-> bool {
     self._exists = v;
     v
   }
 
-  fn init(&mut self) { //, args : &[Object]) {
-    self.tok.init()
-  }
-
-  fn move1(&self) {
-    self.tok.move1();
-  }
-
-  fn draw1(&self) {
-    self.tok.draw1();
+  fn init(&mut self /*, args : &[Object]*/) {
+    Token::<EnemyState, EnemySpec>::init(self /*, args*/);
+    self.tok.state.enemy = self;
   }
 }
 
-impl Enemy {
-  /*
-  //moved to Actor
-  fn init(&mut self, args : &[Object]) {
-    self.tok.init(args);
-    self.tok.state.enemy = self;
-  }
-  */
+impl<'a> Token<EnemyState, EnemySpec> for Enemy<'a> {
+}
+
+impl<'a> Enemy<'a> {
 
   fn setSmallEnemyState(&mut self, baseSpeed : f32, angVel : f32, waitCnt : i32, appPattern : i32,
                                 er : f32 /*= 0*/, ed : f32 /*= 0*/, gd : bool /*= false*/,
-                                fireIntervalRatio : f32 /*= 0*/, firstEnemy : Option<Enemy> /*= null*/) {
+                                fireIntervalRatio : f32 /*= 0*/, firstEnemy : Option<&Enemy> /*= null*/) {
     self.tok.state.baseBaseSpeed = baseSpeed;
     self.tok.state.baseSpeed = baseSpeed;
     self.tok.state.baseAngVel = angVel;
@@ -334,7 +326,7 @@ impl Enemy {
     self.tok._exists = false;
   }
 
-  fn isInAttack(&mut self) -> bool {
+  fn isInAttack(&self) -> bool {
     if self.tok.spec.isBeingCaptured(&self.tok.state) {
       return false;
     }
@@ -353,6 +345,12 @@ impl Enemy {
   }
 
   fn isCaptured(&self) -> bool {
+    match self.tok.spec.get_type() {
+      EnemySpecType::GhostEnemySpec => true,
+      EnemySpecType::SmallEnemySpec => self.tok.spec.isCaptured(&self.tok.state),
+      _ => false,
+    }
+    /*
     let ges : GhostEnemySpec = self.tok.spec as GhostEnemySpec;
     if ges {
       return true;
@@ -361,7 +359,8 @@ impl Enemy {
     if !ses {
       return false;
     }
-    ses.isCaptured(self.tok.state)
+    ses.isCaptured(&self.tok.state)
+    */
   }
 
   fn beforeAlign(&self) -> bool {
@@ -387,7 +386,7 @@ const TURRET_MAX_NUM2 : usize = 3;
 struct EnemyState {
   ts : TokenState,
   turretStates : [TurretState; TURRET_MAX_NUM2],
-  enemy : *mut Enemy,
+  enemy : &'static Enemy<'static>,
   vel : Vector,
   centerPos : Vector,
   centerVel : Vector,
@@ -552,7 +551,7 @@ struct EnemySpecData {
   player : *mut Player,
   particles : *mut ParticlePool,
   bonusParticles : *mut ParticlePool,
-  enemies : *mut EnemyPool,
+  enemies : &'static EnemyPool<'static>,
   stage : *mut Stage,
   trailShape : *mut EnemyShape,
   bulletSpec : *mut BulletSpec,
@@ -604,8 +603,20 @@ impl EnemySpecData {
   }
 }
 
+// helper enum
+#[derive(PartialEq)]
+enum EnemySpecType {
+  GhostEnemySpec,
+  MiddleEnemySpec,
+  SmallEnemySpec,
+  SE1Spec,
+  SE2Spec,
+}
+
 trait EnemySpec {
+  // helpers
   fn get_enemyspec_data(&mut self) -> &mut EnemySpecData;
+  fn get_type(&self) -> EnemySpecType;
 
   fn set(&mut self , es : &mut EnemyState) {
     let spec = self.get_enemyspec_data();
@@ -1101,10 +1112,10 @@ trait EnemySpec {
   }
 
   fn setRank(&mut self, rank : f32);
-  fn init(&mut self, es : &EnemyState);
-  fn gotoNextPhase(&mut self, es : &EnemyState) -> bool;
-  fn isInAttack(&mut self, es : &EnemyState) -> bool;
-  fn calcStandByTime(&mut self, es : &EnemyState) -> i32;
+  fn init(&mut self, es : &mut EnemyState);
+  fn gotoNextPhase(&self, es : &mut EnemyState) -> bool;
+  fn isInAttack(&self, es : &EnemyState) -> bool;
+  fn calcStandByTime(&self, es : &EnemyState) -> i32;
 
   fn draw(&self, es : &EnemyState) {
     let spec = self.get_enemyspec_data();
@@ -1179,6 +1190,10 @@ impl EnemySpec for GhostEnemySpec {
     &mut self.es
   }
 
+  fn get_type(&self) -> EnemySpecType {
+    EnemySpecType::GhostEnemySpec
+  }
+
   fn draw(&self, es : &EnemyState) {
     //with (es) {
       let p : Vector3 = self.field.calcCircularPos(es.ts.pos);
@@ -1188,14 +1203,14 @@ impl EnemySpec for GhostEnemySpec {
     //}
   }
 
-  fn set(&mut self, es : &EnemyState) {}
-  fn move2(&mut self, es : &EnemyState) -> bool { true }
-  fn destroyed(&mut self, es : &EnemyState, dd : f32 /*= 0*/) {}
+  fn set(&mut self, es : &mut EnemyState) {}
+  fn move2(&mut self, es : &mut EnemyState) -> bool { true }
+  fn destroyed(&mut self, es : &mut EnemyState, dd : f32 /*= 0*/) {}
   fn setRank(&mut self, rank : f32) {}
-  fn init(&mut self, es : &EnemyState) {}
-  fn gotoNextPhase(&mut self, es : &EnemyState) -> bool { false }
-  fn isInAttack(&mut self, ses : &EnemyState) -> bool { false }
-  fn calcStandByTime(&mut self, es : &EnemyState) -> i32 { 0 }
+  fn init(&mut self, es : &mut EnemyState) {}
+  fn gotoNextPhase(&self, es : &mut EnemyState) -> bool { false }
+  fn isInAttack(&self, ses : &EnemyState) -> bool { false }
+  fn calcStandByTime(&self, es : &EnemyState) -> i32 { 0 }
   fn isBeingCaptured(&self, es : &EnemyState) -> bool { true }
   fn isCaptured(&self, es : &EnemyState) -> bool { true }
 }
@@ -1243,6 +1258,10 @@ impl MiddleEnemySpec {
 impl EnemySpec for MiddleEnemySpec {
   fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
     &mut self.es
+  }
+
+  fn get_type(&self) -> EnemySpecType {
+    EnemySpecType::MiddleEnemySpec
   }
 
  fn init(&mut self, es : &mut EnemyState) {
@@ -1333,7 +1352,7 @@ impl EnemySpec for MiddleEnemySpec {
     }
   }
 
-  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool {
+  fn gotoNextPhase(&self, es : &mut EnemyState) -> bool {
     //with (es) {
       if es.phase < 0 {
         return self.es.gotoNextPhaseInAppearing(es);
@@ -1395,11 +1414,11 @@ impl EnemySpec for MiddleEnemySpec {
     true
   }
 
-  fn isInAttack(&mut self, es : &EnemyState) -> bool {
+  fn isInAttack(&self, es : &EnemyState) -> bool {
     (es.phase == 1) || (es.phase == 2)
   }
 
-  fn calcStandByTime(&mut self, es : &EnemyState) -> i32 {
+  fn calcStandByTime(&self, es : &EnemyState) -> i32 {
     if (es.phase < 0) || (self.es.gameState.mode == GameState::Mode::MODERN) {
       30 + rand.nextInt(30)
     } else {
@@ -1455,11 +1474,15 @@ impl EnemySpec for SmallEnemySpec {
     &mut self.es
   }
 
+  fn get_type(&self) -> EnemySpecType {
+    EnemySpecType::SmallEnemySpec
+  }
+
   fn init(&mut self, es : &mut EnemyState) {
     self.es.gotoNextPhaseInAppearing(es);
   }
 
-fn setRank(&mut self, r : f32) {
+  fn setRank(&mut self, r : f32) {
     self.es.rank =(r * 0.5).sqrt();
     let mut tr : f32;
     match self.es.gameState.mode {
@@ -1482,11 +1505,10 @@ fn setRank(&mut self, r : f32) {
     self.es.turretNum = 1;
   }
 
-  fn calcStandByTime(es : EnemyState) -> i32 {
+  fn calcStandByTime(&self, es : &EnemyState) -> i32 {
     60 + rand.nextInt(120)
   }
 }
-
 
 struct SE1Spec {
   ses : SmallEnemySpec,
@@ -1511,7 +1533,11 @@ impl EnemySpec for SE1Spec {
     self.ses.get_enemyspec_data()
   }
 
-  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool {
+  fn get_type(&self) -> EnemySpecType {
+    EnemySpecType::SE1Spec
+  }
+
+  fn gotoNextPhase(&self, es : &mut EnemyState) -> bool {
     //with (es) {
       if es.phase < 0 {
         return self.ses.es.gotoNextPhaseInAppearing(es);
@@ -1546,7 +1572,7 @@ impl EnemySpec for SE1Spec {
     true
   }
 
-  fn isInAttack(&mut self, es : &EnemyState) -> bool {
+  fn isInAttack(&self, es : &EnemyState) -> bool {
     (es.phase < -10 || es.phase == 1 || es.phase == 2)
   }
 }
@@ -1574,7 +1600,11 @@ impl EnemySpec for SE2Spec {
     self.ses.get_enemyspec_data()
   }
 
-  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool {
+  fn get_type(&self) -> EnemySpecType {
+    EnemySpecType::SE2Spec
+  }
+
+  fn gotoNextPhase(&self, es : &mut EnemyState) -> bool {
     //with (es) {
       if es.phase < 0 {
         return self.ses.gotoNextPhaseInAppearing(es);
@@ -1639,7 +1669,7 @@ impl EnemySpec for SE2Spec {
     //}
   }
   
-  fn isInAttack(&mut self, es : &EnemyState) -> bool {
+  fn isInAttack(&self, es : &EnemyState) -> bool {
     (es.phase < -10 || es.phase == 1 || es.phase == 2 || es.phase == 3)
   }
 }

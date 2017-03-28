@@ -131,14 +131,14 @@ const DISAPPEAR_CNT : f32 = 300.0;
 pub struct BulletSpec {
   ts : TokenSpec<BulletState>,
   player : *mut Player,
-  enemies : *mut EnemyPool,
+  enemies : &'static EnemyPool<'static>,
   particles : *mut ParticlePool,
   lineShape : *mut Shape,
   gameState : *mut GameState,
 }
 
 impl BulletSpec {
-  fn new(field : *mut Field, player : *mut Player, enemies : *mut EnemyPool, particles : *mut ParticlePool,
+  fn new(field : *mut Field, player : *mut Player, enemies : &'static EnemyPool<'static>, particles : *mut ParticlePool,
               shape : *mut Shape, lineShape : *mut Shape, gameState : *mut GameState) {
     BulletSpec{
       ts : TokenSpec::<BulletState>::new(field, shape),
@@ -229,7 +229,9 @@ impl BulletSpec {
 }
 
 pub struct Bullet {
-  tok : Token<BulletState, BulletSpec>,
+  //tok : Token<BulletState, BulletSpec>, //inlined
+  state : *mut BulletState,
+  spec : *mut BulletSpec,
   _exists : bool, //inherited by Actor class
 }
 
@@ -242,19 +244,9 @@ impl Actor for Bullet {
     self._exists = v;
     v
   }
+}
 
-  fn init(&mut self) { //, args : &[Object]) {
-    self.tok.init();
-  }
-
-  fn move1(&self) {
-    self.tok.move1();
-  }
-
-  fn draw1(&self) {
-    self.tok.draw1();
-  }
-
+impl Token<BulletState, BulletSpec> for Bullet {
 }
 
 impl Bullet {

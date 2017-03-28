@@ -33,12 +33,12 @@ pub struct ActorPool<T : Actor> {
   hasNoActor : bool,
 }
 
-impl<T : Default + Actor> ActorPool<T> {
+impl<T : Actor> ActorPool<T> {
   // init() replacement
   pub fn new(n : i32) -> ActorPool<T> {
    let mut actors = Vec::with_capacity(10);
    for i in 0..n {
-    actors.push(T::default());
+    actors.push(T::new());
    }
    ActorPool{actorIdx : 0, hasNoActor : false, actors : actors}
   }
