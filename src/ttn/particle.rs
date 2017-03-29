@@ -157,7 +157,7 @@ impl TriangleParticleSpec
       ps.vd2 = self.rand.nextSignedFloat(0.1);
   }
 
-  fn move(&mut self, ps : ParticleState) -> bool {
+  fn move2(&mut self, ps : ParticleState) -> bool {
     //with (ps) {
       pos += vel;
       pos.x = self.field.normalizeX(pos.x);
@@ -184,8 +184,8 @@ impl TriangleParticleSpec
         fs = 0.1f + self.rand.nextSignedFloat(0.05);
       }
       if fs > 0 {
-        let mut vx : f32 = vel.x * self.rand.nextSignedFloat(0.8f);
-        let mut vy : f32 = vel.y * self.rand.nextSignedFloat(0.8f);
+        let mut vx : f32 = vel.x * self.rand.nextSignedFloat(0.8);
+        let mut vy : f32 = vel.y * self.rand.nextSignedFloat(0.8);
         vel.x -= vx * fs;
         vel.y -= vy * fs;
         let cr : f32 = 1.0 - fs * 0.2;
@@ -193,8 +193,7 @@ impl TriangleParticleSpec
         let p : Particle = particles.getInstanceForced();
         let nc : i32 = (cnt * (0.8 + fs * 0.2)) as i32;
         if nc > 0 {
-          p.setByVelocity(pos.x, pos.y, vx, vy, size * fs, r, g, b, a,
-                          nc, effectedByGravity);
+          p.setByVelocity(pos.x, pos.y, vx, vy, size * fs, r, g, b, a, nc, effectedByGravity);
         }
         size *= (1 - fs);
         cnt *= cr;
@@ -234,7 +233,7 @@ impl LineParticleSpec {
   }
 
 
-  fn move(ps : ParticleState) -> bool {
+  fn move2(&mut self, ps : ParticleState) -> bool {
     //with (ps) {
       ps.stepForward();
       tailPos.x += (pos.x - tailPos.x) * 0.05;
@@ -254,7 +253,7 @@ impl LineParticleSpec {
     //}
   }
 
-  fn draw(&self, ps : ParticleState) {
+  fn draw(&self, ps : &ParticleState) {
     //with (ps) {
       let mut p : Vector3;
       glBegin(GL_LINES);
@@ -278,11 +277,11 @@ struct QuadParticleSpec {
 }
 
 impl QuadParticleSpec {
-  fn this(f&mut self, field : Field) {
-    self.field = field;
+  fn new(f&mut self, field : &Field) {
+    QuadParticleSpec{ ps : ParticleSpec::new(field) }
   }
 
-  fn move(ps : ParticleState) -> bool {
+  fn move1(&mut self, ps : &ParticleState) -> bool {
     //with (ps) {
       pos += vel;
       pos.x = field.normalizeX(pos.x);
@@ -354,7 +353,7 @@ impl BonusParticleSpec {
     //}
   }
 
-  fn move(ps : ParticleState) -> bool {
+  fn move1(ps : ParticleState) -> bool {
     //with (ps) {
       if waitCnt > 0 {
         waitCnt -= 1;
@@ -446,10 +445,10 @@ impl Particle {
           x : f32, y : f32, deg : f32, speed : f32, sz : f32, r : f32, g : f32, b : f32,
           c : i32 /*= 60*/, ebg : bool /*= true*/, num : f32 /*= 0*/, waitCnt : i32 /*= 0*/) {
     self.spec = match type {
-      Shape.TRIANGLE => triangleParticleSpec,
-      Shape.LINE => lineParticleSpec,
-      Shape.QUAD => quadParticleSpec,
-      Shape.BONUS =>bonusParticleSpec,
+      Shape::TRIANGLE => triangleParticleSpec,
+      Shape::LINE => lineParticleSpec,
+      Shape::QUAD => quadParticleSpec,
+      Shape::BONUS => bonusParticleSpec,
     }
     self.tok.set(x, y, deg, speed);
     self.state.size = sz;
@@ -462,7 +461,7 @@ impl Particle {
     self.state.effectedByGravity = ebg;
     self.state.trgNum = num;
     self.state.waitCnt = waitCnt;
-    if type == Shape.BONUS {
+    if type == Shape::BONUS {
       (spec as BonusParticleSpec).setSize(state, sz);
     }
   }
@@ -470,7 +469,7 @@ impl Particle {
   fn setByVelocity(&mut self, x : f32, y : f32, vx : f32, vy : f32,
                             sz : f32, r : f32, g : f32, b : f32, a : f32,
                             c : i32 /*= 60*/, ebg : bool /* = true*/) {
-    self.tok.spec = triangleParticleSpec;
+    self.tok.spec = self.triangleParticleSpec;
     self.tol.set(x, y, 0.0, 0.0);
     self.state.vel.x = vx;
     self.state.vel.y = vy;
