@@ -283,7 +283,10 @@ impl<'a> Enemy<'a> {
     };
 
     if let Some(e) = firstEnemy {
-      (self.tok.spec as SmallEnemySpec).init(self.tok.state, e.tok.state);
+      // (self.tok.spec as SmallEnemySpec).init(self.tok.state, e.tok.state);
+      if is_small_enemy_spec(&self.tok.spec) {
+        SmallEnemySpec_init3(self.tok.state, e.tok.state);
+      }
       self.tok.state.isFirstEnemy = false;
     } else {
       self.tok.spec.init(self.tok.state);
@@ -315,9 +318,13 @@ impl<'a> Enemy<'a> {
   }
 
   fn hitCaptured(&mut self) {
+    /*
     let ses : SmallEnemySpec = self.tok.spec as SmallEnemySpec;
     if ses {
       ses.hitCaptured(&self.tok.state);
+    }*/
+    if is_small_enemy_spec(&self.tok.spec) {
+      self.tok.spec.hitCaptured(&self.tok.state);
     }
   }
 
@@ -608,9 +615,15 @@ impl EnemySpecData {
 enum EnemySpecType {
   GhostEnemySpec,
   MiddleEnemySpec,
-  SmallEnemySpec,
+  //SmallEnemySpec,
   SE1Spec,
   SE2Spec,
+}
+
+//Helper
+fn is_small_enemy_spec(es : &EnemySpec) -> bool {
+  let ty = es.get_type();
+  (ty == EnemySpecType::SE1Spec) || (ty == EnemySpecType::SE1Spec)
 }
 
 trait EnemySpec {
@@ -1427,11 +1440,9 @@ impl EnemySpec for MiddleEnemySpec {
   }
 }
 
-struct SmallEnemySpec {
-  es : EnemySpecData,
-}
-
-impl SmallEnemySpec {
+/*
+//TODO: finish transform into trait, what about new?
+trait SmallEnemySpec { //: EnemySpec {
   fn new(field : *mut Field, bullets : *mut BulletPool, player : *mut Player,
               particles : *mut ParticlePool, bonusParticles : *mut ParticlePool,
               enemies : *mut EnemyPool, stage : *mut Stage,
@@ -1452,8 +1463,8 @@ impl SmallEnemySpec {
     inst.removeBullets = false;
     inst
   }
-
-  fn init3(&mut self, es : &mut EnemyState, fes : &EnemyState) {
+*/
+  fn SmallEnemySpec_init3(self_ : &mut EnemySpec, es : &mut EnemyState, fes : &EnemyState) {
     //with (es) {
       es.centerPos.x = fes.centerPos.x;
       es.centerPos.y = fes.centerPos.y;
@@ -1467,51 +1478,41 @@ impl SmallEnemySpec {
       es.size.y = 1.25;
     //}
   }
-}
 
-impl EnemySpec for SmallEnemySpec {
-  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
-    &mut self.es
+  fn SmallEnemySpec_init(self_ : &mut EnemySpec, es : &mut EnemyState) {
+    self_.es.gotoNextPhaseInAppearing(es);
   }
 
-  fn get_type(&self) -> EnemySpecType {
-    EnemySpecType::SmallEnemySpec
-  }
-
-  fn init(&mut self, es : &mut EnemyState) {
-    self.es.gotoNextPhaseInAppearing(es);
-  }
-
-  fn setRank(&mut self, r : f32) {
-    self.es.rank =(r * 0.5).sqrt();
+  fn SmallEnemySpec_setRank(self_ : &mut EnemySpec, r : f32) {
+    self_.es.rank =(r * 0.5).sqrt();
     let mut tr : f32;
-    match self.es.gameState.mode {
+    match self_.es.gameState.mode {
     GameState::Mode::CLASSIC => {
-      self.es.rank = self.es.rank.sqrt();
+      self_.es.rank = self_.es.rank.sqrt();
       tr = r;
     },
     GameState::Mode::BASIC => {
       tr = r * 2.0;
     },
     GameState::Mode::MODERN => {
-      self.es.rank = 1.0;
+      self_.es.rank = 1.0;
       tr = r;
     },
     };
-    if self.es.rank < 1.0 {
-      self.es.rank = 1;
+    if self_.es.rank < 1.0 {
+      self_.es.rank = 1;
     }
-    self.es.turretSpecs[0].setRankNormal(tr);
-    self.es.turretNum = 1;
+    self_.es.turretSpecs[0].setRankNormal(tr);
+    self_.es.turretNum = 1;
   }
 
-  fn calcStandByTime(&self, es : &EnemyState) -> i32 {
+  fn SmallEnemySpec_calcStandByTime(self_ : &EnemySpec, es : &EnemyState) -> i32 {
     60 + rand.nextInt(120)
   }
-}
+//}
 
 struct SE1Spec {
-  ses : SmallEnemySpec,
+  es : EnemySpecData,
 }
 
 impl SE1Spec {
@@ -1521,8 +1522,20 @@ impl SE1Spec {
               shape : *mut Shape, trailShape : *mut EnemyShape,
               bulletSpec : *mut BulletSpec, counterBulletSpec : *mut BulletSpec,
               gameState : *mut GameState) -> SE1Spec {
-    let mut inst = SE1Spec {ses : SmallEnemySpec::new(field, bullets, player, particles, bonusParticles, enemies, stage,
-          shape, trailShape, bulletSpec, counterBulletSpec, gameState)};
+    let mut inst = SE1Spec{ es : EnemySpecData{
+      field : field, bullets: bullets, player : player, particles : particles, bonusParticles : bonusParticles, enemies : enemies, stage : stage,
+      shape : shape, trailShape : trailShape, bulletSpec : bulletSpec, counterBulletSpec : counterBulletSpec, gameState : gameState}};
+
+    inst.turretSpecs[0] = TurretSpec::new(field, bullets, player, enemies, particles, stage, bulletSpec, gameState);
+    inst.shild = match gameState.mode {
+      GameState::Mode::CLASSIC => 1,
+      GameState::Mode::BASIC => 1,
+      GameState::Mode::MODERN => 2,
+    };
+    inst.capturable = true;
+    inst.score = 10;
+    inst.removeBullets = false;
+
     inst.ses.es.explosionSeName = "explosion1.wav";
     inst
   }
@@ -1530,43 +1543,60 @@ impl SE1Spec {
 
 impl EnemySpec for SE1Spec {
   fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
-    self.ses.get_enemyspec_data()
+    self.es.get_enemyspec_data()
   }
 
   fn get_type(&self) -> EnemySpecType {
     EnemySpecType::SE1Spec
   }
+/*
+  //we use SmallEnemySpec_init3 directly
+  fn init3(&mut self, es : &mut EnemyState, fes : &EnemyState) {
+    SmallEnemySpec_init3(self, es, fes);
+  }
+*/
+  fn init(&mut self, es : &mut EnemyState) {
+    SmallEnemySpec_init(self, es);
+  }
+
+  fn setRank(&mut self, r : f32) {
+    SmallEnemySpec_setRank(self, r);
+  }
+
+  fn calcStandByTime(&self, es : &EnemyState) -> i32 {
+    SmallEnemySpec_calcStandByTime(self, es)
+  }
 
   fn gotoNextPhase(&self, es : &mut EnemyState) -> bool {
     //with (es) {
       if es.phase < 0 {
-        return self.ses.es.gotoNextPhaseInAppearing(es);
+        return self.es.gotoNextPhaseInAppearing(es);
       }
       match es.phase {
       1 => {
-        if !self.ses.player.hasCollision || (self.ses.enemies.numInAttack > self.ses.stage.attackSmallEnemyNum) {
+        if !self.es.player.hasCollision || (self.es.enemies.numInAttack > self.es.stage.attackSmallEnemyNum) {
           es.phase = 0;
           es.nextPhaseCnt = self.calcStandByTime(es);
         } else {
           Sound::playSe("flying_down.wav");
           es.centerPos.y = 0.0;
-          es.centerPos.x = (es.standByPos.x + self.ses.player.pos.x) / 2.0;
+          es.centerPos.x = (es.standByPos.x + self.es.player.pos.x) / 2.0;
           es.nextPhaseCnt = 60;
         }
       },
       2 => {
-        es.centerPos.y = -self.ses.field.size.y * 0.7;
-        es.centerPos.x = self.ses.player.pos.x;
+        es.centerPos.y = -self.es.field.size.y * 0.7;
+        es.centerPos.x = self.es.player.pos.x;
         es.nextPhaseCnt = 30;
       },
       3 => {
         es.centerPos.x = es.standByPos.x;
         es.centerPos.y = es.standByPos.y;
         es.phase = 0;
-        es.nextPhaseCnt = self.ses.calcStandByTime(es);
+        es.nextPhaseCnt = self.es.calcStandByTime(es);
         },
       }
-      es.nextPhaseCnt /= self.ses.rank;
+      es.nextPhaseCnt /= self.es.rank;
       es.phaseCnt = 0;
     //}
     true
@@ -1578,7 +1608,7 @@ impl EnemySpec for SE1Spec {
 }
 
 struct SE2Spec {
- ses : SmallEnemySpec,
+  es : EnemySpecData,
 }
 
 impl SE2Spec {
@@ -1588,8 +1618,20 @@ impl SE2Spec {
               shape : *mut Shape, trailShape : *mut EnemyShape,
               bulletSpec : *mut BulletSpec, counterBulletSpec : *mut BulletSpec,
               gameState : *mut GameState) -> SE2Spec {
-    let mut inst = SE2Spec{ ses : SE2Spec::new(field, bullets, player, particles, bonusParticles, enemies, stage,
-          shape, trailShape, bulletSpec, counterBulletSpec, gameState) };
+    let mut inst = SE2Spec{ es : EnemySpecData{
+      field : field, bullets: bullets, player : player, particles : particles, bonusParticles : bonusParticles, enemies : enemies, stage : stage,
+      shape : shape, trailShape : trailShape, bulletSpec : bulletSpec, counterBulletSpec : counterBulletSpec, gameState : gameState}};
+
+    inst.turretSpecs[0] = TurretSpec::new(field, bullets, player, enemies, particles, stage, bulletSpec, gameState);
+    inst.shild = match gameState.mode {
+      GameState::Mode::CLASSIC => 1,
+      GameState::Mode::BASIC => 1,
+      GameState::Mode::MODERN => 2,
+    };
+    inst.capturable = true;
+    inst.score = 10;
+    inst.removeBullets = false;
+
     inst.ses.explosionSeName = "explosion2.wav";
     inst
   }
@@ -1597,43 +1639,60 @@ impl SE2Spec {
 
 impl EnemySpec for SE2Spec {
   fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
-    self.ses.get_enemyspec_data()
+    self.es.get_enemyspec_data()
   }
 
   fn get_type(&self) -> EnemySpecType {
     EnemySpecType::SE2Spec
   }
+/*
+//we use SmallEnemySpec_init3 directly
+  fn init3(&mut self, es : &mut EnemyState, fes : &EnemyState) {
+    SmallEnemySpec_init3(self, es, fes);
+  }
+*/
+  fn init(&mut self, es : &mut EnemyState) {
+    SmallEnemySpec_init(self, es);
+  }
+
+  fn setRank(&mut self, r : f32) {
+    SmallEnemySpec_setRank(self, r);
+  }
+
+  fn calcStandByTime(&self, es : &EnemyState) -> i32 {
+    SmallEnemySpec_calcStandByTime(self, es)
+  }
 
   fn gotoNextPhase(&self, es : &mut EnemyState) -> bool {
     //with (es) {
       if es.phase < 0 {
-        return self.ses.gotoNextPhaseInAppearing(es);
+        return self.es.gotoNextPhaseInAppearing(es);
       }
       match es.phase {
       1 => {
-        if !self.ses.player.hasCollision || (self.ses.enemies.numInAttack > self.ses.stage.attackSmallEnemyNum) {
+        if !self.es.player.hasCollision || (self.es.enemies.numInAttack > self.es.stage.attackSmallEnemyNum) {
           es.phase = 0;
-          es.nextPhaseCnt = self.ses.calcStandByTime(es);
+          es.nextPhaseCnt = self.es.calcStandByTime(es);
         } else {
           Sound::playSe("flying_down.wav");
-          es.centerPos.y = -self.ses.field.size.y * 0.3;
-          es.centerPos.x = (es.standByPos.x + self.ses.player.pos.x) / 2;
+          es.centerPos.y = -self.es.field.size.y * 0.3;
+          es.centerPos.x = (es.standByPos.x + self.es.player.pos.x) / 2;
           es.baseSpeed = es.baseBaseSpeed;
           es.angVel = es.baseAngVel;
           es.nextPhaseCnt = 30 + rand.nextInt(60);
         }
       },
       2 => {
-        es.centerPos.y = -self.ses.field.size.y * 1.3;
+        es.centerPos.y = -self.es.field.size.y * 1.3;
         es.centerPos.x *= -1.0;
         es.nextPhaseCnt = 30;
       },
       3 => {
-        es.centerPos.y = -self.ses.field.size.y * 1.0;
+        es.centerPos.y = -self.es.field.size.y * 1.0;
         if es.centerPos.x < 0 {
-          es.centerPos.x = -self.ses.field.size.x * 1.5;
+          es.centerPos.x = -self.es.field.size.x * 1.5;
         } else {
-          es.centerPos.x = self.ses.field.size.x * 1.5;
+          es.centerPos.x = self.es.field.size.x * 1.5;
         }
         es.baseSpeed = es.baseBaseSpeed * 1.5;
         es.angVel = es.baseAngVel * 1.5;
@@ -1646,22 +1705,22 @@ impl EnemySpec for SE2Spec {
         es.nextPhaseCnt = es.calcStandByTime(es);
       },
       }
-      es.nextPhaseCnt /= self.ses.rank;
+      es.nextPhaseCnt /= self.es.rank;
       es.phaseCnt = 0;
     //}
     true
   }
 
   fn movePhase(&mut self, es : &mut EnemyState) {
-    self.ses.movePhase(es);
+    self.es.movePhase(es);
     //with (es) {
       if es.phase == 3 {
         if es.centerPos.x < 0.0 {
-          if es.ts.pos.x > (-self.ses.field.size.x * 1.2) {
+          if es.ts.pos.x > (-self.es.field.size.x * 1.2) {
             es.ts.pos.x += (es.centerPos.x - es.ts.pos.x) * 0.2;
           }
         } else {
-          if es.ts.pos.x < (self.field.size.x * 1.2) {
+          if es.ts.pos.x < (self.es.field.size.x * 1.2) {
             es.ts.pos.x += (es.centerPos.x - es.ts.pos.x) * 0.2;
           }
         }
