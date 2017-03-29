@@ -34,6 +34,7 @@ use ttn::shape::*;
 use util::math::*;
 use ttn::bullet::*;
 use ttn::field::*;
+use ttn::player::*;
 use ttn::dummy::*;
 
 
@@ -664,27 +665,27 @@ trait EnemySpec {
       if spec.capturable {
         self.checkCaptured(es);
       }
-      let er: f32 = (1.0 - es.ellipseRatio) + (es.deg + es.ellipseDeg).sin().abs() * es.ellipseRatio * 2.0;
+      let er: f32 = (1.0 - es.ellipseRatio) + (es.ts.deg + es.ellipseDeg).sin().abs() * es.ellipseRatio * 2.0;
       let rk : f32 = spec.rank;
-      es.vel.x -= es.ts.deg.sin() * es.speed * er * 0.1 * rk;
-      es.vel.y += es.ts.deg.cos() * es.speed * er * 0.1 * rk;
+      es.vel.x -= es.ts.deg.sin() * es.ts.speed * er * 0.1 * rk;
+      es.vel.y += es.ts.deg.cos() * es.ts.speed * er * 0.1 * rk;
       es.vel *= 0.9;
       es.ts.pos += es.vel;
       if self.isInScreen(es) {
-        spec.field.addSlowdownRatio(es.speed * 0.04 * rk);
+        spec.ts.field.addSlowdownRatio(es.ts.speed * 0.04 * rk);
       }
-      es.ts.pos.x = spec.field.normalizeX(es.ts.pos.x);
+      es.ts.pos.x = spec.ts.field.normalizeX(es.ts.pos.x);
       es.recordTrail();
-      if (es.phase >= -50) && (es.phase < 0) && !spec.field.containsIncludingPit(es.ts.pos) {
+      if (es.phase >= -50) && (es.phase < 0) && !spec.ts.field.containsIncludingPit(es.ts.pos) {
         return false;
       }
       if es.waitCnt > 0 {
         es.waitCnt -= 1;
       } else {
         let cp : Vector = es.centerPos;
-        es.centerPos.x = spec.field.normalizeX(es.centerPos.x);
-        spec.phaseCnt += 1;
-        if spec.field.calcCircularDist2(es.centerPos, es.ts.pos) < NEXT_PHASE_DIST {
+        es.centerPos.x = spec.ts.field.normalizeX(es.centerPos.x);
+        es.phaseCnt += 1;
+        if spec.ts.field.calcCircularDist2(es.centerPos, es.ts.pos) < NEXT_PHASE_DIST {
           es.nextPhaseCnt -= 1;
           if es.nextPhaseCnt <= 0 {
             es.phase += 1;
@@ -693,11 +694,11 @@ trait EnemySpec {
             }
           }
         }
-        cp.x = spec.field.normalizeX(cp.x);
-        let dst : f32 = spec.field.calcCircularDist2(cp, es.ts.pos);
+        cp.x = spec.ts.field.normalizeX(cp.x);
+        let dst : f32 = spec.ts.field.calcCircularDist2(cp, es.ts.pos);
         es.ts.speed += ((es.baseSpeed * (1.0 + dst * 0.1)) - es.ts.speed) * 0.05;
-        let mut av : f32 = spec.angVel * rk;
-        let mut td : f32 = (spec.field.normalizeX(-(cp.x - es.ts.pos.x)), cp.y - es.ts.pos.y).atan2();
+        let mut av : f32 = es.angVel * rk;
+        let mut td : f32 = spec.ts.field.normalizeX(-(cp.x - es.ts.pos.x)).atan2(cp.y - es.ts.pos.y);
         let mut ad : f32 = normalize_deg(td - es.ts.deg);
         av *= 2.5 - er;
         if (ad > av) || (ad < (-PI * 0.8)) {
@@ -717,7 +718,7 @@ trait EnemySpec {
           1 => { tx -= spec.turretWidth; },
           2 => { tx += spec.turretWidth; },
           }
-          let turretDeg : f32 = (spec.field.normalizeX(-(spec.player.pos.x - tx)), spec.player.pos.y - ty).atan2();
+          let turretDeg : f32 = spec.ts.field.normalizeX(-(spec.player.pos().x - tx)).atan2(spec.player.pos().y - ty);
           match spec.gameState.mode {
             GameStateMode::CLASSIC => {
               if (turretDeg >= 0.0) && (turretDeg < (PI - PI / 6.0)) {
@@ -753,31 +754,31 @@ trait EnemySpec {
     //with (es) {
       match es.captureState {
       1 => {
-        es.vel.x += (spec.player.pos.x - es.ts.pos.x) * 0.03;
-        es.vel.y += (spec.player.pos.y - es.ts.pos.y) * 0.03;
-        es.ts.pos.x += (spec.player.pos.x - es.ts.pos.x) * 0.03;
-        es.ts.pos.y += (spec.player.pos.y - es.ts.pos.y) * 0.03;
+        es.vel.x += (spec.player.pos().x - es.ts.pos.x) * 0.03;
+        es.vel.y += (spec.player.pos().y - es.ts.pos.y) * 0.03;
+        es.ts.pos.x += (spec.player.pos().x - es.ts.pos.x) * 0.03;
+        es.ts.pos.y += (spec.player.pos().y - es.ts.pos.y) * 0.03;
         es.ts.deg *= 0.95;
-        if spec.player.pos.dist(es.ts.pos) < 1 {
+        if spec.player.pos().dist2(es.ts.pos) < 1.0 {
           es.captureState = 2;
         }
       },
       2 => {
         let cx : f32 = self.calcCapturePosX(es.captureIdx);
-        es.vel.x += (spec.player.pos.x + cx - es.ts.pos.x) * 0.03;
-        es.ts.pos.x += (spec.player.pos.x + cx - es.ts.pos.x) * 0.1;
-        es.ts.pos.y += (spec.player.pos.y - es.ts.pos.y) * 0.33;
+        es.vel.x += (spec.player.pos().x + cx - es.ts.pos.x) * 0.03;
+        es.ts.pos.x += (spec.player.pos().x + cx - es.ts.pos.x) * 0.1;
+        es.ts.pos.y += (spec.player.pos().y - es.ts.pos.y) * 0.33;
         es.vel.y *= 0.6;
         es.ts.deg *= 0.95;
-        if (spec.player.pos.x + cx - es.ts.pos.x).abs() < 0.2 {
+        if (spec.player.pos().x + cx - es.ts.pos.x).abs() < 0.2 {
           es.captureState = 3;
         }
       },
       3 => {
         let cx : f32 = self.calcCapturePosX(es.captureIdx);
-        es.ts.pos.x = spec.player.pos.x + cx;
-        es.ts.pos.y = spec.player.pos.y;
-        es.ts.deg = spec.player.deg;
+        es.ts.pos.x = spec.player.pos().x + cx;
+        es.ts.pos.y = spec.player.pos().y;
+        es.ts.deg = spec.player.deg();
         }
       }
       es.vel *= 0.9;
@@ -788,9 +789,9 @@ trait EnemySpec {
   fn calcCapturePosX(&self, idx : i32) -> f32 {
     let spec = self.get_enemyspec_data();
     if (idx % 2) == 0 {
-      ((idx as f32 / 2.0) + 0.5) * PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH * spec.player.capturedEnemyWidth
+      ((idx as f32 / 2.0) + 0.5) * PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH * spec.player.capturedEnemyWidth()
     } else {
-      -((idx as f32 / 2.0) + 0.5) * PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH * spec.player.capturedEnemyWidth
+      -((idx as f32 / 2.0) + 0.5) * PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH * spec.player.capturedEnemyWidth()
     }
   }
 

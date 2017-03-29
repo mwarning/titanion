@@ -20,6 +20,7 @@ mod ttn {
 	pub mod token;
 	pub mod bullet;
 	pub mod field;
+	pub mod player;
 	pub mod dummy; //skeleton dummies
 }
 

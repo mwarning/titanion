@@ -51,11 +51,11 @@ impl Field {
     Field{
       frame : frame,
       screen : screen,
-      _size : Vector::default(12.0, 12.0),
-      _outerSize : Vector::default(13.0, 13.0),
-      _eyePos : Vector3::default(0.0, 0.0, 0.0),
+      _size : Vector::new(12.0, 12.0),
+      _outerSize : Vector::new(13.0, 13.0),
+      _eyePos : Vector3::new(0.0, 0.0, 0.0),
       eyeDeg : 0.0,
-      circlePos : Vector3::default(0.0, 0.0, 0.0),
+      circlePos : Vector3::new(0.0, 0.0, 0.0),
       cnt : 0.0,
     }
   }

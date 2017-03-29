@@ -136,8 +136,8 @@ use std::marker::PhantomData;
  * Base class of a token's specification.
  */
 pub struct TokenSpec<T> {
-  field : *mut Field,
-  shape : *mut Shape,
+  pub field : &'static mut Field,
+  pub shape : &'static mut Shape,
   phantom: PhantomData<T>, //dummy
 }
 

@@ -23,26 +23,17 @@ pub fn glPushMatrix() {}
 pub fn glPopMatrix() {}
 pub fn glLoadIdentity() {}
 
-//pub struct Field;
 pub struct Object;
 pub struct Frame;
 pub struct Screen;
-//pub trait BulletPool {  }
-pub struct Player;
 
-impl Player {
-  pub fn enemiesHasCollision(&self) -> bool { false }
-  pub fn checkEnemyHit(&mut self, p : Vector, v : Vector, size : Vector) -> bool { false }
-}
 
 pub trait ParticlePool {}
 pub struct Stage;
-//pub struct BulletSpec;
 pub struct GameState {
   pub mode : GameStateMode,
 }
 pub struct Particle;
-//pub struct Bullet;
 pub struct Rand;
 
 impl Rand {

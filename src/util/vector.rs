@@ -109,12 +109,12 @@ impl Vector {
     Vector {x: x, y: y,}
   }
 
-  fn clear(&mut self) {
+  pub fn clear(&mut self) {
     self.x = 0.0;
     self.y = 0.0;
   }
 
-  fn opMul(&mut self, v : Vector) -> f32 {
+  pub fn opMul(&mut self, v : Vector) -> f32 {
     self.x * v.x + self.y * v.y
   }
 
@@ -151,27 +151,27 @@ impl Vector {
     RSL
   }
 
-  fn opAddAssign(&mut self, v : Vector) {
+  pub fn opAddAssign(&mut self, v : Vector) {
     self.x += v.x;
     self.y += v.y;
   }
 
-  fn opSubAssign(&mut self, v : Vector) {
+  pub fn opSubAssign(&mut self, v : Vector) {
     self.x -= v.x;
     self.y -= v.y;
   }
 
-  fn opMulAssign(&mut self, a : f32) {
+  pub fn opMulAssign(&mut self, a : f32) {
     self.x *= a;
     self.y *= a;
   }
 
-  fn opDivAssign(&mut self, a : f32) {
+  pub fn opDivAssign(&mut self, a : f32) {
     self.x /= a;
     self.y /= a;
   }
 
-  fn checkSide(&self, pos1 : Vector, pos2 : Vector) -> f32 {
+  pub fn checkSide(&self, pos1 : Vector, pos2 : Vector) -> f32 {
    let xo : f32 = pos2.x - pos1.x;
    let yo : f32 = pos2.y - pos1.y;
     if xo == 0.0 {
@@ -199,7 +199,7 @@ impl Vector {
   }
 
   // was checkSide
-  fn checkSideOffset(&self, pos1 : Vector, pos2 : Vector, ofs : Vector) -> f32 {
+  pub fn checkSideOffset(&self, pos1 : Vector, pos2 : Vector, ofs : Vector) -> f32 {
     let xo : f32 = pos2.x - pos1.x;
     let yo : f32 = pos2.y - pos1.y;
     let mx : f32 = self.x + ofs.x;
@@ -228,7 +228,7 @@ impl Vector {
     }
   }
 
-  fn checkCross(&self, p : Vector, p1 : Vector, p2 : Vector, width : f32) -> bool {
+  pub fn checkCross(&self, p : Vector, p1 : Vector, p2 : Vector, width : f32) -> bool {
     let a1x : f32;
     let a1y : f32;
     let a2x : f32;
@@ -311,17 +311,17 @@ impl Vector {
     false
   }
 
-  fn vctSize(&self) -> f32 {
+  pub fn vctSize(&self) -> f32 {
     (self.x * self.x + self.y * self.y).sqrt()
   }
 
   // was dist()
-  fn distVector(&self, v : Vector) -> f32 {
+  pub fn dist2(&self, v : Vector) -> f32 {
     self.dist(v.x, v.y)
   }
 
   ///
-  fn dist(&self, px : f32, py : f32) -> f32 {
+  pub fn dist3(&self, px : f32, py : f32) -> f32 {
     let ax : f32 = (self.x - px).abs();
     let ay : f32 = (self.y - py).abs();
     if ax > ay {
@@ -331,37 +331,37 @@ impl Vector {
     }
   }
 
-  fn distAcc(&self, v : Vector) -> f32 {
+  pub fn distAcc(&self, v : Vector) -> f32 {
     ((v.x - self.x) * (v.x - self.x) + (v.y - self.y) * (v.y - self.y)).sqrt()
   }
 
   // was contains
-  fn containsVectorRadius(&self, p : Vector, r : f32) -> bool {
+  pub fn containsVectorRadius(&self, p : Vector, r : f32) -> bool {
     self.containsXYRadius(p.x, p.y, r)
   }
 
   // was contains
-  fn containsVector(&self, p : Vector) -> bool {
+  pub fn containsVector(&self, p : Vector) -> bool {
     self.containsXYRadius(p.x, p.y, 1.0)
   }
 
   // was contains
-  fn containsXY(&self, px : f32, py : f32) -> bool {
+  pub fn containsXY(&self, px : f32, py : f32) -> bool {
     self.containsXYRadius(px, py, 1.0)
   }
 
   // was contains
-  fn containsXYRadius(&self, px : f32, py : f32, r : f32) -> bool {
+  pub fn containsXYRadius(&self, px : f32, py : f32, r : f32) -> bool {
     (px >= (-self.x * r) && (px <= self.x * r) && (py >= -self.y * r) && (py <= self.y * r))
   }
 
-  fn roll(&mut self, d : f32) {
+  pub fn roll(&mut self, d : f32) {
     let tx : f32 = self.x * d.cos() - self.y * d.sin();
     self.y = self.x * d.sin() + self.y * d.cos();
     self.x = tx;
   }
 
-  fn toString(&self) -> String {
+  pub fn toString(&self) -> String {
     format!("({}, {})", self.x, self.y)
   }
 }
