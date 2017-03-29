@@ -235,6 +235,16 @@ pub struct Bullet {
   _exists : bool, //inherited by Actor class
 }
 
+//we inline varaibles and methods into Bullet
+//impl Token<BulletState, BulletSpec> for Bullet {
+//}
+
+impl Bullet {
+  fn setWaitCnt(&mut self, c : i32) {
+    self.tok.state.waitCnt = c;
+  }
+}
+
 impl Actor for Bullet {
   fn getExists(&self) -> bool {
     self._exists
@@ -244,19 +254,18 @@ impl Actor for Bullet {
     self._exists = v;
     v
   }
-}
 
-impl Token<BulletState, BulletSpec> for Bullet {
-}
+  fn init(&mut self /*Object[] args*/) {
+    self.state = BulletState::new();
+  }
 
-impl Bullet {
-  fn setWaitCnt(&mut self, c : i32) {
-    self.tok.state.waitCnt = c;
+  fn move1(&self) {
+    if !self.spec.move2(self.state) {
+      self.remove();
+    }
+  }
+
+  fn draw1(&self) {
+    self.spec.draw(self.state);
   }
 }
-
-/*
-impl Token<BulletState, BulletSpec> for Bullet
-{
-}
-*/

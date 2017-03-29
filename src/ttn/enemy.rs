@@ -354,8 +354,8 @@ impl<'a> Enemy<'a> {
   fn isCaptured(&self) -> bool {
     match self.tok.spec.get_type() {
       EnemySpecType::GhostEnemySpec => true,
-      EnemySpecType::SmallEnemySpec => self.tok.spec.isCaptured(&self.tok.state),
-      _ => false,
+      EnemySpecType::MiddleEnemySpec => false,
+      EnemySpecType::SE1Spec | EnemySpecType::SE2Spec => self.tok.spec.isCaptured(&self.tok.state),
     }
     /*
     let ges : GhostEnemySpec = self.tok.spec as GhostEnemySpec;
@@ -555,7 +555,7 @@ struct EnemySpecData {
   ts : TokenSpec<EnemyState>,
   //mixin StaticRandImpl;
   bullets : *mut BulletPool,
-  player : *mut Player,
+  player : &'static Player,
   particles : *mut ParticlePool,
   bonusParticles : *mut ParticlePool,
   enemies : &'static EnemyPool<'static>,
@@ -603,9 +603,9 @@ impl EnemySpecData {
       bulletSpec : bulletSpec,
       counterBulletSpec : counterBulletSpec,
       gameState : gameState,
-      turretWidth : 0,
-      shield : 1,
-      rank : 0,
+      turretWidth : 0.0,
+      shield : 1.0,
+      rank : 0.0,
     }
   }
 }
@@ -635,34 +635,34 @@ trait EnemySpec {
     let spec = self.get_enemyspec_data();
     es.shield = spec.shield;
     for i in 0..spec.turretNum {
-      spec.turretSpecs[i].set(es.turretStates[i]);
+      spec.turretSpecs[i as usize].set(&es.turretStates[i as usize]);
     }
   }
 
   fn move2(&mut self, es : &mut EnemyState) -> bool {
     let spec = self.get_enemyspec_data();
     //with (es) {
-      es.move();
-      if spec.isInScreen(es) && es.isFirstEnemy {
+      es.move1();
+      if self.isInScreen(es) && es.isFirstEnemy {
         Sound::playSe("flying_down.wav");
         es.isFirstEnemy = false;
       }
       if es.captureState > 0 {
-        es.moveCaptured(es);
+        self.moveCaptured(es);
         return true;
       }
       if spec.player.enemiesHasCollision() {
-        if spec.enemies.checkEnemyHit(es.pos, es.size) {
-          spec.destroyed(es);
+        if spec.enemies.checkEnemyHit(es.ts.pos, es.size) {
+          self.destroyed(es, 0.0);
           return false;
         }
       }
-      if spec.player.checkEnemyHit(es.pos, es.vel, es.size) {
-        spec.destroyed(es);
+      if spec.player.checkEnemyHit(es.ts.pos, es.vel, es.size) {
+        self.destroyed(es, 0.0);
         return false;
       }
       if spec.capturable {
-        spec.checkCaptured(es);
+        self.checkCaptured(es);
       }
       let er: f32 = (1.0 - es.ellipseRatio) + (es.deg + es.ellipseDeg).sin().abs() * es.ellipseRatio * 2.0;
       let rk : f32 = spec.rank;
@@ -670,7 +670,7 @@ trait EnemySpec {
       es.vel.y += es.ts.deg.cos() * es.speed * er * 0.1 * rk;
       es.vel *= 0.9;
       es.ts.pos += es.vel;
-      if spec.isInScreen(es) {
+      if self.isInScreen(es) {
         spec.field.addSlowdownRatio(es.speed * 0.04 * rk);
       }
       es.ts.pos.x = spec.field.normalizeX(es.ts.pos.x);
@@ -688,14 +688,14 @@ trait EnemySpec {
           es.nextPhaseCnt -= 1;
           if es.nextPhaseCnt <= 0 {
             es.phase += 1;
-            if !spec.gotoNextPhase(es) {
+            if !self.gotoNextPhase(es) {
               return false;
             }
           }
         }
         cp.x = spec.field.normalizeX(cp.x);
         let dst : f32 = spec.field.calcCircularDist2(cp, es.ts.pos);
-        es.ts.speed += ((es.baseSpeed * (1 + dst * 0.1)) - es.ts.speed) * 0.05;
+        es.ts.speed += ((es.baseSpeed * (1.0 + dst * 0.1)) - es.ts.speed) * 0.05;
         let mut av : f32 = spec.angVel * rk;
         let mut td : f32 = (spec.field.normalizeX(-(cp.x - es.ts.pos.x)), cp.y - es.ts.pos.y).atan2();
         let mut ad : f32 = normalize_deg(td - es.ts.deg);
@@ -709,7 +709,7 @@ trait EnemySpec {
         }
         //assert(deg <>= 0);
         for i in 0..spec.turretNum {
-          let ts : TurretState = es.turretStates[i];
+          let ts : TurretState = es.turretStates[i as usize];
           let tx : f32 = es.ts.pos.x;
           let ty : f32 = es.ts.pos.y;
           match i {
@@ -719,26 +719,26 @@ trait EnemySpec {
           }
           let turretDeg : f32 = (spec.field.normalizeX(-(spec.player.pos.x - tx)), spec.player.pos.y - ty).atan2();
           match spec.gameState.mode {
-            GameState::Mode::CLASSIC => {
-              if (turretDeg >= 0) && (turretDeg < (PI - PI / 6.0)) {
-                turretDeg = PI - PI / 6;
-              } else if (turretDeg < 0) && turretDeg > (-PI + PI / 6.0) {
-                turretDeg = -PI + PI / 6;
+            GameStateMode::CLASSIC => {
+              if (turretDeg >= 0.0) && (turretDeg < (PI - PI / 6.0)) {
+                turretDeg = PI - PI / 6.0;
+              } else if (turretDeg < 0.0) && turretDeg > (-PI + PI / 6.0) {
+                turretDeg = -PI + PI / 6.0;
              }
              turretDeg = ((((turretDeg + PI / 64.0) / (PI / 32.0)) as i32) as f32) * (PI / 32.0);
             },
-            GameState::Mode::BASIC => {
-              if (turretDeg >= 0) && (turretDeg < (PI - PI / 4.0)) {
+            GameStateMode::BASIC => {
+              if (turretDeg >= 0.0) && (turretDeg < (PI - PI / 4.0)) {
                turretDeg = PI - PI / 4.0;
-              } else if (turretDeg < 0) && (turretDeg > (-PI + PI / 4.0)) {
+              } else if (turretDeg < 0.0) && (turretDeg > (-PI + PI / 4.0)) {
                turretDeg = -PI + PI / 4.0;
               }
             },
-            GameState::Mode::MODERN => {}
+            GameStateMode::MODERN => {}
           };
           ts.update(tx, ty, turretDeg);
         }
-        spec.movePhase(es);
+        self.movePhase(es);
         es.sizeVel.x += (es.targetSize.x - es.size.x) * 0.2;
         es.sizeVel.y += (es.targetSize.y - es.size.y) * 0.2;
         es.size += es.sizeVel;
@@ -763,7 +763,7 @@ trait EnemySpec {
         }
       },
       2 => {
-        let cx : f32 = spec.calcCapturePosX(es.captureIdx);
+        let cx : f32 = self.calcCapturePosX(es.captureIdx);
         es.vel.x += (spec.player.pos.x + cx - es.ts.pos.x) * 0.03;
         es.ts.pos.x += (spec.player.pos.x + cx - es.ts.pos.x) * 0.1;
         es.ts.pos.y += (spec.player.pos.y - es.ts.pos.y) * 0.33;
@@ -774,7 +774,7 @@ trait EnemySpec {
         }
       },
       3 => {
-        let cx : f32 = spec.calcCapturePosX(es.captureIdx);
+        let cx : f32 = self.calcCapturePosX(es.captureIdx);
         es.ts.pos.x = spec.player.pos.x + cx;
         es.ts.pos.y = spec.player.pos.y;
         es.ts.deg = spec.player.deg;
@@ -788,9 +788,9 @@ trait EnemySpec {
   fn calcCapturePosX(&self, idx : i32) -> f32 {
     let spec = self.get_enemyspec_data();
     if (idx % 2) == 0 {
-      ((idx / 2) + 0.5) * PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH * spec.player.capturedEnemyWidth
+      ((idx as f32 / 2.0) + 0.5) * PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH * spec.player.capturedEnemyWidth
     } else {
-      -((idx / 2) + 0.5) * PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH * spec.player.capturedEnemyWidth
+      -((idx as f32 / 2.0) + 0.5) * PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH * spec.player.capturedEnemyWidth
     }
   }
 
@@ -798,14 +798,14 @@ trait EnemySpec {
     let spec = self.get_enemyspec_data();
     //with (es) {
       if spec.player.isInTractorBeam(es.ts.pos) {
-        if spec.gameState.mode != GameState::Mode::MODERN {
+        if spec.gameState.mode != GameStateMode::MODERN {
           let idx : i32 = spec.player.addCapturedEnemy(es.enemy);
           if idx >= 0 {
             es.captureState = 1;
             es.captureIdx = idx;
           }
         } else {
-          spec.provacated(es);
+          self.provacated(es);
         }
       }
     //}
@@ -837,28 +837,28 @@ trait EnemySpec {
       let b : f32 = 0.5 + rand.nextFloat(0.5);
       for i in 0..10 {
         let p : Particle = spec.particles.getInstanceForced();
-        let d : f32 = dd + rand.nextSignedFloat(PI / 4);
+        let d : f32 = dd + rand.nextSignedFloat(PI / 4.0);
         p.set(Particle.Shape.LINE, es.ts.pos.x, es.ts.pos.y, d, 0.1 + rand.nextFloat(0.5), 1,
               r, g, b, 30 + rand.nextInt(30));
         p = spec.particles.getInstanceForced();
-        d = dd + PI + rand.nextSignedFloat(PI / 4);
+        d = dd + PI + rand.nextSignedFloat(PI / 4.0);
         p.set(Particle.Shape.LINE, es.ts.pos.x, es.ts.pos.y, d, 0.1 + rand.nextFloat(0.5), 1,
               r, g, b, 30 + rand.nextInt(30));
       }
       if es.shield <= 0 {
-        spec.destroyed(es, dd);
+        self.destroyed(es, dd);
         return true;
       }
       match spec.gameState.mode {
-       GameState::Mode::CLASSIC => {
+       GameStateMode::CLASSIC => {
         es.ts.targetSize.x *= 1.3;
         es.ts.targetSize.y *= 1.3;
         },
-      GameState::Mode::BASIC => {
+      GameStateMode::BASIC => {
         es.ts.targetSize.x *= 1.2;
         es.ts.targetSize.y *= 1.2;
         },
-      GameState::Mode::MODERN => {
+      GameStateMode::MODERN => {
         es.ts.targetSize.x *= 1.01;
         es.ts.targetSize.y *= 1.01;
         },
@@ -891,7 +891,7 @@ trait EnemySpec {
         p.set(Particle.Shape.QUAD, es.ts.pos.x, es.ts.pos.y, d, 0.1 + rand.nextFloat(0.1),
               (1 + rand.nextFloat(0.5)) * sz, r, g, b, 50 + rand.nextInt(100));
       }
-      if !spec.isBeingCaptured(es) {
+      if !self.isBeingCaptured(es) {
         if spec.removeBullets {
           let mut cnt : i32 = 1;
           spec.bullets.removeAround(cnt, es.ts.pos, spec.particles, spec.bonusParticles, spec.player);
@@ -906,7 +906,7 @@ trait EnemySpec {
                 1.0 + (wc as f32) / 75.0, 1, 1, 1, 120, false, cnt, wc);
           spec.player.addScore(spec.score * cnt);
         } else {
-          if spec.gameState.mode == GameState::Mode::BASIC {
+          if spec.gameState.mode == GameStateMode::BASIC {
             let oy : f32 = es.ts.pos.y - spec.player.pos.y;
             let mut pm : i32 = (18.0 - oy) as i32;
             if pm > 16 {
@@ -925,8 +925,7 @@ trait EnemySpec {
         }
         spec.player.addMultiplier(0.1);
         if spec.stage.existsCounterBullet {
-          let blt : Bullet = spec.bullets.getInstance();
-          if blt {
+          if let Some(blt) = spec.bullets.getInstance() {
             blt.set(spec.counterBulletSpec, es.ts.pos,
                     spec.turretStates[0].deg, spec.turretSpecs[0].speed * TurretSpec_SPEED_RATIO);
           }
@@ -965,9 +964,9 @@ trait EnemySpec {
       -300 => {
         let mut cpw : f32;
         match spec.gameState.mode {
-          GameState::Mode::CLASSIC => { cpw = 0.2; },
-          GameState::Mode::BASIC => { cpw = 0.2; },
-          GameState::Mode::MODERN => { cpw = 0.4; },
+          GameStateMode::CLASSIC => { cpw = 0.2; },
+          GameStateMode::BASIC => { cpw = 0.2; },
+          GameStateMode::MODERN => { cpw = 0.4; },
         }
         es.centerPos.x = rand.nextSignedFloat(spec.field.size.x * cpw);
         es.centerPos.y = spec.field.size.y * 2.0;
@@ -1109,8 +1108,8 @@ trait EnemySpec {
       },
       _ => {},
       };
-      if spec.isInAttack(es) {
-        if (spec.gameState.mode == GameState::Mode::MODERN) || (es.phase >= 0) || (rand.nextInt(5) == 0) {
+      if self.isInAttack(es) {
+        if (spec.gameState.mode == GameStateMode::MODERN) || (es.phase >= 0) || (rand.nextInt(5) == 0) {
           for i in 0..spec.turretNum {
             spec.turretSpecs[i].move(spec.turretStates[i], es.rank, es.anger);
           }
@@ -1246,17 +1245,17 @@ impl MiddleEnemySpec {
       ts = TurretSpec::new(field, bullets, player, enemies, particles, stage, bulletSpec, gameState);
     }
     match gameState.mode {
-    GameState::Mode::CLASSIC => {
+    GameStateMode::CLASSIC => {
       inst.shield = 2;
       inst.capturable = false;
       inst.removeBullets = false;
     },
-    GameState::Mode::BASIC => {
+    GameStateMode::BASIC => {
       inst.shield = 3;
       inst.capturable = false;
       inst.removeBullets = false;
     },
-    GameState::Mode::MODERN => {
+    GameStateMode::MODERN => {
       inst.shield = 32;
       inst.capturable = true;
       inst.removeBullets = true;
@@ -1290,14 +1289,14 @@ impl EnemySpec for MiddleEnemySpec {
     self.es.rank = r.sqrt();
     let mut tr : f32;
     match self.es.gameState.mode {
-    GameState::Mode::CLASSIC => {
+    GameStateMode::CLASSIC => {
       self.es.rank = self.es.rank.sqrt();
       tr = r * 2.0;
       },
-    GameState::Mode::BASIC => {
+    GameStateMode::BASIC => {
       tr = r * 3.0;
       },
-    GameState::Mode::MODERN => {
+    GameStateMode::MODERN => {
       self.es.rank = 1.0;
       tr = r * 15.0;
       },
@@ -1307,7 +1306,7 @@ impl EnemySpec for MiddleEnemySpec {
     }
     self.es.turretSpecs[0].setRankMiddle(tr);
     self.es.turretNum = 1;
-    if self.es.gameState.mode == GameState::Mode::MODERN {
+    if self.es.gameState.mode == GameStateMode::MODERN {
       let ts : TurretSpec = self.es.turretSpecs[0];
       let ptn : i32 = rand.nextInt(6);
       if ptn == 1 || ptn == 2 || ptn == 4 {
@@ -1372,12 +1371,12 @@ impl EnemySpec for MiddleEnemySpec {
       }
       match es.phase {
       1 => {
-        if (self.es.gameState.mode != GameState::Mode::MODERN) && !self.es.player.hasCollision {
+        if (self.es.gameState.mode != GameStateMode::MODERN) && !self.es.player.hasCollision {
           es.phase = 0;
           es.nextPhaseCnt = self.es.calcStandByTime(es);
         } else {
           Sound::playSe("flying_down.wav");
-          if self.es.gameState.mode != GameState::Mode::MODERN {
+          if self.es.gameState.mode != GameStateMode::MODERN {
             es.centerPos.x = self.field.size.x * (0.6 + rand.nextSignedFloat(0.1));
             if rand.nextInt(2) == 0 {
               es.centerPos.x *= -1;
@@ -1393,7 +1392,7 @@ impl EnemySpec for MiddleEnemySpec {
         }
       },
       2 => {
-        if self.es.gameState.mode != GameState::Mode::MODERN {
+        if self.es.gameState.mode != GameStateMode::MODERN {
           es.centerPos.x *= -0.9;
           es.centerPos.y = self.field.size.y * (0.2 + rand.nextFloat(0.2));
           es.nextPhaseCnt = 60;
@@ -1405,7 +1404,7 @@ impl EnemySpec for MiddleEnemySpec {
         }
       },
       3 => {
-        if self.es.gameState.mode != GameState::Mode::MODERN {
+        if self.es.gameState.mode != GameStateMode::MODERN {
           es.centerPos.x = es.standByPos.x;
           es.centerPos.y = es.standByPos.y;
           es.phase = 0;
@@ -1432,7 +1431,7 @@ impl EnemySpec for MiddleEnemySpec {
   }
 
   fn calcStandByTime(&self, es : &EnemyState) -> i32 {
-    if (es.phase < 0) || (self.es.gameState.mode == GameState::Mode::MODERN) {
+    if (es.phase < 0) || (self.es.gameState.mode == GameStateMode::MODERN) {
       30 + rand.nextInt(30)
     } else {
       200 + rand.nextInt(150)
@@ -1454,9 +1453,9 @@ trait SmallEnemySpec { //: EnemySpec {
           shape : shape, trailShape : trailShape, bulletSpec : bulletSpec, counterBulletSpec : counterBulletSpec, gameState : gameState}};
     inst.turretSpecs[0] = TurretSpec::new(field, bullets, player, enemies, particles, stage, bulletSpec, gameState);
     inst.shild = match gameState.mode {
-      GameState::Mode::CLASSIC => 1,
-      GameState::Mode::BASIC => 1,
-      GameState::Mode::MODERN => 2,
+      GameStateMode::CLASSIC => 1,
+      GameStateMode::BASIC => 1,
+      GameStateMode::MODERN => 2,
     };
     inst.capturable = true;
     inst.score = 10;
@@ -1480,30 +1479,31 @@ trait SmallEnemySpec { //: EnemySpec {
   }
 
   fn SmallEnemySpec_init(self_ : &mut EnemySpec, es : &mut EnemyState) {
-    self_.es.gotoNextPhaseInAppearing(es);
+    self_.gotoNextPhaseInAppearing(es);
   }
 
   fn SmallEnemySpec_setRank(self_ : &mut EnemySpec, r : f32) {
-    self_.es.rank =(r * 0.5).sqrt();
+    let es = self_.get_enemyspec_data();
+    es.rank = (r * 0.5).sqrt();
     let mut tr : f32;
-    match self_.es.gameState.mode {
-    GameState::Mode::CLASSIC => {
-      self_.es.rank = self_.es.rank.sqrt();
+    match es.gameState.mode {
+    GameStateMode::CLASSIC => {
+      es.rank = es.rank.sqrt();
       tr = r;
     },
-    GameState::Mode::BASIC => {
+    GameStateMode::BASIC => {
       tr = r * 2.0;
     },
-    GameState::Mode::MODERN => {
-      self_.es.rank = 1.0;
+    GameStateMode::MODERN => {
+      es.rank = 1.0;
       tr = r;
     },
     };
-    if self_.es.rank < 1.0 {
-      self_.es.rank = 1;
+    if es.rank < 1.0 {
+      es.rank = 1.0;
     }
-    self_.es.turretSpecs[0].setRankNormal(tr);
-    self_.es.turretNum = 1;
+    es.turretSpecs[0].setRankNormal(tr, false);
+    es.turretNum = 1;
   }
 
   fn SmallEnemySpec_calcStandByTime(self_ : &EnemySpec, es : &EnemyState) -> i32 {
@@ -1528,9 +1528,9 @@ impl SE1Spec {
 
     inst.turretSpecs[0] = TurretSpec::new(field, bullets, player, enemies, particles, stage, bulletSpec, gameState);
     inst.shild = match gameState.mode {
-      GameState::Mode::CLASSIC => 1,
-      GameState::Mode::BASIC => 1,
-      GameState::Mode::MODERN => 2,
+      GameStateMode::CLASSIC => 1,
+      GameStateMode::BASIC => 1,
+      GameStateMode::MODERN => 2,
     };
     inst.capturable = true;
     inst.score = 10;
@@ -1623,10 +1623,10 @@ impl SE2Spec {
       shape : shape, trailShape : trailShape, bulletSpec : bulletSpec, counterBulletSpec : counterBulletSpec, gameState : gameState}};
 
     inst.turretSpecs[0] = TurretSpec::new(field, bullets, player, enemies, particles, stage, bulletSpec, gameState);
-    inst.shild = match gameState.mode {
-      GameState::Mode::CLASSIC => 1,
-      GameState::Mode::BASIC => 1,
-      GameState::Mode::MODERN => 2,
+    inst.shield = match gameState.mode {
+      GameStateMode::CLASSIC => 1,
+      GameStateMode::BASIC => 1,
+      GameStateMode::MODERN => 2,
     };
     inst.capturable = true;
     inst.score = 10;
@@ -1864,13 +1864,13 @@ impl TurretSpec {
     let mut ir : f32;
     let intervalMax : f32 = INTERVAL_MAX;
     match self.gameState.mode {
-    GameState::Mode::CLASSIC => {
+    GameStateMode::CLASSIC => {
       nr = 0.0;
       br = 0.0;
       ir = (rank * nsr).sqrt() * 2.0;
       self.burstInterval = 3 + rand.nextInt(2);
     },
-    GameState::Mode::BASIC => {
+    GameStateMode::BASIC => {
       if isWide {
         nr = rank * nsr * rr;
         br = 0.0;
@@ -1882,7 +1882,7 @@ impl TurretSpec {
       }
       self.burstInterval = 3 + rand.nextInt(2);
     },
-    GameState::Mode::MODERN => {
+    GameStateMode::MODERN => {
       if isWide {
         nr = rank * nsr * rr;
         br = 0.0;
@@ -1913,7 +1913,7 @@ impl TurretSpec {
     }
     //assert(speed > 0);
     match self.es.ts.gameState.mode {
-    GameState::Mode::CLASSIC => {
+    GameStateMode::CLASSIC => {
       self.speed *= 0.36;
       if self.speed < 0.05 {
         self.speed = 0.05;
@@ -1921,10 +1921,10 @@ impl TurretSpec {
         self.speed = (self.speed * 20).sqrt() / 20;
       }
     },
-    GameState::Mode::BASIC => {
+    GameStateMode::BASIC => {
       self.speed *= 0.33;
     },
-    GameState::Mode::MODERN => {
+    GameStateMode::MODERN => {
       self.speed *= 0.25;
       if self.speed < 0.04 {
         self.speed = 0.04;
@@ -1947,14 +1947,14 @@ impl TurretSpec {
     let mut nwayDegRatio : f32;
     let intervalMax : f32 = INTERVAL_MAX;
     match self.gameState.mode {
-      GameState::Mode::CLASSIC => {
+      GameStateMode::CLASSIC => {
       nr = 0.0;
       br = 0.0;
       ir = (rank * (0.5 + rand.nextSignedFloat(0.3))).sqrt() * 2;
       nwayDegRatio = 0.0;
       self.burstInterval = 3 + rand.nextInt(2);
       },
-    GameState::Mode::BASIC => {
+    GameStateMode::BASIC => {
       if rand.nextInt(3) == 0 {
         nr = 0.0;
         br = (rank * 0.4) * (1.0 + rand.nextSignedFloat(0.2));
@@ -1969,7 +1969,7 @@ impl TurretSpec {
       nwayDegRatio = 0.06;
       self.burstInterval = 3 + rand.nextInt(2);
     },
-    GameState::Mode::MODERN => {
+    GameStateMode::MODERN => {
       let v = rand.nextInt(5);
       if v == 0 {
         rank *= 1.2;
@@ -2015,7 +2015,7 @@ impl TurretSpec {
     }
     //assert(speed > 0);
     match self.gameState.mode {
-    GameState::Mode::CLASSIC => { 
+    GameStateMode::CLASSIC => { 
       self.speed *= 0.36;
       if self.speed < 0.05 {
         self.speed = 0.05;
@@ -2023,10 +2023,10 @@ impl TurretSpec {
         self.speed = (self.speed * 20.0).sqrt / 20.0;
       }
     },
-    GameState::Mode::BASIC => {
+    GameStateMode::BASIC => {
       self.speed *= 0.4;
     },
-    GameState::Mode::MODERN => {
+    GameStateMode::MODERN => {
       self.speed *= 0.22;
       if self.speed < 0.04 {
         self.speed = 0.04;
@@ -2042,7 +2042,7 @@ impl TurretSpec {
         self.speedAccel *= -1.0;
       }
     }
-    if (self.gameState.mode == GameState::Mode::BASIC) && (self.nway > 1) && (rand.nextInt(3) == 0) {
+    if (self.gameState.mode == GameStateMode::BASIC) && (self.nway > 1) && (rand.nextInt(3) == 0) {
       self.speed *= 0.9;
       self.nwaySpeedAccel = (self.speed * (0.2 + (self.nway as f32) * 0.05 + rand.nextFloat(0.1))) / ((self.nway - 1) as f32);
       if rand.nextInt(2) == 0 {
@@ -2137,7 +2137,7 @@ impl TurretSpec {
   }
 
   fn isAbleToFire(&self, p : Vector) -> bool {
-    if self.gameState.mode != GameState::Mode::MODERN {
+    if self.gameState.mode != GameStateMode::MODERN {
       p.y > 0.0
     } else {
       (p.y > 0.0) && (p.dist(self.player.pos) > self.minimumFireDist)

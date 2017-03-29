@@ -29,13 +29,26 @@ pub struct Frame;
 pub struct Screen;
 //pub trait BulletPool {  }
 pub struct Player;
+
+impl Player {
+  pub fn enemiesHasCollision(&self) -> bool { false }
+  pub fn checkEnemyHit(&mut self, p : Vector, v : Vector, size : Vector) -> bool { false }
+}
+
 pub trait ParticlePool {}
 pub struct Stage;
 //pub struct BulletSpec;
-pub struct GameState;
+pub struct GameState {
+  pub mode : GameStateMode,
+}
 pub struct Particle;
 //pub struct Bullet;
-pub struct Rand {
+pub struct Rand;
+
+impl Rand {
+  pub fn nextInt(&self, n : i32) -> i32 {
+    0
+  }
 }
 
 pub struct Sound;

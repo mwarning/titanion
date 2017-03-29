@@ -582,7 +582,7 @@ impl GameState {
   }
 
   fn isInGameAndNotGameOver(&self) -> bool {
-    (selfscene == Scene.IN_GAME && !self._isGameOver)
+    (self.scene == Scene.IN_GAME && !self._isGameOver)
   }
 
   fn isTitle(&self) -> bool {
@@ -601,17 +601,17 @@ impl GameState {
     self._multiplier
   }
 
-  fn inReplay(v : bool) -> bool {
+  fn inReplay(&mut self, vv : bool) -> bool {
     self._inReplay = v;
     v
   }
 
-  fn lastGameScore(v : i32) -> i32 {
+  fn lastGameScore(&mut self, v : i32) -> i32 {
     self._lastGameScore = v;
     v
   }
 
-  fn lastGameMode(v : i32) -> i32 {
+  fn lastGameMode(&mut self, vv : i32) -> i32 {
     self._lastGameMode = v;
     v
   }
@@ -620,7 +620,7 @@ impl GameState {
     self._mode
   }
 
-  fn mode(&self, v : Mode) -> Mode {
+  fn mode(&mut self, v : Mode) -> Mode {
     self._mode = v;
     v
   }
