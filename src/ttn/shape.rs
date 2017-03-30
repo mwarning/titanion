@@ -156,7 +156,7 @@ fn PyramidShape_drawLineShape() {
     glEnd();
 }
 
-struct PlayerShape {
+pub struct PlayerShape {
     displayList : DisplayList,
 }
 
@@ -216,7 +216,7 @@ impl DisplayListShape for PlayerShape {
   }
 }
 
-struct PlayerLineShape {
+pub struct PlayerLineShape {
     displayList : DisplayList,
 }
 
@@ -822,7 +822,7 @@ impl DisplayListShape for Enemy1Shape {
   }
 }
 
-struct Enemy1TrailShape {
+pub struct Enemy1TrailShape {
    displayList : DisplayList,
 }
 
@@ -861,7 +861,7 @@ impl DisplayListShape for Enemy1TrailShape {
   }
 }
 
-struct Enemy2Shape {
+pub struct Enemy2Shape {
     displayList : DisplayList,
 }
 
@@ -922,7 +922,7 @@ impl DisplayListShape for Enemy2Shape {
   }
 }
 
-struct Enemy2TrailShape {
+pub struct Enemy2TrailShape {
     displayList : DisplayList,
 }
 
@@ -961,7 +961,7 @@ impl DisplayListShape for Enemy2TrailShape {
   }
 }
 
-struct Enemy3Shape {
+pub struct Enemy3Shape {
     displayList : DisplayList,
 }
 
@@ -1023,7 +1023,7 @@ impl DisplayListShape for Enemy3Shape {
   }
 }
 
-struct Enemy3TrailShape {
+pub struct Enemy3TrailShape {
     displayList : DisplayList,
 }
 
@@ -1062,7 +1062,7 @@ impl DisplayListShape for Enemy3TrailShape {
   }
 }
 
-struct TriangleParticleShape {
+pub struct TriangleParticleShape {
     displayList : DisplayList,
 }
 
@@ -1172,7 +1172,7 @@ trait PillarShape : DisplayListShape {
   }
 }
 
-struct Pillar1Shape {
+pub struct Pillar1Shape {
     displayList : DisplayList,
 }
 
@@ -1196,7 +1196,7 @@ impl DisplayListShape for Pillar1Shape {
   }
 }
 
-struct Pillar2Shape {
+pub struct Pillar2Shape {
     displayList : DisplayList,
 }
 
@@ -1221,7 +1221,7 @@ impl DisplayListShape for Pillar2Shape {
   }
 }
 
-struct Pillar3Shape {
+pub struct Pillar3Shape {
     displayList : DisplayList,
 }
 
@@ -1244,7 +1244,7 @@ impl DisplayListShape for Pillar3Shape {
   }
 }
 
-struct Pillar4Shape {
+pub struct Pillar4Shape {
     displayList : DisplayList,
 }
 
@@ -1268,7 +1268,7 @@ impl DisplayListShape for Pillar4Shape {
   }
 }
 
-struct OutsidePillarShape {
+pub struct OutsidePillarShape {
     displayList : DisplayList,  
 }
 

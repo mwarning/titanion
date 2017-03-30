@@ -26,7 +26,9 @@ pub fn glLoadIdentity() {}
 pub struct Object;
 pub struct Frame;
 pub struct Screen;
-
+pub struct RecordablePad;
+pub struct Pad;
+pub struct PadState;
 
 pub trait ParticlePool {}
 pub struct Stage;

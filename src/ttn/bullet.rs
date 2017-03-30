@@ -31,6 +31,7 @@ use ttn::dummy::*;
 use ttn::enemy::*;
 use ttn::field::*;
 use util::actor::*;
+use ttn::player::*;
 
 /*
  * Enemies' bullets.

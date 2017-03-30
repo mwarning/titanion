@@ -239,7 +239,7 @@ impl<'a> EnemyPool<'a> {
   }
 }
 
-struct Enemy<'a> {
+pub struct Enemy<'a> {
   //tok : Token<EnemyState, EnemySpec>, //inlined
   state : &'a mut EnemyState,
   spec : &'a mut EnemySpec,
@@ -1188,7 +1188,7 @@ impl Trail {
   }
 }
 
-struct GhostEnemySpec {
+pub struct GhostEnemySpec {
   es : EnemySpecData,
 }
 

@@ -29,44 +29,59 @@ private import src.ttn.sound;
 private import src.ttn.letter;
 */
 
+use std::f32::consts::PI;
+
+use util::vector::*;
+use util::actor::*;
+use ttn::token::*;
+use ttn::enemy::*;
+use ttn::bullet::*;
+use ttn::shape::*;
+use ttn::field::*;
+use ttn::dummy::*;
+
+
 /**
  * Player and shots.
  */
-struct Player {
-  tok : Token!(PlayerState, PlayerSpec),
+pub struct Player<'a> {
+  //tok : Token!(PlayerState, PlayerSpec),
+  pub _exists : bool, //from Actor
+  pub state : &'a mut PlayerState,
+  pub spec : &'a mut PlayerSpec,
+
   hitOffset : Vector,
-  _exists : bool, //inherited by Actor class
 }
 
-impl Actor for Player {
+impl<'a> Actor for Player<'a> {
   fn getExists(&self) -> bool {
     self._exists
   }
-  fn setEexists(&mut self, v : bool)-> bool {
+
+  fn setExists(&mut self, v : bool)-> bool {
     self._exists = v;
     v
   }
 
-  fn init(&mut self) { //, args : &[Object]) {
-    self.tok.init()
-  }
-
-  fn move1(&self) {
-    self.tok.move1();
-  }
-
-  fn draw1(&self) {
-    self.tok.draw1();
+  fn init(&mut self /*Object[] args*/) {
+    self.state = PlayerState::new();
   }
 }
 
+impl<'a> Token<PlayerState, PlayerSpec> for Player<'a> {
+}
+
 impl Player {
-  fn new(spec : PlayerSpec) -> Player {
-    self.tok.state = PlayerState();
-    self.tok.spec = spec;
-    self.tok.spec.setState(state);
-    self.tok.state.setSpec(spec);
-    self.hitOffset = Vector();
+  fn new(spec : &PlayerSpec) -> Player {
+    let mut ins = Player {
+      state : PlayerState::new(),
+      spec : spec,
+      _exists : false, //correct init?
+      hitOffset : Vector::new(),
+    };
+    ins.spec.setState(ins.state);
+    ins.state.setSpec(ins.spec);
+    ins
   }
 
   fn replayMode(&mut self, v : bool) -> bool {
@@ -79,7 +94,7 @@ impl Player {
     self.tok.spec.start();
     self.hitOffset.x = 0.0;
     self.hitOffset.y = 0.0;
-    self.tok.spec.field.setEyePos(pos);
+    self.tok.spec.field.setEyePos(self.pos());
   }
 
   fn checkBulletHit(&self, p : Vector, pp : Vector) -> bool {
@@ -107,8 +122,8 @@ impl Player {
         match self.spec.gameState.mode {
           GameStateMode::CLASSIC => { self.destroy(); },
           GameStateMode::BASIC => {
-          self.hitOffset.x = pos.x - p.x;
-          self.hitOffset.y = pos.y - p.y;
+          self.hitOffset.x = self.pos().x - p.x;
+          self.hitOffset.y = self.pos().y - p.y;
           self.tok.spec.addVelocity(self.tok.state, v, self.hitOffset);
           },
         _ => {},
@@ -126,7 +141,7 @@ impl Player {
 
   fn drawState(&mut self) {
     if self.tok.spec.gameState.mode == GameStateMode::CLASSIC {
-      self.tok.spec.drawState(state);
+      self.tok.spec.drawState(self.state);
     }
   }
 
@@ -138,7 +153,7 @@ impl Player {
     self.tok.spec.tractorBeam.contains(p)
   }
 
-  fn addCapturedEnemy(&mut self, e : Enemy) {
+  fn addCapturedEnemy(&mut self, e : &Enemy) {
     self.tok.state.addCapturedEnemy(e)
   }
 
@@ -174,7 +189,7 @@ impl Player {
     self.state.hasCollision
   }
 
-  fn enemiesHasCollision() -> bool {
+  fn enemiesHasCollision(&self) -> bool {
     match self.tok.spec.gameState.mode {
       GameStateMode::CLASSIC => self.tok.state.hasCollision,
       GameStateMode::BASIC => true,
@@ -191,7 +206,7 @@ struct PlayerState {
   ts : TokenState,
   replayMode : bool,
   spec : PlayerSpec,
-  capturedEnemies : vec<Enemy>,
+  capturedEnemies : Vec<Enemy>,
   capturedEnemyNum : i32,
   respawnCnt : i32,
   isInRespawn : bool,
@@ -223,9 +238,31 @@ struct PlayerState {
 */
 
 impl PlayerState {
-  fn this(&mut self) {
-    self.capturedEnemies = new Enemy[MAX_CAPTURED_ENEMIES_NUM];
-    self.vel = Vector::new();
+  fn new() -> PlayerState {
+      PlayerState{
+        ts : TokenState::new(),
+        replayMode : false,
+        spec : PlayerSpec::new(),
+        capturedEnemies : [],
+        capturedEnemyNum : 0,
+        respawnCnt : 0,
+        isInRespawn : false,
+        invincibleCnt : 0,
+        isInvincible : false,
+        shotCnt : 0,
+        capturedEnemyShotCnt : 0,
+        aPressed : false,
+        bPressed : false,
+        vel : Vector::new(),
+        capturedEnemyWidth : 0.0,
+        colorCnt : 0,
+        isFirstShot : false,
+        captureBeamEnergy : 0.0,
+        captureBeamReleased : false,
+        ghostCnt : 0,
+        ghostShotCnt : 0,
+        midEnemyProvacated : false,
+    }
   }
 
   fn setSpec(&mut self, spec : PlayerSpec) {
@@ -273,7 +310,7 @@ impl PlayerState {
     self.isInvincible = true;
     self.isFirstShot = true;
     self.captureBeamEnergy = 1;
-    self.spec.respawn(this);
+    self.spec.respawn(self);
   }
 
   fn move1(&mut self) {
@@ -319,11 +356,11 @@ impl PlayerState {
     self.isInRespawn = true;
   }
 
-  fn addCapturedEnemy(&mut self, e : Enemy) -> f32 {
+  fn addCapturedEnemy(&mut self, e : &Enemy) -> f32 {
     if self.isInRespawn || (self.capturedEnemyNum >= MAX_CAPTURED_ENEMIES_NUM) {
       return -1;
     }
-    self.capturedEnemies[capturedEnemyNum] = e;
+    self.capturedEnemies[self.capturedEnemyNum as usize] = e;
     self.capturedEnemyNum += 1;
     (self.capturedEnemyNum - 1)
   }
@@ -338,7 +375,7 @@ impl PlayerState {
   }
 
   fn countShotHit(&mut self) {
-    self.captureBeamEnergy += (0.02 / (self.capturedEnemyNum + 1));
+    self.captureBeamEnergy += 0.02 / ((self.capturedEnemyNum as f32) + 1.0);
     if self.captureBeamEnergy > 1 {
       self.captureBeamEnergy = 1;
     }
@@ -354,49 +391,55 @@ const FIRST_SHOT_INTERVAL : f32 = 6;
 const TWIN_SHOT_MAX_NUM : i32 = 2;
 
 struct PlayerSpec {
-  ts : TokenSpec!(PlayerState),
+  ts : TokenSpec<PlayerState>,
   //mixin StaticRandImpl;
-  shots : ShotPool,
-  capturedEnemiesShots : ShotPool,
-  shotSpec : ShotSpec,
-  enemies :  EnemyPool,
-  bullets : BulletPool,
-  particles : ParticlePool,
-  pad : RecordablePad,
-  gameState : GameState,
-  playerState : PlayerState,
-  tractorBeam : TractorBeam,
-  lineShape : Shape,
+  shots : &ShotPool,
+  capturedEnemiesShots : &ShotPool,
+  shotSpec : &ShotSpec,
+  enemies : &EnemyPool,
+  bullets : &BulletPool,
+  particles : &ParticlePool,
+  pad : &RecordablePad,
+  gameState : &GameState,
+  playerState : Option(&PlayerState),
+  tractorBeam : Option(&TractorBeam),
+  lineShape : &Shape,
   bulletHitWidth : f32,
-  ghostEnemySpec : GhostEnemySpec,
-  ghostEnemyShape : EnemyShape,
+  ghostEnemySpec : &GhostEnemySpec,
+  ghostEnemyShape : &EnemyShape,
   shotMaxNum : i32,
 }
 
 impl PlayerSpec {
-  fn this(&mut self, pad : Pad, gameState : GameState,  field : Field,
-              enemies : EnemyPool, bullets : BulletPool, particles : ParticlePool) {
-    self.pad = pad as &RecordablePad;
-    self.gameState = gameState;
-    self.field = field;
-    self.enemies = enemies;
-    self.bullets = bullets;
-    self.particles = particles;
-    self.shots = ShotPool::new();
-    self.shots.init(16);
-    self.capturedEnemiesShots = ShotPool::new();
-    self.capturedEnemiesShots.init(64);
-    self.shotSpec = ShotSpec::new(field, enemies, bullets, gameState);
-    self.shape = PlayerShape::new();
-    self.lineShape = PlayerLineShape::new();
-    self.ghostEnemyShape = Enemy1TrailShape::new();
-    self.ghostEnemySpec = GhostEnemySpec::new(field, ghostEnemyShape);
+  fn new(pad : &Pad, gameState : &GameState,  field : &Field, enemies : &EnemyPool, bullets : &BulletPool, particles : &ParticlePool) {
+    let mut ins = PlayerSpec {
+      ts : TokenSpec::<PlayerState>::new(field, PlayerShape::new()),
+      //mixin StaticRandImpl;
+      shots : ShotPool::new(),
+      capturedEnemiesShots : ShotPool::new(),
+      shotSpec : ShotSpec::new(field, enemies, bullets, gameState),
+      enemies : enemies,
+      bullets : bullets,
+      particles : particles,
+      pad : (pad as &RecordablePad),
+      gameState : gameState,
+      playerState : None,
+      tractorBeam : None,
+      lineShape : PlayerLineShape::new(),
+      bulletHitWidth : 0.0,
+      ghostEnemySpec : GhostEnemySpec::new(field, ghostEnemyShape),
+      ghostEnemyShape : Enemy1TrailShape::new(),
+      shotMaxNum : 0,
+    };
+    ins.shots.init(16);
+    ins.capturedEnemiesShots.init(64);
+    ins
   }
 
   fn setState(&mut self, ps : &PlayerState) {
-    self.playerState = ps;
+    self.playerState = Some(ps);
     self.shotSpec.setPlayerState(ps);
-    self.tractorBeam = TractorBeam::new(field, ps, gameState);
+    self.tractorBeam = TractorBeam::new(self.field, ps, self.gameState);
   }
 
   fn close(&mut self) {
@@ -426,7 +469,7 @@ impl PlayerSpec {
   fn respawn(&mut self, ps : &PlayerState) {
     if self.gameState.mode == GameStateMode::MODERN {
       for i in 0..4 {
-        if let Some(e) = enemies.getInstance() {
+        if let Some(e) = self.enemies.getInstance() {
           e.set(self.ghostEnemySpec, ps.pos.x, ps.pos.y, 0, 0);
           self.playerState.addCapturedEnemy(e);
         } else {
@@ -495,23 +538,23 @@ impl PlayerSpec {
         vy *= 0.7;
       }
 
-      let mut px : f32 = pos.x;
-      pos.x += (vx * speed);
+      let mut px : f32 = ps.pos.x;
+      ps.pos.x += vx * ps.speed;
       if self.gameState.mode == GameStateMode::CLASSIC {
         vy *= 0.5;
       }
-      pos.y += (vy * speed);
+      ps.pos.y += vy * ps.speed;
       if !(input.button & PadState.Button.B) {
-        deg += (-TILT_DEG * (vx * speed) - deg) * 0.1;
+        ps.deg += (-TILT_DEG * (vx * ps.speed) - ps.deg) * 0.1;
       }
       //assert(deg <>= 0);
-      pos += vel;
-      vel *= 0.9;
+      ps.pos += ps.vel;
+      ps.vel *= 0.9;
       if self.gameState.mode == GameStateMode::MODERN {
-        let mut d : f32 = ghostCnt * 0.05;
+        let mut d : f32 = ps.ghostCnt * 0.05;
         for i in 0..self.capturedEnemyNum {
-          let e : Enemy = capturedEnemies[i];
-          e.setGhostEnemyState(pos.x + d.sin() * capturedEnemyWidth * 2.0, pos.y, deg, (d * 180.0 / PI / 3.0) as i32);
+          let e : Enemy = self.capturedEnemies[i];
+          e.setGhostEnemyState(ps.pos.x + d.sin() * ps.capturedEnemyWidth * 2.0, ps.pos.y, ps.deg, (d * 180.0 / PI / 3.0) as i32);
           d += PI / 2.0;
         }
       }
@@ -554,28 +597,28 @@ impl PlayerSpec {
       },
       }
       if self.input.button & PadState.Button.B {
-        speed += (BASE_SPEED * 1.2 - speed) * 0.33;
-        deg *= 0.9;
+        ps.speed += (BASE_SPEED * 1.2 - ps.speed) * 0.33;
+        ps.deg *= 0.9;
         if self.gameState.mode == GameStateMode::MODERN {
-          capturedEnemyWidth -= 0.05;
-          if capturedEnemyWidth < 0.2 {
-            capturedEnemyWidth = 0.2;
+          ps.capturedEnemyWidth -= 0.05;
+          if ps.capturedEnemyWidth < 0.2 {
+            ps.capturedEnemyWidth = 0.2;
           }
         }
       } else {
-        speed += (BASE_SPEED * 2.0 - speed) * 0.33;
-        if self.gameState.mode == GameStateMode::MODERN {
-          self.capturedEnemyWidth += 0.05;
-          if self.capturedEnemyWidth > 1.0 {
-            self.capturedEnemyWidth = 1.0;
+        ps.speed += (BASE_SPEED * 2.0 - ps.speed) * 0.33;
+        if ps.gameState.mode == GameStateMode::MODERN {
+          ps.capturedEnemyWidth += 0.05;
+          if ps.capturedEnemyWidth > 1.0 {
+            ps.capturedEnemyWidth = 1.0;
           }
         }
       }
       match self.gameState.mode {
         GameStateMode::CLASSIC => {
-        if (selfinput.button & PadState.Button.B) &&
+        if (self.input.button & PadState.Button.B) &&
             !self.captureBeamReleased && (self.captureBeamEnergy >= 1.0) &&
-            (self.capturedEnemyNum < PlayerState.MAX_CAPTURED_ENEMIES_NUM) {
+            (self.capturedEnemyNum < MAX_CAPTURED_ENEMIES_NUM) {
           self.captureBeamReleased = true;
           self.isInvincible = true;
           self.invincibleCnt = 99999;
@@ -595,7 +638,7 @@ impl PlayerSpec {
         },
       GameStateMode::BASIC => {
         if (self.input.button & PadState.Button.B) &&
-            (self.capturedEnemyNum < PlayerState.MAX_CAPTURED_ENEMIES_NUM) {
+            (self.capturedEnemyNum < MAX_CAPTURED_ENEMIES_NUM) {
           self.tractorBeam.extendLength();
         } else {
           self.tractorBeam.reduceLength();
@@ -612,10 +655,10 @@ impl PlayerSpec {
       }
       self.tractorBeam.move1();
       if self.shotCnt > 0 {
-        shotCnt -= 1;
+        self.shotCnt -= 1;
       }
       if self.capturedEnemyShotCnt > 0 {
-        capturedEnemyShotCnt -= 1;
+        self.capturedEnemyShotCnt -= 1;
       }
       match self.gameState.mode {
       GameStateMode::CLASSIC => {
@@ -651,11 +694,11 @@ impl PlayerSpec {
 
   fn fireShot(&mut self, ps : &PlayerState) {
     //with (ps) {
-      if self.shots.num >= shotMaxNum {
+      if self.shots.num >= self.shotMaxNum {
         return;
       }
-      if let Some(s) = shots.getInstance() {
-        s.set(shotSpec, pos, deg, 0.66);
+      if let Some(s) = self.shots.getInstance() {
+        s.set(self.shotSpec, ps.pos, ps.deg, 0.66);
         if self.isFirstShot {
           self.isFirstShot = false;
           self.shotCnt += FIRST_SHOT_INTERVAL;
@@ -663,7 +706,7 @@ impl PlayerSpec {
           self.shotCnt += SHOT_INTERVAL;
         }
         self.gameState.countShotFired();
-        self.addShotParticle(self.pos, self.deg);
+        self.addShotParticle(ps.pos, ps.deg);
         Sound.playSe("shot.wav");
         for i in 0..self.capturedEnemyNum {
           if (self.gameState.mode == GameStateMode::MODERN) && ((i + self.ghostShotCnt) % 4 == 0) {
@@ -674,7 +717,7 @@ impl PlayerSpec {
             if !ces {
               break;
             }
-            let mut d : f32 = deg;
+            let mut d : f32 = ps.deg;
             if self.gameState.mode == GameStateMode::MODERN {
               d -= (self.capturedEnemies[i].pos.x - self.pos.x) * 0.3;
             }
@@ -685,7 +728,7 @@ impl PlayerSpec {
             else {
               self.gameState.countShotFired();
             }
-            self.addShotParticle(capturedEnemies[i].pos, deg);
+            self.addShotParticle(self.capturedEnemies[i].pos, ps.deg);
           }
         }
         if self.gameState.mode == GameStateMode::MODERN {
@@ -713,10 +756,10 @@ impl PlayerSpec {
     let mut rv : Vector = v.getElement(o, 0.05, 0.25);
     rv *= 5.0;
     ps.vel += rv;
-    let d : f32 = atan2(rv.x, -rv.y);
+    let d : f32 = (rv.x, -rv.y).atan2();
     let sp : f32 = rv.vctSize();
     for i in 0..36 {
-      let mut pt : Particle = particles.getInstanceForced();
+      let mut pt : Particle = self.particles.getInstanceForced();
       let mut r : f32 = 0.5 + rand.nextFloat(0.5);
       let mut g : f32 = 0.3 + rand.nextFloat(0.3);
       let mut b : f32 = 0.8 + rand.nextFloat(0.2);
@@ -727,7 +770,7 @@ impl PlayerSpec {
     Sound.playSe("flick.wav");
   }
 
-  fn destroyed(&mut self, ps : PlayerState) {
+  fn destroyed(&mut self, ps : &PlayerState) {
     //with (ps) {
       if !self.isActive {
         return;
@@ -740,23 +783,23 @@ impl PlayerSpec {
       let mut b : f32 = 0.8 + rand.nextFloat(0.2);
       for i in 0..100 {
         let mut p : Particle = self.particles.getInstanceForced();
-        p.set(Particle.Shape.QUAD, pos.x, pos.y, rand.nextFloat(PI * 2.0), 0.01 + rand.nextFloat(1.0),
+        p.set(Particle.Shape.QUAD, ps.pos.x, ps.pos.y, rand.nextFloat(PI * 2.0), 0.01 + rand.nextFloat(1.0),
               1 + rand.nextFloat(4), r, g, b, 10 + rand.nextInt(200));
       }
       r = 0.5 + rand.nextFloat(0.5);
       g = 0.3 + rand.nextFloat(0.3);
       b = 0.8 + rand.nextFloat(0.2);
       for i in 0..30 {
-        let mut p : Particle = particles.getInstanceForced();
-        p.set(Particle.Shape.TRIANGLE, pos.x, pos.y, rand.nextFloat(PI * 2.0), 0.03 + rand.nextFloat(0.3),
+        let mut p : Particle = self.particles.getInstanceForced();
+        p.set(Particle.Shape.TRIANGLE, ps.pos.x, ps.pos.y, rand.nextFloat(PI * 2.0), 0.03 + rand.nextFloat(0.3),
               3, r, g, b, 50 + rand.nextInt(150));
       }
       r = 0.5 + rand.nextFloat(0.5);
       g = 0.3 + rand.nextFloat(0.3);
       b = 0.8 + rand.nextFloat(0.2);
       for i in 0..300 {
-        let mut p : Particle = particles.getInstanceForced();
-        p.set(Particle.Shape.LINE, pos.x, pos.y, rand.nextFloat(PI * 2.0), 0.07 + rand.nextFloat(0.7),
+        let mut p : Particle = self.particles.getInstanceForced();
+        p.set(Particle.Shape.LINE, ps.pos.x, ps.pos.y, rand.nextFloat(PI * 2.0), 0.07 + rand.nextFloat(0.7),
               1, r, g, b, 100 + rand.nextInt(100));
       }
       Sound.playSe("player_explosion.wav");
@@ -783,12 +826,12 @@ impl PlayerSpec {
       if !self.isActive {
         return;
       }
-      let p : Vector3 = field.calcCircularPos(pos);
-      let cd : f32 = field.calcCircularDeg(pos.x);
+      let p : Vector3 = self.field.calcCircularPos(ps.pos);
+      let cd : f32 = self.field.calcCircularDeg(ps.pos.x);
       if self.hasShape {
-        self.shape.draw(p, cd, deg);
+        self.shape.draw(p, cd, ps.deg);
       }
-      let c : i32 = colorCnt % 60;
+      let c : i32 = ps.colorCnt % 60;
       let mut a : f32;
       if c < 30 {
         a = (c as f32) / 30.0;
@@ -797,7 +840,7 @@ impl PlayerSpec {
         a = 1.0 - ((c - 30) as f32) / 30.0;
       }
       Screen.setColor(a, a, a);
-      self.lineShape.draw(p, cd, deg);
+      self.lineShape.draw(p, cd, ps.deg);
     //}
   }
 
@@ -815,7 +858,7 @@ impl PlayerSpec {
       if self.captureBeamEnergy < 1 {
         a = self.captureBeamEnergy;
       } else {
-        let c  : i32 = colorCnt % 60;
+        let c  : i32 = ps.colorCnt % 60;
         if c < 30 {
           a = (c / 30) as f32;
         }
@@ -989,7 +1032,7 @@ struct TractorBeam {
   field : Field,
   playerState : PlayerState,
   gameState : GameState,
-  shapes : vec!<TractorBeamShape>,
+  shapes : Vec<Box<TractorBeamShape>>,
   length : f32, //= 0;
   cnt : i32,
   isExtending : bool,
@@ -1001,17 +1044,26 @@ struct TractorBeam {
 */
 
 impl TractorBeam {
-  fn this(&mut self, field : &Field, playerState : &PlayerState, gameState : &GameState) {
-    self.field = field;
-    self.playerState = playerState;
-    self.gameState = gameState;
-    self.shapes.push(TractorBeamShapeRed::new());
-    self.shapes.push(TractorBeamShapeBlue::new());
-    self.shapes.push(TractorBeamShapePurple::new());
-    self.shapes.push(TractorBeamShapeDarkRed::new());
-    self.shapes.push(TractorBeamShapeDarkBlue::new());
-    self.shapes.push(TractorBeamShapeDarkPurple::new());
-    self.clear();
+  fn new(field : &Field, playerState : &PlayerState, gameState : &GameState) {
+    TractorBeam {
+      field : field,
+      playerState : playerState,
+      gameState : gameState,
+      shapes : vec![
+        Box::new(TractorBeamShapeRed::new()),
+        Box::new(TractorBeamShapeBlue::new()),
+        Box::new(TractorBeamShapePurple::new()),
+        Box::new(TractorBeamShapeDarkRed::new()),
+        Box::new(TractorBeamShapeDarkBlue::new()),
+        Box::new(TractorBeamShapeDarkPurple::new())
+      ],
+      length : 0,
+      cnt : 0,
+      isExtending : false,
+    }
+
+    //ins.clear(); //not needed anymore
+    //ins
   }
 
   fn clear(&mut self) {
@@ -1065,7 +1117,7 @@ impl TractorBeam {
         break;
       }
       glPushMatrix();
-      let p : Vector3 = field.calcCircularPos(self.playerState.pos.x, self.playerState.pos.y + y);
+      let p : Vector3 = self.field.calcCircularPos(self.playerState.pos.x, self.playerState.pos.y + y);
       Screen::glTranslate(p);
       let mut s : f32 = y;
       if s > 1.0 {
@@ -1076,7 +1128,7 @@ impl TractorBeam {
       GameStateMode::CLASSIC => { self.shapes[c % 3].draw(); },
       GameStateMode::BASIC => { self.shapes[c % 3].draw(); },
       GameStateMode::MODERN => {
-        if (playerState.midEnemyProvacated) {
+        if playerState.midEnemyProvacated {
           self.shapes[c % 3].draw();
         }
         else {
