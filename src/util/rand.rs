@@ -56,7 +56,7 @@ impl Rand {
     //let timer = TickDuration.currSystemTick().nsecs();
     //init_genrand(timer as u32);
 
-    State { state : [0u32; N], left : 1, initf : 0, next : 0 }
+    Rand { state : [0u32; N], left : 1, initf : 0, next : 0 }
   }
 
   fn setSeed(&mut self, n : i64) {
@@ -90,7 +90,6 @@ impl Rand {
   fn nextSignedFloat(&mut self, n : f32 /*= 1*/) -> f32 {
     (self.genrand_real1() as f32) * (n * 2.0) - n
   }
-}
 
 /* 
    MT.d
@@ -333,11 +332,10 @@ impl Rand {
   }
 
   /* generates a random number on [0,1) with 53-bit resolution*/
-  fn genrand_res53(&mut self) -> f64() 
+  fn genrand_res53(&mut self) -> f64
   {
     let a : u32 = self.genrand_int32() >> 5;
     let b : u32 = self.genrand_int32() >> 6;
     ((a as f64) * 67108864.0 + (b as f64)) * (1.0 / 9007199254740992.0)
   }
-
 }

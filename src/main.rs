@@ -9,6 +9,7 @@ mod util {
 	pub mod vector;
 	pub mod actor;
 	pub mod math;
+	pub mod rand;
 	pub mod sdl {
 		pub mod displaylist;
 	}
