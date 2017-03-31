@@ -26,6 +26,7 @@ use std::f32::consts::PI;
 
 use util::vector::*;
 use util::actor::*;
+use util::rand::*;
 use ttn::token::*;
 use ttn::shape::*;
 use ttn::bullet::*;

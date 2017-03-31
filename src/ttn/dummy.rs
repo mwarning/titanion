@@ -1,7 +1,7 @@
 
 
 use util::vector::*;
-
+use util::rand::*;
 
 //dummy
 pub enum GameStateMode {
@@ -30,9 +30,6 @@ pub struct RecordablePad;
 pub struct Pad;
 pub struct PadState;
 pub struct ShotShape;
-//pub struct PillarPool;
-//pub struct PillarSpec;
-//pub struct PillarShape;
 
 pub trait ParticlePool {}
 pub struct Stage;
@@ -45,13 +42,7 @@ pub struct GameState {
   pub sound_rand : Rand,
 }
 pub struct Particle;
-pub struct Rand;
 
-impl Rand {
-  pub fn nextInt(&self, n : i32) -> i32 {
-    0
-  }
-}
 
 pub struct Sound;
 
@@ -71,20 +62,7 @@ impl Letter {
 	}
 }
 
-impl Rand {
-  pub fn nextFloat(&mut self, n : f32 /*n = 1*/) -> f32 {
-    0.0
-  }
-
-  pub fn nextSignedFloat(&mut self, n : f32 /*= 1*/) -> f32 {
-    0.0
-  }
-}
-
 pub const TurretSpec_SPEED_RATIO : f32 = 0.0;
-
-
-//pub static rand : Rand = Rand{};
 
 
 pub const PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH : f32 = 1.2;

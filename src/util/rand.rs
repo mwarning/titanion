@@ -43,7 +43,7 @@ const LMASK : u32 = 0x7fffffff; /* least significant r bits */
 fn MIXBITS(u : u32, v : u32) -> u32 { (u & UMASK) | (v & LMASK) }
 fn TWIST(u : u32, v : u32) -> u32 { (MIXBITS(u,v) >> 1) ^ (if (v & 1) != 0 {MATRIX_A} else {0}) }
 
-struct Rand {
+pub struct Rand {
   state : [u32; N], /* the array for the state vector  */
   //uint state[N]; /* the array for the state vector  */
   left : usize,
