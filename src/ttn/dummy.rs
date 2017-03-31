@@ -30,9 +30,9 @@ pub struct RecordablePad;
 pub struct Pad;
 pub struct PadState;
 pub struct ShotShape;
-pub struct PillarPool;
-pub struct PillarSpec;
-pub struct PillarShape;
+//pub struct PillarPool;
+//pub struct PillarSpec;
+//pub struct PillarShape;
 
 pub trait ParticlePool {}
 pub struct Stage;

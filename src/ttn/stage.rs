@@ -324,7 +324,7 @@ impl Stage {
 
   fn initPillars(&mut self) {
     self.pillars.setEnd();
-    let mut pp /*: Pillar*/ = None;
+    let mut pp : Option(&Pillar) = None;
     let mut pln : i32 = 0;
     let pn = self.phaseNum;
     let mut pshapes = Vec::new();
@@ -383,32 +383,28 @@ impl Stage {
       let dst : f32 = sp * 6.0;
       let er : f32 = rand.nextFloat(0.8);
       let ed : f32 = rand.nextFloat(PI * 2.0);
-      let fe : &Enemy = null;
+      let fe : Option(&Enemy) = None;
       let fir : f32 = 0.0;
       for i in 0..self.smallEnemyNum {
-        let e = self.enemies.getInstance();
-        if !e {
+        if let Some(e) = self.enemies.getInstance() {
+          let appPattern : i32 = self.formationIdx % 2;
+          let ses = match self.formationIdx % 3 {
+            0 => (self.smallEnemy1Spec as &SmallEnemySpec),
+            1 => (self.smallEnemy1Spec as &SmallEnemySpec),
+            2 => (self.smallEnemy2Spec as &SmallEnemySpec),
+          };
+          e.set(ses, x, self.field.size.y * /*Field.*/ PIT_SIZE_Y_RATIO + i * dst, PI, sp);
+          let gd = rand.nextFloat(1) < self.goingDownBeforeStandByRatio;
+          if !fe {
+            e.setSmallEnemyState(sp, av, (i * (dst / sp)) as i32, self.appPattern, er, ed, gd, 0.0, None);
+            fe = Some(e);
+          } else {
+            e.setSmallEnemyState(sp, av, (i * (dst / sp)) as i32, self.appPattern, er, ed, gd, fir, fe);
+          }
+          fir += 1.0 / self.smallEnemyNum;
+        } else {
           break;
         }
-
-        let appPattern : i32 = self.formationIdx % 2;
-        let ses : &SmallEnemySpec = match self.formationIdx % 3 {
-          0 => { self.smallEnemy1Spec as &SmallEnemySpec; },
-          1 => { self.smallEnemy1Spec as &SmallEnemySpec; },
-          2 => { self.smallEnemy2Spec as &SmallEnemySpec; },
-        };
-        e.set(ses, x, self.field.size.y * /*Field.*/ PIT_SIZE_Y_RATIO + i * dst, PI, sp);
-        let mut gd : bool = false;
-        if self.rand.nextFloat(1) < self.goingDownBeforeStandByRatio {
-          gd = true;
-        }
-        if !fe {
-          e.setSmallEnemyState(sp, av, (i * (dst / sp)) as i32, self.appPattern, er, ed, gd);
-          fe = e;
-        } else {
-          e.setSmallEnemyState(sp, av, (i * (dst / sp)) as i32, self.appPattern, er, ed, gd, fir, fe);
-        }
-        fir += 1.0 / self.smallEnemyNum;
       }
       self.smallEnemyFormationNum -= 1;
       self.formationIdx += 1;
@@ -479,7 +475,7 @@ impl Stage {
   }
 
   fn drawGameover(&self) {
-  let hr : f32 = 0;
+  let hr : f32 = 0.0;
     if self.shotFiredNumTotal > 0 {
       hr = (self.shotHitNumTotal as f32) / (self.shotFiredNumTotal as f32);
     }
@@ -492,7 +488,7 @@ impl Stage {
   }
 
   fn attackSmallEnemyNum(&self) -> i32 {
-   self._attackSmallEnemyNum
+    self._attackSmallEnemyNum
   }
 
   fn existsCounterBullet(&self) -> bool {
