@@ -32,6 +32,7 @@ use ttn::bullet::*;
 use ttn::field::*;
 use ttn::player::*;
 use ttn::enemy::*;
+use ttn::pillar::*;
 use ttn::dummy::*;
 
 
@@ -73,7 +74,7 @@ struct Stage {
   counterBulletShape : &RollBulletShapeBase,
   counterBulletLineShape : &RollBulletShapeBase,
   pillarSpec : PillarSpec,
-  pillarShapes : Vec<PillarShape>,
+  pillarShapes : Vec<&PillarShape>,
   outsidePillarShape : &PillarShape,
   smallEnemyNum : i32,
   smallEnemyFormationNum : i32,

@@ -1092,7 +1092,7 @@ impl DisplayListShape for TriangleParticleShape {
 const TICKNESS : f32 = 4.0;
 const RADIUS_RATIO : f32 = 0.3;
 
-trait PillarShape : DisplayListShape {
+pub trait PillarShape : DisplayListShape {
   fn drawPillar(&self, r : f32, g : f32, b : f32, outside : bool /*= false*/) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBegin(GL_QUADS);

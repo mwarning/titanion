@@ -15,17 +15,22 @@ private import src.ttn.enemy;
 */
 
 use ttn::token::*;
+use ttn::field::*;
+use ttn::shape::*;
+use ttn::dummy::*;
+use ttn::bullet::*;
+use ttn::enemy::*;
+use util::actor::*;
 
 /**
  * Pillars at the center and on the background.
  */
 
-struct PillarPool {
+pub struct PillarPool {
   ap : ActorPool<Pillar>,
 }
 
 impl PillarPool {
-
   fn setEnd(&mut self) {
     for a in &self.ap.actors {
       if a.exists {
@@ -52,7 +57,7 @@ impl PillarPool {
   }
 }
 
-struct Pillar<'a> {
+pub struct Pillar<'a> {
   //tok : Token!(PillarState, PillarSpec),
   _exists : bool, //from Actor
   pub state : &'a mut PillarState,
@@ -102,16 +107,16 @@ impl<'a> Pillar<'a> {
   }
 
 
-  fn opCmp(&mut self, o : Object) {
+  fn opCmp(&mut self, o : Object) -> i32 {
     let p = o as &Pillar;
     if !p {
       return 0;
     }
-    (p.pos.y.abs() - pos.y.abs()) as i32
+    (p.pos.y.abs() - self.pos().y.abs()) as i32
   }
 }
 
-struct PillarState {
+pub struct PillarState {
   ts : TokenState,
   previousPillar : Option(&Pillar),
   vy : f32,
@@ -136,7 +141,7 @@ impl PillarState {
 
 static VELOCITY_Y : f32 = 0.025;
 
-struct PillarSpec {
+pub struct PillarSpec {
   ts : TokenSpec<PillarState>,
 }
 
@@ -146,40 +151,38 @@ impl PillarSpec {
     PillarSpec { ts : TokenSpec::<PillarState>::new(), field : field }
   }
 
-  fn move2(&mut self, ps : PillarState) -> bool {
+  fn move2(&mut self, ps : &PillarState) -> bool {
     //with (ps) {
       if !ps.isOutside {
-      vy += VELOCITY_Y;
-        vy *= 0.98;
-        pos.y += vy;
-        if vy > 0 {
-          let mut ty : f32;
-          if self.previousPillar && self.previousPillar.exists {
-            ty = self.previousPillar.pos.y - PillarShape::TICKNESS;
-          }
-          else {
-            ty = maxY;
-          }
-          ty -= PillarShape.TICKNESS;
-          if !self.isEnded && pos.y > ty {
-            vy *= -0.5;
-            pos.y += (ty - pos.y) * 0.5;
-            if self.previousPillar {
-              self.previousPillar.state.vy -= vy * 0.5;
+        ps.vy += VELOCITY_Y;
+        ps.vy *= 0.98;
+        ps.ts.pos.y += ps.vy;
+        if ps.vy > 0 {
+          let mut ty : f32 = if self.previousPillar && self.previousPillar.exists {
+            self.previousPillar.pos.y - PillarShape::TICKNESS
+          } else {
+            ps.maxY
+          };
+          ps.ty -= PillarShape::TICKNESS;
+          if !ps.isEnded && ps.ts.pos.y > ty {
+            ps.vy *= -0.5;
+            ps.ts.pos.y += (ps.ty - ps.ts.pos.y) * 0.5;
+            if let Some(p) = ps.previousPillar {
+              p.state.vy -= ps.vy * 0.5;
             }
           }
-          if pos.y > 100 {
+          if ps.ts.pos.y > 100 {
             return false;
           }
         }
       } else {
-        pos.y -= 0.2;
-        if pos.y < -50 {
+        ps.ts.pos.y -= 0.2;
+        if ps.ts.pos.y < -50 {
           return false;
         }
       }
-      deg += vdeg;
-      true;
+      ps.ts.deg += ps.vdeg;
+      true
     //}
   }
 
