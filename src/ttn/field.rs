@@ -28,7 +28,7 @@ use ttn::dummy::*;
  */
 
 
-const PIT_SIZE_Y_RATIO :f32 = 12.0;
+pub const PIT_SIZE_Y_RATIO :f32 = 12.0;
 const CIRCLE_RADIUS : f32 = 64.0;
 const EYE_POS_DIST_RATIO : f32 = 1.25;
 const X_EXPANSION_RATIO : f32 = 1.0;

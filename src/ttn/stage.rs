@@ -298,7 +298,7 @@ impl Stage {
     self.smallEnemy1Spec = SE1Spec::new
       (self.field, self.bullets, self.player, self.particles, self.bonusParticles, self.enemies,
        self, self.enemy1Shape, self.enemy1TrailShape,
-       self.bulletSpec, self.counterBulletSpec, gameState);
+       self.bulletSpec, self.counterBulletSpec, self.gameState);
     (self.smallEnemy1Spec as SE1Spec).setRank(self.rank * 0.22);
     self.smallEnemy2Spec = SE2Spec::new
       (self.field, self.bullets, self.player, self.particles, self.bonusParticles, self.enemies,
@@ -326,7 +326,7 @@ impl Stage {
     self.pillars.setEnd();
     let mut pp /*: Pillar*/ = None;
     let mut pln : i32 = 0;
-    let pn = phaseNum;
+    let pn = self.phaseNum;
     let mut pshapes = Vec::new();
     while true {
       if pn <= 0 {
@@ -349,11 +349,11 @@ impl Stage {
     }
     let maxY : f32 = -15.0 + pln * 8.0;
     for i in 0..pln {
-      let p = pillars.getInstance();
+      let p = self.pillars.getInstance();
       if !p {
         break;
       }
-      p.set(pillarSpec, -80 - i * 10, maxY, pp, self.pillarShapes[pshapes[i]], (pln - i) * 0.03);
+      p.set(self.pillarSpec, -80 - i * 10, maxY, pp, self.pillarShapes[pshapes[i]], (pln - i) * 0.03);
       pp = p;
     }
   }
@@ -373,7 +373,7 @@ impl Stage {
         let av : f32 = sp * 0.4 + rand.nextSignedFloat(0.005);
         let er : f32 = rand.nextFloat(0.5);
         let ed : f32 = rand.nextFloat(PI * 2.0);
-        me.set(self.middleEnemySpec, x, self.field.size.y * Field.PIT_SIZE_Y_RATIO, PI, sp);
+        me.set(self.middleEnemySpec, x, self.field.size.y * /*Field.*/ PIT_SIZE_Y_RATIO, PI, sp);
         me.setMiddleEnemyState(sp, av, er, ed);
       }
       let mut x : f32 = rand.nextFloat(self.field.circularDistance);
@@ -393,11 +393,11 @@ impl Stage {
 
         let appPattern : i32 = self.formationIdx % 2;
         let ses : &SmallEnemySpec = match self.formationIdx % 3 {
-          0 => { ses = self.smallEnemy1Spec as SmallEnemySpec; },
-          1 => { ses = self.smallEnemy1Spec as SmallEnemySpec; },
-          2 => { ses = self.smallEnemy2Spec as SmallEnemySpec; },
+          0 => { self.smallEnemy1Spec as &SmallEnemySpec; },
+          1 => { self.smallEnemy1Spec as &SmallEnemySpec; },
+          2 => { self.smallEnemy2Spec as &SmallEnemySpec; },
         };
-        e.set(ses, x, self.field.size.y * Field.PIT_SIZE_Y_RATIO + i * dst, PI, sp);
+        e.set(ses, x, self.field.size.y * /*Field.*/ PIT_SIZE_Y_RATIO + i * dst, PI, sp);
         let mut gd : bool = false;
         if self.rand.nextFloat(1) < self.goingDownBeforeStandByRatio {
           gd = true;
@@ -427,7 +427,7 @@ impl Stage {
     }
     self.cnt += 1;
     self.moveOutsidePillars();
-    if enemies.numInScreen() > 0 {
+    if self.enemies.numInScreen() > 0 {
       self.gameState.mulMultiplier(0.999);
     }
     if self.stageStarted && self.enemies.num <= 0 {
@@ -437,9 +437,8 @@ impl Stage {
 
   fn moveOutsidePillars(&mut self) {
     if (self.cnt % 120) == 0 {
-      let p : &Pillar = self.pillars.getInstance();
-      if p {
-        p.set(self.pillarSpec, 180, 0, None, self.outsidePillarShape, (((cnt / 120) as i32) % 2 * 2 - 1) * 0.003, true);
+      if let Some(p) = self.pillars.getInstance() {
+        p.set(self.pillarSpec, 180, 0, None, self.outsidePillarShape, (((self.cnt / 120) % 2 * 2 - 1) as f32)  * 0.003, true);
       }
     }
   }
@@ -469,7 +468,7 @@ impl Stage {
       Letter.drawNum((self.hitRatio * 10000) as i32, 480, 310, 6, 3, -1, 2);
       Letter.drawString("BONUS", 200, 350, 6, Letter.Direction.TO_RIGHT, false, 0, 1, 0.33, 0.33);
       Letter.drawNum(self.hitRatioBonus, 440, 350, 6);
-    } else if phaseTime < (PHASE_RESULT_SHOW_CNT + PHASE_START_SHOW_CNT) {
+    } else if self.phaseTime < (PHASE_RESULT_SHOW_CNT + PHASE_START_SHOW_CNT) {
       Letter.drawNum(self.phaseNum, 392, 200, 10);
       Letter.drawString("PHASE", 232, 200, 10);
     }

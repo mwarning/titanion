@@ -1531,7 +1531,7 @@ trait SmallEnemySpec { //: EnemySpec {
   }
 //}
 
-struct SE1Spec {
+pub struct SE1Spec {
   es : EnemySpecData,
 }
 
@@ -1627,7 +1627,7 @@ impl EnemySpec for SE1Spec {
   }
 }
 
-struct SE2Spec {
+pub struct SE2Spec {
   es : EnemySpecData,
 }
 
