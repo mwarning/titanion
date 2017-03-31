@@ -131,7 +131,7 @@ const DISAPPEAR_CNT : f32 = 300.0;
 
 pub struct BulletSpec {
   ts : TokenSpec<BulletState>,
-  player : *mut Player,
+  player : &'static Player<'static>,
   enemies : &'static EnemyPool<'static>,
   particles : *mut ParticlePool,
   lineShape : *mut Shape,
@@ -139,7 +139,7 @@ pub struct BulletSpec {
 }
 
 impl BulletSpec {
-  fn new(field : *mut Field, player : *mut Player, enemies : &'static EnemyPool<'static>, particles : *mut ParticlePool,
+  fn new(field : *mut Field, player : &'static Player, enemies : &'static EnemyPool<'static>, particles : *mut ParticlePool,
               shape : *mut Shape, lineShape : *mut Shape, gameState : *mut GameState) {
     BulletSpec{
       ts : TokenSpec::<BulletState>::new(field, shape),

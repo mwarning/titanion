@@ -21,6 +21,7 @@ mod ttn {
 	pub mod bullet;
 	pub mod field;
 	pub mod player;
+	pub mod stage;
 	pub mod dummy; //skeleton dummies
 }
 

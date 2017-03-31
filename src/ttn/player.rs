@@ -71,8 +71,8 @@ impl<'a> Actor for Player<'a> {
 impl<'a> Token<PlayerState, PlayerSpec> for Player<'a> {
 }
 
-impl Player {
-  fn new(spec : &PlayerSpec) -> Player {
+impl<'a> Player<'a> {
+  fn new(spec : &PlayerSpec) -> Player<'a> {
     let mut ins = Player {
       state : PlayerState::new(),
       spec : spec,
@@ -206,7 +206,7 @@ struct PlayerState {
   ts : TokenState,
   replayMode : bool,
   spec : PlayerSpec,
-  capturedEnemies : Vec<Enemy>,
+  capturedEnemies : Vec<&'static Enemy<'static>>,
   capturedEnemyNum : i32,
   respawnCnt : i32,
   isInRespawn : bool,
@@ -393,25 +393,26 @@ const TWIN_SHOT_MAX_NUM : i32 = 2;
 struct PlayerSpec {
   ts : TokenSpec<PlayerState>,
   //mixin StaticRandImpl;
-  shots : &ShotPool,
-  capturedEnemiesShots : &ShotPool,
-  shotSpec : &ShotSpec,
-  enemies : &EnemyPool,
-  bullets : &BulletPool,
-  particles : &ParticlePool,
-  pad : &RecordablePad,
-  gameState : &GameState,
+  shots : &'static ShotPool<'static>,
+  capturedEnemiesShots : &'static ShotPool<'static>,
+  shotSpec : &'static ShotSpec,
+  enemies : &'static EnemyPool<'static>,
+  bullets : &'static BulletPool,
+  particles : &'static ParticlePool,
+  pad : &'static RecordablePad,
+  gameState : &'static GameState,
   playerState : Option(&PlayerState),
   tractorBeam : Option(&TractorBeam),
-  lineShape : &Shape,
+  lineShape : &'static Shape,
   bulletHitWidth : f32,
-  ghostEnemySpec : &GhostEnemySpec,
-  ghostEnemyShape : &EnemyShape,
+  ghostEnemySpec : &'static GhostEnemySpec,
+  ghostEnemyShape : &'static EnemyShape,
   shotMaxNum : i32,
 }
 
 impl PlayerSpec {
   fn new(pad : &Pad, gameState : &GameState,  field : &Field, enemies : &EnemyPool, bullets : &BulletPool, particles : &ParticlePool) {
+    let ghostEnemyShape = Enemy1TrailShape::new();
     let mut ins = PlayerSpec {
       ts : TokenSpec::<PlayerState>::new(field, PlayerShape::new()),
       //mixin StaticRandImpl;
@@ -428,7 +429,7 @@ impl PlayerSpec {
       lineShape : PlayerLineShape::new(),
       bulletHitWidth : 0.0,
       ghostEnemySpec : GhostEnemySpec::new(field, ghostEnemyShape),
-      ghostEnemyShape : Enemy1TrailShape::new(),
+      ghostEnemyShape : ghostEnemyShape,
       shotMaxNum : 0,
     };
     ins.shots.init(16);
@@ -739,6 +740,8 @@ impl PlayerSpec {
   }
 
   fn addShotParticle(&mut self, p : Vector, d : f32) {
+    let rand = &self.gameState.player_spec_rand;
+
     for i in 0..5  {
       let mut pt : Particle;
       pt = self.particles.getInstanceForced();
@@ -753,6 +756,8 @@ impl PlayerSpec {
   }
 
   fn addVelocity(&mut self, ps : &PlayerState, v : Vector, o : Vector) {
+    let rand = &self.gameState.player_spec_rand;
+
     let mut rv : Vector = v.getElement(o, 0.05, 0.25);
     rv *= 5.0;
     ps.vel += rv;
@@ -771,6 +776,8 @@ impl PlayerSpec {
   }
 
   fn destroyed(&mut self, ps : &PlayerState) {
+    let rand = &self.gameState.player_spec_rand;
+
     //with (ps) {
       if !self.isActive {
         return;
@@ -881,11 +888,11 @@ impl PlayerSpec {
   }
 }
 
-struct ShotPool {
-  ap : ActorPool<Shot>,
+struct ShotPool<'a> {
+  ap : ActorPool<Box<&'a Shot<'a>>>,
 }
 
-impl ShotPool {
+impl<'a> ShotPool<'a> {
   fn checkParent(&mut self) {
     for a in &self.actors {
       if a.exists() {
@@ -896,23 +903,25 @@ impl ShotPool {
     }
   }
 
-  fn num() -> f32 {
+  fn num(&self) -> f32 {
     let mut n = 0;
     for a in &self.actors {
       if a.exists() {
         n += 0;
       }
     }
-    n as u32
+    n as f32
   }
 }
 
-struct Shot {
-  tok : Token<ShotState, ShotSpec>,
-  _exists : bool, //inherited by Actor class
+struct Shot<'a> {
+  //tok : Token<ShotState, ShotSpec>,
+  pub state : &'a mut ShotState,
+  pub spec : &'a mut ShotSpec,
+  _exists : bool, //from Actor
 }
 
-impl Actor for Shot {
+impl<'a> Actor for Shot<'a> {
   fn getExists(&self) -> bool {
     self._exists
   }
@@ -921,20 +930,25 @@ impl Actor for Shot {
     v
   }
 
-  fn init(&mut self) { //, args : &[Object]) {
-    self.tok.init()
+  fn init(&mut self /*Object[] args*/) {
+    self.state = ShotState::new();
   }
 
   fn move1(&self) {
-    self.tok.move1();
+    if !self.spec.move2(self.state) {
+      self.remove();
+    }
   }
 
   fn draw1(&self) {
-    self.tok.draw1();
+    self.spec.draw(self.state);
   }
 }
 
-impl Shot {
+impl<'a> Token<ShotState, ShotSpec> for Shot<'a> {
+}
+
+impl<'a> Shot<'a> {
   fn setParent(&mut self, s : &Shot) {
     self.tok.spec.setParent(self.tok.state, s);
   }
@@ -942,7 +956,7 @@ impl Shot {
 
 struct ShotState {
   ts : TokenState,
-  parent : Shot,
+  parent : &'static Shot<'static>,
   cnt : i32,
 }
 
@@ -956,22 +970,23 @@ impl ShotState {
 
 struct ShotSpec {
   ts : TokenSpec<ShotState>,
-  enemies : EnemyPool,
-  bullets : BulletPool,
-  playerState : PlayerState,
-  gameState : GameState,
+  enemies : &'static EnemyPool<'static>,
+  bullets : &'static BulletPool<'static>,
+  playerState : &'static PlayerState<'static>,
+  gameState : &'static GameState<'static>,
 }
 
 impl ShotSpec {
-  fn this(&mut self, field : Field, enemies : EnemyPool, bullets : BulletPool, gameState : GameState) {
-    self.field = field;
-    self.enemies = enemies;
-    self.bullets = bullets;
-    self.gameState = gameState;
-    self.ts.shape = ShotShape::new();
+  fn new(&field : &mut Field, enemies : &mut EnemyPool, bullets : &mut BulletPool, gameState : &mut GameState) {
+    ShotSpec{
+      ts : TokenSpec::new(field, ShotShape::new()),
+      enemies : enemies,
+      bullets : bullets,
+      gameState : gameState,
+    }
   }
 
-  fn setPlayerState(&mut self, ps : PlayerState) {
+  fn setPlayerState(&mut self, ps : &mut PlayerState) {
     self.playerState = ps;
   }
 
@@ -979,7 +994,7 @@ impl ShotSpec {
     (self.tok.shape as ShotShape).close();
   }
 
-  fn set(ss : ShotState) {
+  fn set(ss : &mut ShotState) {
     ss.parent = None;
     ss.cnt = 0;
   }
@@ -996,11 +1011,11 @@ impl ShotSpec {
         }
       }
       self.stepForward();
-      self.tok.pos.x = self.tok.field.normalizeX(self.tok.pos.x);
-      if !self.tok.field.containsOuterY(self.tok.pos.y) {
+      ss.pos.x = self.tok.field.normalizeX(ss.pos.x);
+      if !self.tok.field.containsOuterY(ss.pos.y) {
         return false;
       }
-      if self.enemies.checkShotHit(pos, deg, 2.0) {
+      if self.enemies.checkShotHit(ss.pos, ss.deg, 2.0) {
         if self.parent {
           self.parent.remove();
         }
@@ -1008,7 +1023,7 @@ impl ShotSpec {
         self.playerState.countShotHit();
         return false;
       }
-      self.cnt += 1;
+      ss.cnt += 1;
       true;
     //}
   }
@@ -1128,7 +1143,7 @@ impl TractorBeam {
       GameStateMode::CLASSIC => { self.shapes[c % 3].draw(); },
       GameStateMode::BASIC => { self.shapes[c % 3].draw(); },
       GameStateMode::MODERN => {
-        if playerState.midEnemyProvacated {
+        if self.playerState.midEnemyProvacated {
           self.shapes[c % 3].draw();
         }
         else {

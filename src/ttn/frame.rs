@@ -309,17 +309,40 @@ struct GameState {
   extendScore : i32,
   proximityMultiplier : i32,
   pmDispCnt : i32,
+  //copied from Radn mixins
+  enemy_spec_rand : Rand,
+  turret_spec_rand : Rand,
+  player_spec_rand : Rand,
+  particle_spec_rand : Rand,
+  sound_rand : Rand;
 }
 
 impl GameState {
 
-  fn this(&mut self, frame : *mut Frame, preference : *mut Preference) {
-    self.frame = frame;
-    self.preference = preference;
-    self.playerShape = PlayerShape();
-    self.playerLineShape = PlayerLineShape();
-    self.clear();
-    self._lastGameScore = -1;
+  fn new(frame : *mut Frame, preference : *mut Preference) -> GameState {
+    GameState {
+      frame : frame,
+      preference : preference;
+      playerShape : PlayerShape::new(),
+      playerLineShape : PlayerLineShape::new(),
+      _lastGameScore : -1,
+
+      //self.clear()
+      score : 0,
+      _multiplier : 1.0,
+      left : 0,
+      gameOverCnt : 0,
+      _isGameOver : false,
+      _paused : false,
+      _inReplay : false,
+      pmDispCnt : 0,
+
+      enemy_spec_rand : Rand::new(),
+      turret_spec_rand : Rand::new(),
+      player_spec_rand : Rand::new(),
+      particle_spec_rand : Rand::new(),
+      sound_rand : Rand::new(),
+    }
   }
 
   fn setStage(&mut self, stage : Stage) {

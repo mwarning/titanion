@@ -288,7 +288,7 @@ impl DisplayListShape for ShotShape {
   }
 }
 
-trait TractorBeamShape : DisplayListShape {
+pub trait TractorBeamShape : DisplayListShape {
     fn drawTractorBeam(&self, r : f32, g : f32, b : f32) {
     Screen_setColor(r, g, b, 0.5);
     glBegin(GL_QUADS);
@@ -317,7 +317,7 @@ trait TractorBeamShape : DisplayListShape {
   }
 }
 
-struct TractorBeamShapeRed {
+pub struct TractorBeamShapeRed {
     displayList : DisplayList,
 }
 
@@ -340,7 +340,7 @@ impl DisplayListShape for TractorBeamShapeRed {
   }
 }
 
-struct TractorBeamShapeBlue {
+pub struct TractorBeamShapeBlue {
     displayList : DisplayList, 
 }
 
@@ -363,7 +363,7 @@ impl DisplayListShape for TractorBeamShapeBlue {
   }
 }
 
-struct TractorBeamShapePurple {
+pub struct TractorBeamShapePurple {
     displayList : DisplayList,
 }
 
@@ -386,7 +386,7 @@ impl DisplayListShape for TractorBeamShapePurple {
   }
 }
 
-struct TractorBeamShapeDarkRed {
+pub struct TractorBeamShapeDarkRed {
     displayList : DisplayList,
 }
 
@@ -409,7 +409,7 @@ impl DisplayListShape for TractorBeamShapeDarkRed {
     }
 }
 
-struct TractorBeamShapeDarkBlue {
+pub struct TractorBeamShapeDarkBlue {
     displayList : DisplayList,
 }
 
@@ -432,7 +432,7 @@ impl DisplayListShape for TractorBeamShapeDarkBlue {
   }
 }
 
-struct TractorBeamShapeDarkPurple {
+pub struct TractorBeamShapeDarkPurple {
     displayList : DisplayList,
 }
 
@@ -515,7 +515,7 @@ impl DisplayListShape for BulletShape {
   }
 }
 
-struct BulletLineShape {
+pub struct BulletLineShape {
     displayList : DisplayList,
 }
 
@@ -548,7 +548,7 @@ impl DisplayListShape for BulletLineShape {
   }
 }
 
-struct MiddleBulletShape {
+pub struct MiddleBulletShape {
     displayList : DisplayList,
 }
 
@@ -617,7 +617,7 @@ impl DisplayListShape for MiddleBulletShape {
   }
 }
 
-struct MiddleBulletLineShape {
+pub struct MiddleBulletLineShape {
     displayList : DisplayList,
 }
 
@@ -655,7 +655,7 @@ impl DisplayListShape for MiddleBulletLineShape {
   }
 }
 
-trait RollBulletShapeBase : BulletShapeBase {
+pub trait RollBulletShapeBase : BulletShapeBase {
   fn draw5(&mut self, pos : Vector3, cd : f32, deg : f32, rd : f32) {
     glPushMatrix();
     Screen_glTranslate(pos);
@@ -666,7 +666,7 @@ trait RollBulletShapeBase : BulletShapeBase {
   }
 }
 
-struct CounterBulletShape {
+pub struct CounterBulletShape {
     displayList : DisplayList,
 }
 
@@ -706,7 +706,7 @@ impl DisplayListShape for CounterBulletShape {
   }
 }
 
-struct CounterBulletLineShape {
+pub struct CounterBulletLineShape {
     displayList : DisplayList,
 }
 
@@ -760,7 +760,7 @@ pub trait EnemyShape : DisplayListShape {
   }
 }
 
-struct Enemy1Shape {
+pub struct Enemy1Shape {
     displayList : DisplayList,
 }
 

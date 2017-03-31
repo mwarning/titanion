@@ -29,12 +29,13 @@ use std::f32::consts::PI;
 
 use util::vector::*;
 use util::actor::*;
+use util::math::*;
 use ttn::token::*;
 use ttn::shape::*;
-use util::math::*;
 use ttn::bullet::*;
 use ttn::field::*;
 use ttn::player::*;
+use ttn::stage::*;
 use ttn::dummy::*;
 
 
@@ -554,9 +555,9 @@ const TURRET_MAX_NUM1 : usize = 3;
 
 struct EnemySpecData {
   ts : TokenSpec<EnemyState>,
-  //mixin StaticRandImpl;
+  //mixin StaticRandImpl; //moved to GameState
   bullets : *mut BulletPool,
-  player : &'static Player,
+  player : &'static Player<'static>,
   particles : *mut ParticlePool,
   bonusParticles : *mut ParticlePool,
   enemies : &'static EnemyPool<'static>,
@@ -627,7 +628,7 @@ fn is_small_enemy_spec(es : &EnemySpec) -> bool {
   (ty == EnemySpecType::SE1Spec) || (ty == EnemySpecType::SE1Spec)
 }
 
-trait EnemySpec {
+pub trait EnemySpec {
   // helpers
   fn get_enemyspec_data(&mut self) -> &mut EnemySpecData;
   fn get_type(&self) -> EnemySpecType;
@@ -831,6 +832,7 @@ trait EnemySpec {
 
   fn hitShot(&mut self, es : &mut EnemyState, dd : f32 /* = 0*/) -> bool {
     let spec = self.get_enemyspec_data();
+    let rand = &spec.gameState.enemy_spec_rand;
     //with (es) {
       es.shield -= 1;
       let r : f32 = 0.5 + rand.nextFloat(0.5);
@@ -872,6 +874,8 @@ trait EnemySpec {
 
   fn destroyed(&mut self, es : &mut EnemyState, dd : f32 /*= 0*/) {
     let spec = self.get_enemyspec_data();
+    let rand = &spec.gameState.enemy_spec_rand;
+
     //with (es) {
       let r : f32 = 0.5 + rand.nextFloat(0.5);
       let g : f32 = 0.1 + rand.nextFloat(0.5);
@@ -938,6 +942,8 @@ trait EnemySpec {
 
   fn provacated(&mut self, es : &mut EnemyState) {
     let spec = self.get_enemyspec_data();
+    let rand = &spec.gameState.enemy_spec_rand;
+
     //with (es) {
       es.anger += (1 - es.anger) * 0.05;
       if es.sizeVel.dist < 0.1 {
@@ -960,6 +966,8 @@ trait EnemySpec {
 
   fn gotoNextPhaseInAppearing(&mut self, es : &mut EnemyState) -> bool {
     let spec = self.get_enemyspec_data();
+    let rand = &self.gameState.enemy_spec_rand;
+
     //with (es) {
       match es.phase {
       -300 => {
@@ -1088,6 +1096,8 @@ trait EnemySpec {
 
   fn movePhase(&mut self, es : &mut EnemyState) {
     let spec = self.get_enemyspec_data();
+    let rand = &self.gameState.enemy_spec_rand;
+
     //with (es) {
       match es.phase {
       -200|-100 => {
@@ -1287,6 +1297,8 @@ impl EnemySpec for MiddleEnemySpec {
   }
 
   fn setRank(&mut self, r : f32) {
+    let rand = &self.es.gameState.enemy_spec_rand;
+
     self.es.rank = r.sqrt();
     let mut tr : f32;
     match self.es.gameState.mode {
@@ -1366,6 +1378,8 @@ impl EnemySpec for MiddleEnemySpec {
   }
 
   fn gotoNextPhase(&self, es : &mut EnemyState) -> bool {
+    let rand = &self.es.gameState.enemy_spec_rand;
+
     //with (es) {
       if es.phase < 0 {
         return self.es.gotoNextPhaseInAppearing(es);
@@ -1432,6 +1446,8 @@ impl EnemySpec for MiddleEnemySpec {
   }
 
   fn calcStandByTime(&self, es : &EnemyState) -> i32 {
+    let rand = &self.es.gameState.enemy_spec_rand;
+
     if (es.phase < 0) || (self.es.gameState.mode == GameStateMode::MODERN) {
       30 + rand.nextInt(30)
     } else {
@@ -1508,6 +1524,9 @@ trait SmallEnemySpec { //: EnemySpec {
   }
 
   fn SmallEnemySpec_calcStandByTime(self_ : &EnemySpec, es : &EnemyState) -> i32 {
+    let spec = self_.get_enemyspec_data();
+    let rand = &spec.gameState.enemy_spec_rand;
+
     60 + rand.nextInt(120)
   }
 //}
@@ -1664,7 +1683,10 @@ impl EnemySpec for SE2Spec {
     SmallEnemySpec_calcStandByTime(self, es)
   }
 
-  fn gotoNextPhase(&self, es : &mut EnemyState) -> bool {
+  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool {
+    let spec = self.get_enemyspec_data();
+    let rand = &spec.gameState.enemy_spec_rand;
+
     //with (es) {
       if es.phase < 0 {
         return self.es.gotoNextPhaseInAppearing(es);
@@ -1773,12 +1795,12 @@ const INTERVAL_MAX : f32 = 90.0;
 
 struct TurretSpec {
   ts : TokenSpec<TurretState>,
-  //mixin StaticRandImpl;
+  //mixin StaticRandImpl; //moved to GameState
   bulletSpec : BulletSpec,
   bullets : BulletPool,
-  player : Player,
-  stage : Stage,
-  gameState : GameState,
+  player : &'static Player<'static>,
+  stage : &'static Stage<'static>,
+  gameState : &'static GameState<'static>,
   interval : i32,
   speed : f32,
   speedAccel : f32,
@@ -1857,6 +1879,8 @@ impl TurretSpec {
   }
 
   fn setRankNormal(&mut self, rank : f32, isWide : bool /*= false*/) {
+    let rand = &self.gameState.turret_spec_rand;
+
     self.initParam();
     let rr : f32 = rand.nextFloat(0.5);
     let nsr : f32 = 0.5 + rand.nextSignedFloat(0.3);
@@ -1941,6 +1965,7 @@ impl TurretSpec {
   }
 
   fn setRankMiddle(&mut self, rank : f32) {
+    let rand = &self.gameState.turret_spec_rand;
     self.initParam();
     let mut nr : f32;
     let mut br : f32;

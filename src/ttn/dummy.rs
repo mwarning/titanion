@@ -29,11 +29,20 @@ pub struct Screen;
 pub struct RecordablePad;
 pub struct Pad;
 pub struct PadState;
+pub struct ShotShape;
+pub struct PillarPool;
+pub struct PillarSpec;
+pub struct PillarShape;
 
 pub trait ParticlePool {}
 pub struct Stage;
 pub struct GameState {
   pub mode : GameStateMode,
+  pub enemy_spec_rand : Rand,
+  pub turret_spec_rand : Rand,
+  pub player_spec_rand : Rand,
+  pub particle_spec_rand : Rand,
+  pub sound_rand : Rand,
 }
 pub struct Particle;
 pub struct Rand;
@@ -75,7 +84,7 @@ impl Rand {
 pub const TurretSpec_SPEED_RATIO : f32 = 0.0;
 
 
-pub static rand : Rand = Rand{};
+//pub static rand : Rand = Rand{};
 
 
 pub const PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH : f32 = 1.2;
