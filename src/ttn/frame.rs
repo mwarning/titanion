@@ -58,10 +58,10 @@ struct Frame {
 //public class Frame: src.util.sdl.frame.Frame {
 impl Frame {
   fn init(&mut self) {
-    Sound.load();
+    Sound::load();
     self.preference = abstractPreference as &Preference;
     self.preference.load();
-    Letter.init();
+    Letter::init();
     self.pad = abstractInput as &Pad;
     self.pad.openJoystick();
     self.screen = abstractScreen as &Screen;
@@ -111,9 +111,9 @@ impl Frame {
   }
 
   fn startInGame(&mut self, mode : i32) {
-    self.gameState.startInGame(mode as GameState.Mode);
+    self.gameState.startInGame(mode as GameState::Mode);
     self.player.replayMode = false;
-    let rp : RecordablePad= pad as &RecordablePad;
+    let rp : RecordablePad = pad as &RecordablePad;
     rp.startRecord();
     let replayData = ReplayData::new();
     replayData.inputRecord = rp.inputRecord;
@@ -166,21 +166,21 @@ impl Frame {
   }
 
   fn move1(&mut self) {
-    self.gameState.move();
-    self.field.move();
+    self.gameState.move1();
+    self.field.move1();
     if self.gameState.isInGame || replayData {
       if !self.gameState.paused {
-        self.stage.move();
-        self.pillars.move();
-        self.player.move();
-        self.enemies.move();
-        self.bullets.move();
-        self.particles.move();
-        self.bonusParticles.move();
+        self.stage.move1();
+        self.pillars.move1();
+        self.player.move1();
+        self.enemies.move1();
+        self.bullets.move1();
+        self.particles.move1();
+        self.bonusParticles.move1();
       }
     }
     if gameState.isTitle {
-      self.title.move();
+      self.title.move1();
     }
   }
 
@@ -302,14 +302,14 @@ struct GameState {
   pauseCnt : i32,
   _isGameOver : bool,
   gameOverCnt : i32,
-  playerShape : PlayerShape,
-  playerLineShape : playerLineShape,
+  playerShape : &PlayerShape,
+  playerLineShape : &playerLineShape,
   _inReplay : bool,
   _mode : Mode,
   extendScore : i32,
   proximityMultiplier : i32,
   pmDispCnt : i32,
-  //copied from Radn mixins
+  //copied from Rand mixins
   enemy_spec_rand : Rand,
   turret_spec_rand : Rand,
   player_spec_rand : Rand,
@@ -345,7 +345,7 @@ impl GameState {
     }
   }
 
-  fn setStage(&mut self, stage : Stage) {
+  fn setStage(&mut self, stage : &Stage) {
     self.stage = stage;
   }
 
@@ -366,22 +366,16 @@ impl GameState {
   }
 
   fn setExtendScore(&mut self) {
-    match self._mode {
-      Mode.CLASSIC => {
-        self.extendScore = 100000;
-      },
-      Mode.BASIC => {
-        self.extendScore = 1000000;
-      },
-      Mode.MODERN => {
-        self.extendScore = 1000000;
-      },
+    self.extendScore = match self._mode {
+      Mode::CLASSIC => 100000;
+      Mode::BASIC => 1000000;
+      Mode::MODERN => 1000000;
     };
     self.nextExtendScore = self.extendScore;
   }
 
   fn startTitle(&mut self) {
-    self.scene = Scene.TITLE;
+    self.scene = Scene::TITLE;
     self.clear();
     self.left = 2;
   }
@@ -391,7 +385,7 @@ impl GameState {
     self._multiplier = 1.0;
     self.left = 0;
     self.gameOverCnt = 0;
-    self._isGameOver = fasle;
+    self._isGameOver = false;
     self._paused = false;
     self._inReplay = false;
     self.pmDispCnt = 0;
@@ -404,8 +398,8 @@ impl GameState {
     self._isGameOver = true;
     self.gameOverCnt = 0;
     Sound::fadeBgm();
-    self._lastGameScore = score;
-    self._lastGameMode = mode;
+    self._lastGameScore = self.score;
+    self._lastGameMode = self.mode;
     self.preference.recordResult(self.score, self._mode);
     self.preference.save();
   }
@@ -474,7 +468,7 @@ impl GameState {
     if self.frame.keys[SDLK_ESCAPE] == SDL_PRESSED {
       if !self.escPressed {
         self.escPressed = true;
-        if self.scene == Scene.IN_GAME {
+        if self.scene == Scene::IN_GAME {
           self.frame.loadLastReplay();
           self.frame.startTitle();
         } else {
@@ -498,9 +492,9 @@ impl GameState {
     }
   }
 
-  fn addScore(sc : i32, noMultiplier : bool /*= false*/) {
+  fn addScore(&mut self, sc : i32, noMultiplier : bool /*= false*/) {
     if !self._isGameOver {
-      if self.noMultiplier {
+      if noMultiplier {
         self.score += sc;
       }
       else {
@@ -512,7 +506,7 @@ impl GameState {
           Sound::playSe("extend.wav");
         }
         self.nextExtendScore += self.extendScore;
-        if self._mode == Mode.MODERN {
+        if self._mode == Mode::MODERN {
           self.extendScore += 1000000;
         }
       }
@@ -525,7 +519,7 @@ impl GameState {
     }
   }
 
-  fn mulMultiplier(&mut mp : f32) {
+  fn mulMultiplier(&mut self, mp : f32) {
     if !self._isGameOver {
       self._multiplier *= mp;
       if self._multiplier < 1.0 {
@@ -565,9 +559,9 @@ impl GameState {
       Letter.drawNum(self._lastGameScore, 360, 5, 7);
       //Letter.drawString(GameState.MODE_NAME[_lastGameMode], 292, 24, 5);
     }
-    Letter::drawNum((_multiplier * 100) as i32, 626, 4, 9, 3, 33, 2);
+    Letter::drawNum((self._multiplier * 100) as i32, 626, 4, 9, 3, 33, 2);
     if self.pmDispCnt > 0 {
-      Letter.drawNum(proximityMultiplier, 626, 30, 7, 0, 33);
+      Letter::drawNum(self.proximityMultiplier, 626, 30, 7, 0, 33);
     }
     self.stage.drawPhaseNum();
     if self.isInGame {
@@ -576,7 +570,7 @@ impl GameState {
       }
       if self._isGameOver {
         if self.gameOverCnt > 60 {
-          Letter.drawString("GAME OVER", 214, 200, 12);
+          Letter::drawString("GAME OVER", 214, 200, 12);
           self.stage.drawGameover();
         }
       } else if self._paused {
@@ -584,7 +578,7 @@ impl GameState {
           Letter::drawString("PAUSE", 290, 420, 7);
         }
       }
-      Letter::drawString(GameState.MODE_NAME[mode], 540, 400, 5);
+      Letter::drawString(GameState.MODE_NAME[self.mode], 540, 400, 5);
     }
   }
 
@@ -601,15 +595,15 @@ impl GameState {
   }
 
   fn isInGame(&self) -> bool {
-    (self.scene == Scene.IN_GAME)
+    (self.scene == Scene::IN_GAME)
   }
 
   fn isInGameAndNotGameOver(&self) -> bool {
-    (self.scene == Scene.IN_GAME && !self._isGameOver)
+    (self.scene == Scene::IN_GAME && !self._isGameOver)
   }
 
   fn isTitle(&self) -> bool {
-    (self.scene == Scene.TITLE)
+    (self.scene == Scene::TITLE)
   }
 
   fn isGameOver(&self) -> bool {
