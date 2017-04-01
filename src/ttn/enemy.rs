@@ -285,9 +285,9 @@ impl<'a> Enemy<'a> {
     };
 
     if let Some(e) = firstEnemy {
-      // (self.tok.spec as SmallEnemySpec).init(self.tok.state, e.tok.state);
+      //(cast(SmallEnemySpec) spec).init(state, firstEnemy.state);
       if is_small_enemy_spec(&self.tok.spec) {
-        SmallEnemySpec_init3(self.tok.state, e.tok.state);
+        (self.tok.spec as &mut SmallEnemySpec).init3(e.tok.state, e.state);
       }
       self.tok.state.isFirstEnemy = false;
     } else {
@@ -392,7 +392,7 @@ const TRAIL_NUM : usize = 64;
 const TRAIL_INTERVAL : i32 = 8;
 const TURRET_MAX_NUM2 : usize = 3;
 
-struct EnemyState {
+pub struct EnemyState {
   ts : TokenState,
   turretStates : [TurretState; TURRET_MAX_NUM2],
   enemy : &'static Enemy<'static>,
@@ -1135,7 +1135,7 @@ pub trait EnemySpec {
   }
 
   fn setRank(&mut self, rank : f32);
-  fn init(&mut self, es : &mut EnemyState);
+  fn init2(&mut self, es : &mut EnemyState);
   fn gotoNextPhase(&self, es : &mut EnemyState) -> bool;
   fn isInAttack(&self, es : &EnemyState) -> bool;
   fn calcStandByTime(&self, es : &EnemyState) -> i32;
@@ -1230,7 +1230,7 @@ impl EnemySpec for GhostEnemySpec {
   fn move2(&mut self, es : &mut EnemyState) -> bool { true }
   fn destroyed(&mut self, es : &mut EnemyState, dd : f32 /*= 0*/) {}
   fn setRank(&mut self, rank : f32) {}
-  fn init(&mut self, es : &mut EnemyState) {}
+  fn init2(&mut self, es : &mut EnemyState) {}
   fn gotoNextPhase(&self, es : &mut EnemyState) -> bool { false }
   fn isInAttack(&self, ses : &EnemyState) -> bool { false }
   fn calcStandByTime(&self, es : &EnemyState) -> i32 { 0 }
@@ -1238,7 +1238,7 @@ impl EnemySpec for GhostEnemySpec {
   fn isCaptured(&self, es : &EnemyState) -> bool { true }
 }
 
-struct MiddleEnemySpec {
+pub struct MiddleEnemySpec {
  es : EnemySpecData,
 }
 
@@ -1287,7 +1287,7 @@ impl EnemySpec for MiddleEnemySpec {
     EnemySpecType::MiddleEnemySpec
   }
 
- fn init(&mut self, es : &mut EnemyState) {
+ fn init2(&mut self, es : &mut EnemyState) {
     //with (es) {
       self.es.size.x = 1.33;
       self.es.size.y = 1.33;
@@ -1480,7 +1480,13 @@ trait SmallEnemySpec { //: EnemySpec {
     inst
   }
 */
-  fn SmallEnemySpec_init3(self_ : &mut EnemySpec, es : &mut EnemyState, fes : &EnemyState) {
+
+pub trait SmallEnemySpec : EnemySpec {
+  fn init2(&mut self, es : &mut EnemyState) {
+    self.gotoNextPhaseInAppearing(es);
+  }
+
+  fn init3(&mut self, es : &mut EnemyState, fes : &mut EnemyState) {
     //with (es) {
       es.centerPos.x = fes.centerPos.x;
       es.centerPos.y = fes.centerPos.y;
@@ -1495,12 +1501,8 @@ trait SmallEnemySpec { //: EnemySpec {
     //}
   }
 
-  fn SmallEnemySpec_init(self_ : &mut EnemySpec, es : &mut EnemyState) {
-    self_.gotoNextPhaseInAppearing(es);
-  }
-
-  fn SmallEnemySpec_setRank(self_ : &mut EnemySpec, r : f32) {
-    let es = self_.get_enemyspec_data();
+  fn setRank(&mut self, r : f32) {
+    let es = self.get_enemyspec_data();
     es.rank = (r * 0.5).sqrt();
     let mut tr : f32;
     match es.gameState.mode {
@@ -1523,13 +1525,14 @@ trait SmallEnemySpec { //: EnemySpec {
     es.turretNum = 1;
   }
 
-  fn SmallEnemySpec_calcStandByTime(self_ : &EnemySpec, es : &EnemyState) -> i32 {
-    let spec = self_.get_enemyspec_data();
+  fn calcStandByTime(&mut self, es : &mut EnemyState) -> i32 {
+    //SmallEnemySpec_calcStandByTime(self, es)
+    let spec = self.get_enemyspec_data();
     let rand = &spec.gameState.enemy_spec_rand;
 
     60 + rand.nextInt(120)
   }
-//}
+}
 
 pub struct SE1Spec {
   es : EnemySpecData,
@@ -1561,6 +1564,9 @@ impl SE1Spec {
   }
 }
 
+impl SmallEnemySpec for SE1Spec {
+}
+
 impl EnemySpec for SE1Spec {
   fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
     self.es.get_enemyspec_data()
@@ -1570,21 +1576,24 @@ impl EnemySpec for SE1Spec {
     EnemySpecType::SE1Spec
   }
 /*
-  //we use SmallEnemySpec_init3 directly
   fn init3(&mut self, es : &mut EnemyState, fes : &EnemyState) {
-    SmallEnemySpec_init3(self, es, fes);
+    (self as &mut SmallEnemySpec).init3(es, fes);
+    //SmallEnemySpec_init3(self, es, fes);
   }
 */
-  fn init(&mut self, es : &mut EnemyState) {
-    SmallEnemySpec_init(self, es);
+  fn init2(&mut self, es : &mut EnemyState) {
+    (self as &mut SmallEnemySpec).init2(es);
+    //SmallEnemySpec_init3(self, es);
   }
 
   fn setRank(&mut self, r : f32) {
-    SmallEnemySpec_setRank(self, r);
+    (self as &mut SmallEnemySpec).setRank(r);
+    //SmallEnemySpec_setRank(self, r);
   }
 
   fn calcStandByTime(&self, es : &EnemyState) -> i32 {
-    SmallEnemySpec_calcStandByTime(self, es)
+    (self as &mut SmallEnemySpec).calcStandByTime(es)
+    //SmallEnemySpec_calcStandByTime(self, es)
   }
 
   fn gotoNextPhase(&self, es : &mut EnemyState) -> bool {
@@ -1666,21 +1675,24 @@ impl EnemySpec for SE2Spec {
     EnemySpecType::SE2Spec
   }
 /*
-//we use SmallEnemySpec_init3 directly
   fn init3(&mut self, es : &mut EnemyState, fes : &EnemyState) {
-    SmallEnemySpec_init3(self, es, fes);
+    (self as &mut SmallEnemySpec).init3(es, fes);
+    //SmallEnemySpec_init3(self, es, fes);
   }
 */
-  fn init(&mut self, es : &mut EnemyState) {
-    SmallEnemySpec_init(self, es);
+  fn init2(&mut self, es : &mut EnemyState) {
+    (self as &mut SmallEnemySpec).init2(es);
+    //SmallEnemySpec_init3(self, es);
   }
 
   fn setRank(&mut self, r : f32) {
-    SmallEnemySpec_setRank(self, r);
+    (self as &mut SmallEnemySpec).setRank(r);
+    //SmallEnemySpec_setRank(self, r);
   }
 
   fn calcStandByTime(&self, es : &EnemyState) -> i32 {
-    SmallEnemySpec_calcStandByTime(self, es)
+    (self as &mut SmallEnemySpec).calcStandByTime(es)
+    //SmallEnemySpec_calcStandByTime(self, es)
   }
 
   fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool {
@@ -1756,7 +1768,7 @@ impl EnemySpec for SE2Spec {
   }
 }
 
-struct TurretState {
+pub struct TurretState {
   ts : TokenState,
   fireCnt : f32,
   burstCnt : f32,
@@ -1793,7 +1805,7 @@ impl TurretState {
 const SPEED_RATIO : f32 = 5.0;
 const INTERVAL_MAX : f32 = 90.0;
 
-struct TurretSpec {
+pub struct TurretSpec {
   ts : TokenSpec<TurretState>,
   //mixin StaticRandImpl; //moved to GameState
   bulletSpec : BulletSpec,

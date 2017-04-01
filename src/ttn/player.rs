@@ -390,7 +390,7 @@ const SHOT_INTERVAL : f32 = 3;
 const FIRST_SHOT_INTERVAL : f32 = 6;
 const TWIN_SHOT_MAX_NUM : i32 = 2;
 
-struct PlayerSpec {
+pub struct PlayerSpec {
   ts : TokenSpec<PlayerState>,
   //mixin StaticRandImpl;
   shots : &'static ShotPool<'static>,

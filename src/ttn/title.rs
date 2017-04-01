@@ -22,10 +22,10 @@ private import src.ttn.frame;
  * Title screen.
  */
 
-struct Title {
-  preference : Preference,
-  pad : RecordablePad,
-  frame : Frame,
+pub struct Title {
+  preference : &Preference,
+  pad : &RecordablePad,
+  frame : &Frame,
   cnt : i32,
   aPressed : bool,
   udPressed : bool,
@@ -35,11 +35,11 @@ struct Title {
   cursorIdx : i32,
 }
 
-impl Default for Title {
-  fn default() -> Title {
+impl Title {
+  fn new() -> Title {
     Title{
       preference : preference,
-      pad : (pad as RecordablePad),
+      pad : (pad as &RecordablePad),
       frame : frame,
       cnt : 0,
       aPressed : false,
@@ -50,9 +50,7 @@ impl Default for Title {
       cursorIdx : 0,
     }
   }
-}
 
-impl Title for Title {
   fn init(&mut self) {
     self.titleTexture = Texture("title.bmp");
   }
@@ -74,9 +72,8 @@ impl Title for Title {
     self.titleSize = 1.0;
   }
 
-  fn move(&mut self) {
-    let input : PadState;
-    self.input = pad.getState(false);
+  fn move1(&mut self) {
+    let input = pad.getState(false);
     if self.input.button & PadState.Button.A {
       if !self.aPressed {
         self.aPressed = true;
@@ -85,17 +82,17 @@ impl Title for Title {
     } else {
       self.aPressed = false;
     }
-    if self.input.dir & (PadState.Dir.UP | PadState.Dir.DOWN) {
+    if self.input.dir & (PadStateDir::UP | PadStateDir::DOWN) {
       if !udPressed {
         self.udPressed = true;
-        if self.input.dir & PadState.Dir.UP) {
+        if self.input.dir & PadStateDir::UP {
           self.cursorIdx -= 1;
-        } else if (input.dir & PadState.Dir.DOWN) {
+        } else if input.dir & PadStateDir::DOWN {
           self.cursorIdx += 1;
         }
         if self.cursorIdx < 0 {
           self.cursorIdx = GameState.MODE_NUM - 1;
-        } else if self.cursorIdx > GameState.MODE_NUM - 1) {
+        } else if self.cursorIdx > (GameState.MODE_NUM - 1) {
           self.cursorIdx = 0;
         }
       }
@@ -120,17 +117,17 @@ impl Title for Title {
     self.drawBoard(self.titlePos.x, self.titlePos.y, 280 * self.titleSize, 64 * self.titleSize);
     glDisable(GL_TEXTURE_2D);
     if (self.cnt % 120) < 60 {
-      let x : 32 = 175.0;
-      let sz : f32 = 6.0;
-      if (self.cnt >= 600) {
+      let x = 175.0;
+      let sz = 6.0;
+      if self.cnt >= 600 {
         let c : i32 = self.cnt - 600;
-        if (c > 75) {
+        if c > 75 {
           c = 75;
         }
         x += c * 4.33;
         sz -= c * 0.045;
       }
-      Letter.drawString("PUSH SHOT BUTTON TO START", x, 440, sz);
+      Letter::drawString("PUSH SHOT BUTTON TO START", x, 440, sz);
     }
     if self.cnt >= 240 {
       self.drawRanking();
@@ -139,7 +136,7 @@ impl Title for Title {
       self.drawTriangle(575, 398, 180);
       self.drawTriangle(575, 417, 0);
     }
-    Letter.drawString(GameState.MODE_NAME[self.cursorIdx], 540, 400, 5);
+    Letter::drawString(GameState.MODE_NAME[self.cursorIdx], 540, 400, 5);
   }
 
   fn drawBoard(x : f32, y : f32, w : f32, h : f32) {
@@ -161,14 +158,14 @@ impl Title for Title {
     glRotatef(d, 0, 0, 1);
     glScalef(5, 5, 1);
     glBegin(GL_TRIANGLE_FAN);
-    Screen.setColor(1, 1, 1, 0.5f);
-    glVertex3f(0, 1.7f, 0);
+    Screen.setColor(1, 1, 1, 0.5);
+    glVertex3f(0, 1.7, 0);
     glVertex3f(1, 0, 0);
     glVertex3f(-1, 0, 0);
     glEnd();
     glBegin(GL_LINE_LOOP);
     Screen.setColor(1, 1, 1, 1);
-    glVertex3f(0, 1.7f, 0);
+    glVertex3f(0, 1.7, 0);
     glVertex3f(1, 0, 0);
     glVertex3f(-1, 0, 0);
     glEnd();
@@ -177,37 +174,37 @@ impl Title for Title {
 
   fn drawRanking(&self) {
     let rn : i32 = (self.cnt - 240) / 30;
-    if rn > Preference.RANKING_NUM {
-      rn = Preference.RANKING_NUM;
+    if rn > Preference::RANKING_NUM {
+      rn = Preference::RANKING_NUM;
     }
-    let y : f32 = 140.0;
+    let y = 140.0;
     for i in 0..rn {
       if self.cnt < 600 {
-        let rstr = case i {
+        let rstr = match i {
           0 => "1ST",
           1 => "2ND",
           2 => "3RD",
           _ => ((i + 1).to_string() + "TH"),
-        }
+        };
 
         if i < 9 {
-          Letter.drawString(rstr, 180, y, 7);
+          Letter::drawString(rstr, 180, y, 7);
         } else {
-          Letter.drawString(rstr, 166, y, 7);
+          Letter::drawString(rstr, 166, y, 7);
         }
       }
-      let mut sx : f32 = 450;
-      let mut sy : f32 = y;
-      let mut sz : f32 = 6;
+      let mut sx = 450.0;
+      let mut sy = y;
+      let mut sz = 6.0;
       if self.cnt >= 600 {
         let c : i32 = cnt - 600;
         if c > 75 {
           c = 75;
         }
-        sx += (c * 2.35) as i32
+        sx += (c * 2.35) as i32;
         sz -= c * 0.03;
       }
-      Letter.drawNum(preference.highScore[self.cursorIdx][i], sx, sy, sz);
+      Letter::drawNum(preference.highScore[self.cursorIdx][i], sx, sy, sz);
       y += 24;
     }
   }

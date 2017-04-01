@@ -378,15 +378,15 @@ impl Stage {
         me.set(self.middleEnemySpec, x, self.field.size.y * /*Field.*/ PIT_SIZE_Y_RATIO, PI, sp);
         me.setMiddleEnemyState(sp, av, er, ed);
       }
-      let mut x : f32 = rand.nextFloat(self.field.circularDistance);
+      let mut x = rand.nextFloat(self.field.circularDistance);
       x = self.field.normalizeX(x);
-      let sp : f32 = 0.15 + rand.nextSignedFloat(0.01);
-      let av : f32 = sp * 0.5 + rand.nextSignedFloat(0.005);
-      let dst : f32 = sp * 6.0;
-      let er : f32 = rand.nextFloat(0.8);
-      let ed : f32 = rand.nextFloat(PI * 2.0);
+      let sp = 0.15 + rand.nextSignedFloat(0.01);
+      let av = sp * 0.5 + rand.nextSignedFloat(0.005);
+      let dst = sp * 6.0;
+      let er = rand.nextFloat(0.8);
+      let ed = rand.nextFloat(PI * 2.0);
       let fe : Option(&Enemy) = None;
-      let fir : f32 = 0.0;
+      let fir = 0.0;
       for i in 0..self.smallEnemyNum {
         if let Some(e) = self.enemies.getInstance() {
           let appPattern : i32 = self.formationIdx % 2;

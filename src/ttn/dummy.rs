@@ -3,14 +3,28 @@
 use util::vector::*;
 use util::rand::*;
 
+/*
 //dummy
 pub enum GameStateMode {
   CLASSIC, BASIC, MODERN,
-}
+}*/
 
 //dummy
 pub enum ParticleShape {
   TRIANGLE, LINE, QUAD, BONUS,
+}
+
+pub enum PadStateDir {
+  UP,
+  DOWN,
+}
+
+pub struct ReplayData;
+
+pub struct Preference;
+
+impl Preference {
+  pub const RANKING_NUM : usize = 10;
 }
 
 pub const GL_PROJECTION : usize = 0;
@@ -32,6 +46,7 @@ pub struct PadState;
 pub struct ShotShape;
 
 pub trait ParticlePool {}
+/*
 pub struct Stage;
 pub struct GameState {
   pub mode : GameStateMode,
@@ -41,6 +56,7 @@ pub struct GameState {
   pub particle_spec_rand : Rand,
   pub sound_rand : Rand,
 }
+*/
 pub struct Particle;
 
 

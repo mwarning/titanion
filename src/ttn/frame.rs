@@ -31,7 +31,23 @@ private import src.ttn.preference;
 private import src.ttn.shape;
 */
 
-static LAST_REPLAY_FILE_NAME = "last.rpl";
+use util::vector::*;
+use util::actor::*;
+use util::math::*;
+use util::rand::*;
+use ttn::token::*;
+use ttn::shape::*;
+use ttn::bullet::*;
+use ttn::field::*;
+use ttn::player::*;
+use ttn::stage::*;
+use ttn::enemy::*;
+use ttn::pillar::*;
+use ttn::title::*;
+use ttn::dummy::*;
+
+
+static LAST_REPLAY_FILE_NAME : &'static str = "last.rpl";
 
 struct Frame {
   pad : *mut Pad,
@@ -39,7 +55,7 @@ struct Frame {
   field : *mut Field,
   player : *mut Player,
   playerSpec : *mut PlayerSpec,
-  enemies : *mut EnemyPool,
+  enemies : &mut EnemyPool<'static>,
   bullets : *mut BulletPool,
   particles : *mut ParticlePool,
   bonusParticles : *mut ParticlePool,
@@ -65,7 +81,7 @@ impl Frame {
     self.pad = abstractInput as &Pad;
     self.pad.openJoystick();
     self.screen = abstractScreen as &Screen;
-    self.field = Field::new(self., screen);
+    self.field = Field::new(self, screen);
     self.enemies = EnemyPool::new();
     self.enemies.field = field;
     self.bullets = BulletPool::new();
@@ -141,7 +157,7 @@ impl Frame {
     self.clearAll();
     self.field.set();
     if replayData {
-      self.gameState.mode = replayData.mode as GameState.Mode;
+      self.gameState.mode = replayData.mode as GameState::Mode;
       self.gameState.setExtendScore();
       self.gameState.inReplay = true;
       self.player.set();
@@ -271,31 +287,31 @@ impl Frame {
   }
 }
 
-enum Mode {
+pub enum Mode {
   CLASSIC, BASIC, MODERN,
-};
+}
 
 const MODE_NUM : i32 = 3;
 const MODE_NAME: &'static [ &'static str ] = &["CLASSIC", " BASIC ", "MODERN"];
 static stageRandomized : bool = false;
 
-enum Scene {
+pub enum Scene {
   TITLE, IN_GAME,
-};
+}
 
 const MAX_LEFT : i32 = 4;
 
-struct GameState {
+pub struct GameState {
   frame : *mut Frame,
   preference : *mut Preference,
   scene : *mut Scene,
   stage : *mut Stage,
-   score : i32,
+  score : i32,
   _lastGameScore : i32,
   _lastGameMode : i32,
   nextExtendScore : i32,
   _multiplier : f32,
-  left : i32
+  left : i32,
   escPressed : bool,
   pPressed : bool,
   _paused : bool,
@@ -314,7 +330,7 @@ struct GameState {
   turret_spec_rand : Rand,
   player_spec_rand : Rand,
   particle_spec_rand : Rand,
-  sound_rand : Rand;
+  sound_rand : Rand,
 }
 
 impl GameState {
@@ -322,7 +338,7 @@ impl GameState {
   fn new(frame : *mut Frame, preference : *mut Preference) -> GameState {
     GameState {
       frame : frame,
-      preference : preference;
+      preference : preference,
       playerShape : PlayerShape::new(),
       playerLineShape : PlayerLineShape::new(),
       _lastGameScore : -1,
@@ -367,9 +383,9 @@ impl GameState {
 
   fn setExtendScore(&mut self) {
     self.extendScore = match self._mode {
-      Mode::CLASSIC => 100000;
-      Mode::BASIC => 1000000;
-      Mode::MODERN => 1000000;
+      Mode::CLASSIC => 100000,
+      Mode::BASIC => 1000000,
+      Mode::MODERN => 1000000,
     };
     self.nextExtendScore = self.extendScore;
   }
@@ -424,7 +440,7 @@ impl GameState {
     }
   }
 
-  fn move(&mut self) {
+  fn move1(&mut self) {
     self.handleEscKey();
     if self.isInGameAndNotGameOver {
       self.handlePauseKey();
@@ -438,7 +454,7 @@ impl GameState {
         self.frame.handleSound();
       } else {
         self.gameOverCnt += 1;
-        if (self.gameOverCnt < 60 {
+        if self.gameOverCnt < 60 {
           self.frame.handleSound();
         }
         if self.gameOverCnt > 1000 {
@@ -552,7 +568,7 @@ impl GameState {
     self.stage.countShotHit();
   }
 
-  fn draw(&self mut) {
+  fn draw(&mut self) {
     Letter::drawNum(self.score, 132, 5, 7);
     Letter::drawNum(self.nextExtendScore, 134, 25, 5);
     if self._lastGameScore >= 0 {

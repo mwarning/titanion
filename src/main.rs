@@ -24,6 +24,8 @@ mod ttn {
 	pub mod player;
 	pub mod stage;
 	pub mod pillar;
+	pub mod frame;
+	pub mod title;
 	pub mod dummy; //skeleton dummies
 }
 
