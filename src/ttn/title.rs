@@ -18,6 +18,19 @@ private import src.ttn.preference;
 private import src.ttn.frame;
 */
 
+use util::vector::*;
+use util::actor::*;
+use util::rand::*;
+use ttn::token::*;
+use ttn::shape::*;
+use ttn::bullet::*;
+use ttn::field::*;
+use ttn::player::*;
+use ttn::enemy::*;
+use ttn::pillar::*;
+use ttn::frame::*;
+use ttn::dummy::*;
+
 /**
  * Title screen.
  */
@@ -36,7 +49,7 @@ pub struct Title {
 }
 
 impl Title {
-  fn new() -> Title {
+  fn new(preference : &Preference, pad : &Pad, frame : &Frame) -> Title {
     Title{
       preference : preference,
       pad : (pad as &RecordablePad),
@@ -44,15 +57,16 @@ impl Title {
       cnt : 0,
       aPressed : false,
       udPressed : false,
-      titleTexture : texture,
-      titlePos : Vector(0, 0, 0),
+      titleTexture : Texture::new("title.bmp"),
+      titlePos : Vector::new(0.0, 0.0, 0.0),
       titleSize : 0.0,
       cursorIdx : 0,
     }
   }
 
   fn init(&mut self) {
-    self.titleTexture = Texture("title.bmp");
+    //moved to ctor
+    //self.titleTexture = Texture::new("title.bmp");
   }
 
   fn close(&mut self) {
@@ -73,7 +87,7 @@ impl Title {
   }
 
   fn move1(&mut self) {
-    let input = pad.getState(false);
+    let input = self.pad.getState(false);
     if self.input.button & PadState.Button.A {
       if !self.aPressed {
         self.aPressed = true;
@@ -83,7 +97,7 @@ impl Title {
       self.aPressed = false;
     }
     if self.input.dir & (PadStateDir::UP | PadStateDir::DOWN) {
-      if !udPressed {
+      if !self.udPressed {
         self.udPressed = true;
         if self.input.dir & PadStateDir::UP {
           self.cursorIdx -= 1;
@@ -91,8 +105,8 @@ impl Title {
           self.cursorIdx += 1;
         }
         if self.cursorIdx < 0 {
-          self.cursorIdx = GameState.MODE_NUM - 1;
-        } else if self.cursorIdx > (GameState.MODE_NUM - 1) {
+          self.cursorIdx = GameState::MODE_NUM - 1;
+        } else if self.cursorIdx > (GameState::MODE_NUM - 1) {
           self.cursorIdx = 0;
         }
       }
@@ -102,10 +116,10 @@ impl Title {
     if (self.cnt > 180) && (self.cnt < 235) {
       self.titlePos.y -= 2;
     }
-    if (self.cnt > 600) && (cnt < 675) {
+    if (self.cnt > 600) && (self.cnt < 675) {
       self.titlePos.x -= 2;
       self.titlePos.y += 1;
-      self.titleSize -= 0.007f32;
+      self.titleSize -= 0.007;
     }
     self.cnt += 1;
   }
@@ -136,38 +150,38 @@ impl Title {
       self.drawTriangle(575, 398, 180);
       self.drawTriangle(575, 417, 0);
     }
-    Letter::drawString(GameState.MODE_NAME[self.cursorIdx], 540, 400, 5);
+    Letter::drawString(GameState::MODE_NAME[self.cursorIdx], 540, 400, 5);
   }
 
   fn drawBoard(x : f32, y : f32, w : f32, h : f32) {
     glBegin(GL_TRIANGLE_FAN);
-    glTexCoord2f(0, 0);
-    glVertex3f(x, y, 0);
-    glTexCoord2f(1, 0);
-    glVertex3f(x + w, y, 0);
-    glTexCoord2f(1, 1);
-    glVertex3f(x + w, y + h, 0);
-    glTexCoord2f(0, 1);
-    glVertex3f(x, y + h, 0);
+    glTexCoord2f(0.0, 0.0);
+    glVertex3f(x, y, 0.0);
+    glTexCoord2f(1.0, 0.0);
+    glVertex3f(x + w, y, 0.0);
+    glTexCoord2f(1.0, 1.0);
+    glVertex3f(x + w, y + h, 0.0);
+    glTexCoord2f(0.0, 1.0);
+    glVertex3f(x, y + h, 0.0);
     glEnd();
   }
 
   fn drawTriangle(x : f32, y : f32, d : f32) {
     glPushMatrix();
-    glTranslatef(x, y, 0);
-    glRotatef(d, 0, 0, 1);
-    glScalef(5, 5, 1);
+    glTranslatef(x, y, 0.0);
+    glRotatef(d, 0.0, 0.0, 1.0);
+    glScalef(5.0, 5.0, 1.0);
     glBegin(GL_TRIANGLE_FAN);
     Screen.setColor(1, 1, 1, 0.5);
-    glVertex3f(0, 1.7, 0);
-    glVertex3f(1, 0, 0);
-    glVertex3f(-1, 0, 0);
+    glVertex3f(0.0, 1.7, 0.0);
+    glVertex3f(1.0, 0.0, 0.0);
+    glVertex3f(-1.0, 0.0, 0.0);
     glEnd();
     glBegin(GL_LINE_LOOP);
     Screen.setColor(1, 1, 1, 1);
-    glVertex3f(0, 1.7, 0);
-    glVertex3f(1, 0, 0);
-    glVertex3f(-1, 0, 0);
+    glVertex3f(0.0, 1.7, 0.0);
+    glVertex3f(1.0, 0.0, 0.0);
+    glVertex3f(-1.0, 0.0, 0.0);
     glEnd();
     glPopMatrix();
   }
@@ -197,14 +211,14 @@ impl Title {
       let mut sy = y;
       let mut sz = 6.0;
       if self.cnt >= 600 {
-        let c : i32 = cnt - 600;
+        let c : i32 = self.cnt - 600;
         if c > 75 {
           c = 75;
         }
         sx += (c * 2.35) as i32;
         sz -= c * 0.03;
       }
-      Letter::drawNum(preference.highScore[self.cursorIdx][i], sx, sy, sz);
+      Letter::drawNum(self.preference.highScore[self.cursorIdx][i], sx, sy, sz);
       y += 24;
     }
   }

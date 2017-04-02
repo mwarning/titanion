@@ -23,25 +23,25 @@ fn write(T)(File fd, T* dst)
 }
 
 
-static RANKING_NUM : i32 = 10;
-static MODE_NUM : i32 = 3;
-static VERSION_NUM : i32 = 30;
-static PREF_FILE_NAME = "ttn.prf";
+const RANKING_NUM : i32 = 10;
+const MODE_NUM : i32 = 3;
+const VERSION_NUM : i32 = 30;
+const PREF_FILE_NAME = "ttn.prf";
 
-/**
+/*
  * Load/Save/Record a high score table.
  */
- struct Preference {
-	preference : src.util.preference.Preference:
-  	_highScore : i32[RANKING_NUM][MODE_NUM];
-  	_lastMode : i32;
+struct Preference {
+  preference : src.util.preference.Preference:
+  _highScore : i32[RANKING_NUM][MODE_NUM];
+  _lastMode : i32;
 }
 
 impl Preference {
-  fn load() {
-    let fd : File;
+  fn load(&mut self) {
+    //let fd : File;
     //try {
-      fd = File::new(PREF_FILE_NAME, File.ReadExisting);
+    let fd = File::new(PREF_FILE_NAME, File.ReadExisting);
       let mut ver : i32;
       .read(fd, &ver);
       if ver != VERSION_NUM {
@@ -57,7 +57,7 @@ impl Preference {
     //  init();
     //} finally {
       if fd {
-          fd.close();
+        fd.close();
       }
     //}
   }
@@ -91,7 +91,7 @@ impl Preference {
     self.setMode(mode);
     for i in 0..RANKING_NUM {
       if score > self._highScore[mode][i]) {
-		for j in ((i+1)..RANKING_NUM).rev() {
+        for j in ((i+1)..RANKING_NUM).rev() {
           self._highScore[mode][j] = self._highScore[mode][j - 1];
         }
         self._highScore[mode][i] = score;

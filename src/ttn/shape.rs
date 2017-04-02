@@ -23,6 +23,7 @@ use std::marker::Sized;
 use util::vector::Vector;
 use util::vector::Vector3;
 use util::sdl::displaylist::DisplayList;
+use ttn::field::*;
 use ttn::dummy::*;
 
 /*
@@ -51,9 +52,9 @@ pub trait Shape /*: Default*/ {
     fn draw4(&mut self, pos : Vector3, cd : f32, deg : f32) {
         let dl = self.get_display_list();
         glPushMatrix();
-        Screen_glTranslate(pos);
+        Screen::glTranslate(pos);
         glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
-        Screen_glRotate(deg);
+        Screen::glRotate(deg);
         dl.call(0);
         glPopMatrix();
     }
@@ -92,7 +93,7 @@ fn PyramidShape_draw() {
     glVertex3f(-1.0, 1.0, 1.0);
     glVertex3f(1.0, 1.0, 1.0);
     glEnd();
-    Screen_setColor(0.1, 0.1, 0.1, 0.5);
+    Screen::setColor(0.1, 0.1, 0.1, 0.5);
     glBegin(GL_LINE_STRIP);
     glVertex3f(0.0, 0.0, 0.0);
     glVertex3f(1.0, 1.0, 1.0);
@@ -112,12 +113,12 @@ fn PyramidShape_draw() {
 
 fn PyramidShape_drawShadow(r : f32, g : f32, b : f32, noAlpha : bool /*= false*/) {
     glBegin(GL_TRIANGLE_FAN);
-    Screen_setColor(r, g, b, 1.0);
+    Screen::setColor(r, g, b, 1.0);
     glVertex3f(0.0, 0.0, 0.0);
     if !noAlpha {
-      Screen_setColor(r * 0.75, g * 0.75, b * 0.75, 0.33);
+      Screen::setColor(r * 0.75, g * 0.75, b * 0.75, 0.33);
     } else {
-      Screen_setColor(r * 0.75, g * 0.75, b * 0.75, 0.75);
+      Screen::setColor(r * 0.75, g * 0.75, b * 0.75, 0.75);
     }
     glVertex3f(1.0, 1.0, 1.0);
     glVertex3f(1.0, 1.0, -1.0);
@@ -191,21 +192,21 @@ impl DisplayListShape for PlayerShape {
     glScalef(0.3, 0.9, 0.3);
     PyramidShape_drawShadow(1.0, 1.0, 1.0, true);
     glPopMatrix();
-    Screen_setColor(1.0, 0.5, 0.5, 1.0);
+    Screen::setColor(1.0, 0.5, 0.5, 1.0);
     glPushMatrix();
     glRotatef(180.0, 0.0, 0.0, 1.0);
     glTranslatef(0.0, -0.6, 0.0);
     glScalef(0.3, 1.2, 0.3);
     PyramidShape_drawPolygonShape();
     glPopMatrix();
-    Screen_setColor(1.0, 1.0, 1.0, 1.0);
+    Screen::setColor(1.0, 1.0, 1.0, 1.0);
     glPushMatrix();
     glRotatef(180.0, 0.0, 0.0, 1.0);
     glTranslatef(0.5, -0.2, 0.0);
     glScalef(0.2, 0.8, 0.2);
     PyramidShape_drawPolygonShape();
     glPopMatrix();
-    Screen_setColor(1.0, 1.0, 1.0, 1.0);
+    Screen::setColor(1.0, 1.0, 1.0, 1.0);
     glPushMatrix();
     glRotatef(180.0, 0.0, 0.0, 1.0);
     glTranslatef(-0.5, -0.2, 0.0);
@@ -275,14 +276,14 @@ impl DisplayListShape for ShotShape {
     glRotatef(180.0, 0.0, 0.0, 1.0);
     glTranslatef(0.5, -0.5, 0.0);
     glScalef(0.1, 1.0, 0.1);
-    Screen_setColor(0.4, 0.2, 0.8, 1.0);
+    Screen::setColor(0.4, 0.2, 0.8, 1.0);
     PyramidShape_drawLineShape();
     glPopMatrix();
     glPushMatrix();
     glRotatef(180.0, 0.0, 0.0, 1.0);
     glTranslatef(-0.5, -0.5, 0.0);
     glScalef(0.1, 1.0, 0.1);
-    Screen_setColor(0.4, 0.2, 0.8, 1.0);
+    Screen::setColor(0.4, 0.2, 0.8, 1.0);
     PyramidShape_drawLineShape();
     glPopMatrix();
   }
@@ -290,14 +291,14 @@ impl DisplayListShape for ShotShape {
 
 pub trait TractorBeamShape : DisplayListShape {
     fn drawTractorBeam(&self, r : f32, g : f32, b : f32) {
-    Screen_setColor(r, g, b, 0.5);
+    Screen::setColor(r, g, b, 0.5);
     glBegin(GL_QUADS);
     glVertex3f(-1.0, 0.0, -1.0);
     glVertex3f(1.0, 0.0, -1.0);
     glVertex3f(1.0, 0.0, 1.0);
     glVertex3f(-1.0, 0.0, 1.0);
     glEnd();
-    Screen_setColor(r, g, b, 1.0);
+    Screen::setColor(r, g, b, 1.0);
     glBegin(GL_LINE_LOOP);
     glVertex3f(-1.0, 0.0, -1.0);
     glVertex3f(1.0, 0.0, -1.0);
@@ -307,7 +308,7 @@ pub trait TractorBeamShape : DisplayListShape {
   }
 
   fn drawTractorBeamLine(&self, r : f32, g : f32, b : f32) {
-    Screen_setColor(r, g, b, 1.0);
+    Screen::setColor(r, g, b, 1.0);
     glBegin(GL_LINE_LOOP);
     glVertex3f(-1.0, 0.0, -1.0);
     glVertex3f(1.0, 0.0, -1.0);
@@ -458,9 +459,9 @@ impl DisplayListShape for TractorBeamShapeDarkPurple {
 pub trait BulletShapeBase : DisplayListShape {
   fn draw5(&mut self, pos : Vector3, cd : f32, deg : f32, rd : f32) {
     glPushMatrix();
-    Screen_glTranslate(pos);
+    Screen::glTranslate(pos);
     glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
-    Screen_glRotate(deg);
+    Screen::glRotate(deg);
     glRotatef(rd, 0.0, 1.0, 0.0);
     self.get_display_list().call(0);
     glPopMatrix();
@@ -484,7 +485,7 @@ impl Shape for BulletShape {
 impl DisplayListShape for BulletShape {
   fn drawList(&self) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    Screen_setColor(0.0, 0.0, 0.0, 1.0);
+    Screen::setColor(0.0, 0.0, 0.0, 1.0);
     glBegin(GL_TRIANGLE_FAN);
     glVertex3f(0.0, 0.5, 0.0);
     glVertex3f(-0.34, -0.3, -0.2);
@@ -499,7 +500,7 @@ impl DisplayListShape for BulletShape {
     glEnd();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glScalef(1.2, 1.2, 1.2);
-    Screen_setColor(0.1, 0.3, 0.3, 1.0);
+    Screen::setColor(0.1, 0.3, 0.3, 1.0);
     glBegin(GL_TRIANGLE_FAN);
     glVertex3f(0.0, 0.5, 0.0);
     glVertex3f(-0.34, -0.3, -0.2);
@@ -566,7 +567,7 @@ impl DisplayListShape for MiddleBulletShape {
   fn drawList(&self) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glScalef(1.1, 1.0, 1.1);
-    Screen_setColor(0.0, 0.0, 0.0, 1.0);
+    Screen::setColor(0.0, 0.0, 0.0, 1.0);
     glBegin(GL_QUADS);
     glVertex3f(-0.17, 0.3, -0.1);
     glVertex3f(-0.34, -0.3, -0.2);
@@ -591,7 +592,7 @@ impl DisplayListShape for MiddleBulletShape {
     glEnd();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glScalef(1.4, 1.3, 1.4);
-    Screen_setColor(0.1, 0.2, 0.3, 1.0);
+    Screen::setColor(0.1, 0.2, 0.3, 1.0);
     glBegin(GL_QUADS);
     glVertex3f(-0.17, 0.3, -0.1);
     glVertex3f(-0.34, -0.3, -0.2);
@@ -658,7 +659,7 @@ impl DisplayListShape for MiddleBulletLineShape {
 pub trait RollBulletShapeBase : BulletShapeBase {
   fn draw5(&mut self, pos : Vector3, cd : f32, deg : f32, rd : f32) {
     glPushMatrix();
-    Screen_glTranslate(pos);
+    Screen::glTranslate(pos);
     glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
     glRotatef(rd, 0.0, 0.0, 1.0);
     self.get_display_list().call(0);
@@ -683,7 +684,7 @@ impl Shape for CounterBulletShape {
 impl DisplayListShape for CounterBulletShape {
   fn drawList(&self) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    Screen_setColor(0.0, 0.0, 0.0, 1.0);
+    Screen::setColor(0.0, 0.0, 0.0, 1.0);
     glBegin(GL_TRIANGLE_FAN);
     glVertex3f(0.0, 0.0, 0.5);
     glVertex3f(0.5, 0.0, 0.0);
@@ -694,7 +695,7 @@ impl DisplayListShape for CounterBulletShape {
     glEnd();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glScalef(1.2, 1.2, 1.2);
-    Screen_setColor(0.5, 0.5, 0.5, 1.0);
+    Screen::setColor(0.5, 0.5, 0.5, 1.0);
     glBegin(GL_TRIANGLE_FAN);
     glVertex3f(0.0, 0.0, 0.5);
     glVertex3f(0.5, 0.0, 0.0);
@@ -750,9 +751,9 @@ pub trait EnemyShape : DisplayListShape {
 
   fn draw7(&mut self, pos : Vector3, cd : f32, deg : f32, cnt : f32, sx : f32, sy : f32) {
     glPushMatrix();
-    Screen_glTranslate(pos);
+    Screen::glTranslate(pos);
     glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
-    Screen_glRotate(deg);
+    Screen::glRotate(deg);
     glScalef(sx, sy, 1.0);
     glRotatef(cnt * 3.0, 0.0, 1.0, 0.0);
     self.get_display_list().call(0);
@@ -791,27 +792,27 @@ impl DisplayListShape for Enemy1Shape {
     glScalef(0.4, 1.0, 0.4);
     PyramidShape_drawShadow(0.2, 0.2, 0.5, false);
     glPopMatrix();
-    Screen_setColor(0.2, 0.2, 0.5, 1.0);
+    Screen::setColor(0.2, 0.2, 0.5, 1.0);
     glPushMatrix();
     glRotatef(240.0, 0.0, 0.0, 1.0);
     glTranslatef(-0.5, -0.2, 0.0);
     glScalef(0.4, 1.0, 0.4);
     PyramidShape_drawShadow(0.2, 0.2, 0.5, false);
     glPopMatrix();
-    Screen_setColor(1.0, 1.0, 0.6, 1.0);
+    Screen::setColor(1.0, 1.0, 0.6, 1.0);
     glPushMatrix();
     glTranslatef(0.0, -0.6, 0.0);
     glScalef(0.3, 1.2, 0.3);
     PyramidShape_draw();
     glPopMatrix();
-    Screen_setColor(0.5, 0.5, 1.0, 1.0);
+    Screen::setColor(0.5, 0.5, 1.0, 1.0);
     glPushMatrix();
     glRotatef(120.0, 0.0, 0.0, 1.0);
     glTranslatef(0.5, -0.2, 0.0);
     glScalef(0.2, 0.8, 0.2);
     PyramidShape_draw();
     glPopMatrix();
-    Screen_setColor(0.5, 0.5, 1.0, 1.0);
+    Screen::setColor(0.5, 0.5, 1.0, 1.0);
     glPushMatrix();
     glRotatef(240.0, 0.0, 0.0, 1.0);
     glTranslatef(-0.5, -0.2, 0.0);
@@ -898,20 +899,20 @@ impl DisplayListShape for Enemy2Shape {
     glScalef(0.4, 1.4, 0.4);
     PyramidShape_drawShadow(0.9, 0.6, 0.5, false);
     glPopMatrix();
-    Screen_setColor(1.0, 0.9, 1.0, 1.0);
+    Screen::setColor(1.0, 0.9, 1.0, 1.0);
     glPushMatrix();
     glTranslatef(0.0, -0.5, 0.0);
     glScalef(0.3, 1.0, 0.3);
     PyramidShape_draw();
     glPopMatrix();
-    Screen_setColor(0.9, 0.6, 0.5, 1.0);
+    Screen::setColor(0.9, 0.6, 0.5, 1.0);
     glPushMatrix();
     glRotatef(60.0, 0.0, 0.0, 1.0);
     glTranslatef(0.6, -0.7, 0.0);
     glScalef(0.2, 1.2, 0.2);
     PyramidShape_draw();
     glPopMatrix();
-    Screen_setColor(0.9, 0.6, 0.5, 1.0);
+    Screen::setColor(0.9, 0.6, 0.5, 1.0);
     glPushMatrix();
     glRotatef(300.0, 0.0, 0.0, 1.0);
     glTranslatef(-0.6, -0.7, 0.0);
@@ -992,27 +993,27 @@ impl DisplayListShape for Enemy3Shape {
     glScalef(0.4, 1.0, 0.4);
     PyramidShape_drawShadow(0.2, 0.2, 0.5, false);
     glPopMatrix();
-    Screen_setColor(0.2, 0.2, 0.5, 1.0);
+    Screen::setColor(0.2, 0.2, 0.5, 1.0);
     glPushMatrix();
     glRotatef(210.0, 0.0, 0.0, 1.0);
     glTranslatef(-0.5, 0.2, 0.0);
     glScalef(0.4, 1.0, 0.4);
     PyramidShape_drawShadow(0.2, 0.2, 0.5, false);
     glPopMatrix();
-    Screen_setColor(1.0, 0.6, 0.9, 1.0);
+    Screen::setColor(1.0, 0.6, 0.9, 1.0);
     glPushMatrix();
     glTranslatef(0.0, -0.4, 0.0);
     glScalef(0.3, 1.2, 0.3);
     PyramidShape_draw();
     glPopMatrix();
-    Screen_setColor(0.3, 0.5, 1.0, 1.0);
+    Screen::setColor(0.3, 0.5, 1.0, 1.0);
     glPushMatrix();
     glRotatef(150.0, 0.0, 0.0, 1.0);
     glTranslatef(0.5, 0.2, 0.0);
     glScalef(0.2, 0.8, 0.2);
     PyramidShape_draw();
     glPopMatrix();
-    Screen_setColor(0.3, 0.5, 1.0, 1.0);
+    Screen::setColor(0.3, 0.5, 1.0, 1.0);
     glPushMatrix();
     glRotatef(210.0, 0.0, 0.0, 1.0);
     glTranslatef(-0.5, 0.2, 0.0);
@@ -1096,68 +1097,68 @@ pub trait PillarShape : DisplayListShape {
   fn drawPillar(&self, r : f32, g : f32, b : f32, outside : bool /*= false*/) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBegin(GL_QUADS);
-    Screen_setColor(r, g, b, 1.0);
+    Screen::setColor(r, g, b, 1.0);
     for i in 0..8 {
       let mut d : f32 = PI * 2.0 * (i as f32) / 8.0;
-      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
                  TICKNESS,
-                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
       d += PI * 2.0 / 8.0;
-      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
                  TICKNESS,
-                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
-      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
+                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
+      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
                  -TICKNESS,
-                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
       d -= PI * 2.0 / 8.0;
-      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
                  -TICKNESS,
-                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
     }
     glEnd();
     if !outside {
-      Screen_setColor(r, g, b, 1.0);
+      Screen::setColor(r, g, b, 1.0);
       glBegin(GL_TRIANGLES);
       for i in 0..8 {
         let mut d : f32 = PI * 2.0 * (i as f32) / 8.0;
         glVertex3f(0.0, TICKNESS, 0.0);
-        glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
+        glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
                    TICKNESS,
-                   d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+                   d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
         d += PI * 2.0 / 8.0;
-        glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
+        glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
                    TICKNESS,
-                   d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+                   d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
         d -= PI * 2.0 / 8.0;
         glVertex3f(0.0, -TICKNESS, 0.0);
-        glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
+        glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
                    -TICKNESS,
-                   d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+                   d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
         d += PI * 2.0 / 8.0;
-        glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
+        glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
                    -TICKNESS,
-                   d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+                   d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
       }
       glEnd();
     }
-    Screen_setColor(0.1, 0.1, 0.1, 1.0);
+    Screen::setColor(0.1, 0.1, 0.1, 1.0);
     for i in 0..8 {
       let mut d : f32 = PI * 2.0 * (i as f32) / 8.0; 
       glBegin(GL_LINE_STRIP);
-      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
                  TICKNESS,
-                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
       d += PI * 2.0 / 8.0;
-      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
                  TICKNESS,
-                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
-      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
+                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
+      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
                  -TICKNESS,
-                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
       d -= PI * 2.0 / 8.0;
-      glVertex3f(d.sin() * Field_CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
                  -TICKNESS,
-                 d.cos() * Field_CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
       glEnd();
     }
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);

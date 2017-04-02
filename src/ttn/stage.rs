@@ -34,6 +34,7 @@ use ttn::field::*;
 use ttn::player::*;
 use ttn::enemy::*;
 use ttn::pillar::*;
+use ttn::frame::*;
 use ttn::dummy::*;
 
 
@@ -44,7 +45,7 @@ use ttn::dummy::*;
 const PHASE_RESULT_SHOW_CNT : i32 = 150;
 const PHASE_START_SHOW_CNT : i32 = 90;
 
-struct Stage {
+pub struct Stage {
   randomized : bool,
   field : &Field,
   enemies : &EnemyPool,
@@ -241,10 +242,10 @@ impl Stage {
       r = 1.0;
     }
     self.hitRatioBonus = (10000.0 * r * r * r * r) as i32;
-    if self.gameState.mode == GameStateMode::MODERN {
+    if self.gameState.mode == Frame::Mode::MODERN {
       return;
     }
-    if self.gameState.mode == GameStateMode::BASIC {
+    if self.gameState.mode == Frame::Mode::BASIC {
       self.hitRatioBonus *= 10;
     }
     self.gameState.addScore(self.hitRatioBonus, true);
@@ -261,9 +262,9 @@ impl Stage {
     if !self.randomized {
       let rs : i64 = self.phaseNum;
       match self.gameState.mode {
-        GameStateMode::CLASSIC => { rs *= 2; },
-        GameStateMode::BASIC => {},
-        GameStateMode::MODERN => { rs *= 3; },
+        Frame::Mode::CLASSIC => { rs *= 2; },
+        Frame::Mode::BASIC => {},
+        Frame::Mode::MODERN => { rs *= 3; },
       }
       rand.setSeed(rs);
       self.gameState.enemy_spec_rand.setRandSeed(rs);
@@ -272,7 +273,7 @@ impl Stage {
     self._existsCounterBullet = false;
     let en : i32;
     match self.gameState.mode {
-      GameStateMode::CLASSIC => {
+      Frame::Mode::CLASSIC => {
         en = 24 + ((50 + rand.nextInt(10)) * self.rank.sqrt() * 0.2) as i32;
         self.smallEnemyNum = 4 + rand.nextInt(2);
         if self.rank > 10 {
@@ -280,12 +281,12 @@ impl Stage {
         }
         self.middleEnemyAppInterval = 6 + rand.nextInt(2);
       },
-      GameStateMode::BASIC => {
+      Frame::Mode::BASIC => {
         en = 32 + ((50 + rand.nextInt(10)) * self.rank.sqrt() * 0.33) as i32;
         self.smallEnemyNum = 7 + rand.nextInt(4);
         self.middleEnemyAppInterval = 5 + rand.nextInt(2);
       },
-      GameStateMode::MODERN => {
+      Frame::Mode::MODERN => {
         en = 24 + ((50 + rand.nextInt(10)) * self.rank.sqrt() * 0.5) as i32;
         self.smallEnemyNum = 4 + rand.nextInt(2);
         self.middleEnemyAppInterval = 7 + rand.nextInt(3);
@@ -314,7 +315,7 @@ impl Stage {
     }
     self.appCntInterval = (48.0 + rand.nextSignedInt(10)) as f32;
     self.appCntInterval *= 0.5 + 0.5 / self.rank.sqrt();
-    if self.gameState.mode == GameStateMode::MODERN {
+    if self.gameState.mode == Frame::Mode::MODERN {
       self.appCntInterval *= 0.75;
       self._attackSmallEnemyNum *= 2;
     }
@@ -456,7 +457,7 @@ impl Stage {
   }
 
   fn draw(&mut self) {
-    if (self.gameState.mode != GameStateMode::MODERN) &&
+    if (self.gameState.mode != Frame::Mode::MODERN) &&
         (self.phaseTime < PHASE_RESULT_SHOW_CNT) && (self.phaseNum > 1) {
       Letter.drawString("SHOTS FIRED", 152, 250, 6, Letter.Direction.TO_RIGHT, false, 0, 1, 1, 0.33);
       Letter.drawNum(self.shotFiredNumRsl, 480, 250, 6);

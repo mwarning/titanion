@@ -30,6 +30,7 @@ use ttn::shape::*;
 use ttn::dummy::*;
 use ttn::enemy::*;
 use ttn::field::*;
+use ttn::frame::*;
 use util::actor::*;
 use ttn::player::*;
 
@@ -167,7 +168,7 @@ impl BulletSpec {
       bs.ppos.x = bs.ts.pos.x;
       bs.ppos.y = bs.ts.pos.y;
       let sp : f32 = bs.ts.speed;
-      if (self.gameState.mode != GameStateMode::CLASSIC) && (bs.cnt < 40) {
+      if (self.gameState.mode != Frame::Mode::CLASSIC) && (bs.cnt < 40) {
         sp *= ((bs.cnt + 10) as f32) / 50;
       }
       bs.tailPos.x -= bs.ts.deg.cos() * sp * 0.7;
@@ -203,28 +204,28 @@ impl BulletSpec {
       }
       let p : Vector3;
       glBegin(GL_LINES);
-      Screen_setColor(0.1, 0.4, 0.4, 0.5);
+      Screen::setColor(0.1, 0.4, 0.4, 0.5);
       p = self.field.calcCircularPos(bs.tailPos);
-      Screen_glVertex(p);
-      Screen_setColor(0.2 * colorAlpha, 0.8 * colorAlpha, 0.8 * colorAlpha);
+      Screen::glVertex(p);
+      Screen::setColor(0.2 * colorAlpha, 0.8 * colorAlpha, 0.8 * colorAlpha);
       p = self.field.calcCircularPos(bs.ts.pos);
-      Screen_glVertex(p);
+      Screen::glVertex(p);
       glEnd();
       p = self.field.calcCircularPos(bs.ts.pos);
       let d : f32 = match self.gameState.mode {
-        GameStateMode::CLASSIC => {
+        Frame::Mode::CLASSIC => {
           PI;
         }
-        GameStateMode::BASIC => {
+        Frame::Mode::BASIC => {
           bs.ts.deg;
         }
-        GameStateMode::MODERN => {
+        Frame::Mode::MODERN => {
           bs.ts.deg;
         }
       };
       let cd : f32 = self.field.calcCircularDeg(bs.ts.pos.x);
       (self.ts.shape as &BulletShapeBase).draw(p, cd, d, bs.cnt * 3.0);
-      Screen_setColor(0.6 * colorAlpha, 0.9 * colorAlpha, 0.9 * colorAlpha);
+      Screen::setColor(0.6 * colorAlpha, 0.9 * colorAlpha, 0.9 * colorAlpha);
       (self.lineShape as &BulletShapeBase).draw(p, cd, d, bs.cnt * 3.0);
     }
 }

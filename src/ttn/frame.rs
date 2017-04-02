@@ -49,7 +49,7 @@ use ttn::dummy::*;
 
 static LAST_REPLAY_FILE_NAME : &'static str = "last.rpl";
 
-struct Frame {
+pub struct Frame {
   pad : *mut Pad,
   screen :  *mut Screen,
   field : *mut Field,
@@ -75,19 +75,27 @@ struct Frame {
 impl Frame {
   fn init(&mut self) {
     Sound::load();
-    self.preference = abstractPreference as &Preference;
+    let preference = abstractPreference as &Preference;
+    self.preference = preference;
     self.preference.load();
     Letter::init();
-    self.pad = abstractInput as &Pad;
+    let pad = abstractInput as &Pad;
+    self.pad = pad;
     self.pad.openJoystick();
     self.screen = abstractScreen as &Screen;
-    self.field = Field::new(self, screen);
-    self.enemies = EnemyPool::new();
+    let field = Field::new(self, self.screen);
+    self.field = field;
+    let enemies = EnemyPool::new();
+    self.enemies = enemies;
     self.enemies.field = field;
-    self.bullets = BulletPool::new();
-    self.particles = ParticlePool::new();
-    self.bonusParticles = ParticlePool::new();
-    self.pillars = PillarPool::new();
+    let bullets = BulletPool::new();
+    self.bullets = bullets;
+    let particles = ParticlePool::new();
+    self.particles = particles;
+    let bonusParticles = ParticlePool::new();
+    self.bonusParticles = bonusParticles;
+    let pillars = PillarPool::new();
+    self.pillars = pillars;
     self.enemies.init(128);
     self.bullets.init(1024);
     let triangleParticleSpec = TriangleParticleSpec::new(field);
@@ -98,17 +106,21 @@ impl Frame {
     self.bonusParticles.init(256, triangleParticleSpec, lineParticleSpec, quadParticleSpec, bonusParticleSpec);
     self.triangleParticleSpec.setParticles(particles);
     self.pillars.init(48);
-    self.gameState = GameState::new(this, preference);
-    self.title = Title::new(preference, pad, this);
+    let gameState = GameState::new(self, preference);
+    self.gameState = gameState;
+    self.title = Title::new(preference, pad, self);
     self.title.setMode(preference.lastMode);
     self.title.init();
-    self.playerSpec = PlayerSpec::new(pad, gameState, field, enemies, bullets, particles);
-    self.player = Player::new(playerSpec);
+    let playerSpec = PlayerSpec::new(pad, self.gameState, field, enemies, bullets, particles);
+    self.playerSpec = playerSpec;
+    let player = Player::new(playerSpec);
+    self.player = player;
     self.triangleParticleSpec.setPlayer(player);
     self.lineParticleSpec.setPlayer(player);
     self.quadParticleSpec.setPlayer(player);
     self.bonusParticleSpec.setPlayer(player);
-    self.stage = Stage::new(field, enemies, bullets, player, particles, bonusParticles, pillars, gameState);
+    let stage = Stage::new(field, enemies, bullets, player, particles, bonusParticles, pillars, gameState);
+    self.stage = stage;
     self.gameState.setStage(stage);
     self.rand = Rand::new();
     self.loadLastReplay();
@@ -129,11 +141,11 @@ impl Frame {
   fn startInGame(&mut self, mode : i32) {
     self.gameState.startInGame(mode as GameState::Mode);
     self.player.replayMode = false;
-    let rp : RecordablePad = pad as &RecordablePad;
+    let rp : RecordablePad = self.pad as &RecordablePad;
     rp.startRecord();
     let replayData = ReplayData::new();
     replayData.inputRecord = rp.inputRecord;
-    replayData.seed = rand.nextInt32();
+    replayData.seed = self.rand.nextInt32();
     self.clearAll();
     self.field.set();
     self.player.set();
@@ -151,19 +163,19 @@ impl Frame {
     self.gameState.startTitle();
     if self.replayData {
       self.player.replayMode = true;
-      let rp : RecordablePad = pad as &RecordablePad;
-      rp.startReplay(replayData.inputRecord);
+      let rp : RecordablePad = self.pad as &RecordablePad;
+      rp.startReplay(self.replayData.inputRecord);
     }
     self.clearAll();
     self.field.set();
-    if replayData {
-      self.gameState.mode = replayData.mode as GameState::Mode;
+    if self.replayData {
+      self.gameState.mode = self.replayData.mode as GameState::Mode;
       self.gameState.setExtendScore();
       self.gameState.inReplay = true;
       self.player.set();
-      self.stage.start(replayData.seed);
+      self.stage.start(self.replayData.seed);
     } else {
-      self.field.setEyePos(Vector(0.0, 0.0));
+      self.field.setEyePos(Vector::new(0.0, 0.0));
     }
     Sound::clearMarkedSes();
     Sound::haltBgm();
@@ -184,7 +196,7 @@ impl Frame {
   fn move1(&mut self) {
     self.gameState.move1();
     self.field.move1();
-    if self.gameState.isInGame || replayData {
+    if self.gameState.isInGame || self.replayData {
       if !self.gameState.paused {
         self.stage.move1();
         self.pillars.move1();
@@ -195,7 +207,7 @@ impl Frame {
         self.bonusParticles.move1();
       }
     }
-    if gameState.isTitle {
+    if self.gameState.isTitle {
       self.title.move1();
     }
   }
@@ -209,11 +221,11 @@ impl Frame {
   }
 
   fn draw(&mut self) {
-    let e : SDL_Event = mainLoop.event;
-    if e.type == SDL_VIDEORESIZE {
+    let e : SDL_Event = self.mainLoop.event;
+    if e._type == SDL_VIDEORESIZE {
       let re : SDL_ResizeEvent = e.resize;
       if (re.w > 150) && (re.h > 100) {
-        screen.resized(re.w, re.h);
+        self.screen.resized(re.w, re.h);
       }
     }
     self.field.setLookAt();
@@ -231,8 +243,8 @@ impl Frame {
       self.bullets.draw();
       self.field.beginDrawingFront();
       self.gameState.draw();
-      if gameState.isTitle {
-        title.draw();
+      if self.gameState.isTitle {
+        self.title.draw();
       }
       self.player.drawState();
       self.field.resetLookAt();
@@ -242,14 +254,14 @@ impl Frame {
       self.field.drawBack();
       self.field.drawFront();
       self.field.beginDrawingFront();
-      if gameState.isTitle {
+      if self.gameState.isTitle {
         self.title.draw();
       }
     }
   }
 
-  fn keys() -> &u8 {
-    return &pad.keys;
+  fn keys(&self) -> &u8 {
+    &self.pad.keys
   }
 
   // Handle a replay data.
@@ -283,7 +295,7 @@ impl Frame {
   }
 
   fn resetReplay(&mut self) {
-    self.replayData = null;
+    self.replayData = None;
   }
 }
 
@@ -319,7 +331,7 @@ pub struct GameState {
   _isGameOver : bool,
   gameOverCnt : i32,
   playerShape : &PlayerShape,
-  playerLineShape : &playerLineShape,
+  playerLineShape : &PlayerLineShape,
   _inReplay : bool,
   _mode : Mode,
   extendScore : i32,
@@ -371,13 +383,13 @@ impl GameState {
   }
 
   fn startInGame(&mut self, m : Mode) {
-    self.scene = Scene.IN_GAME;
+    self.scene = Scene::IN_GAME;
     self.clear();
     self._mode = m;
     self.left = 2;
     self.setExtendScore();
     self._lastGameScore = -1;
-    self.preference.setMode(_mode);
+    self.preference.setMode(self._mode);
     self.stage.randomized = self.tageRandomized;
   }
 
@@ -594,7 +606,7 @@ impl GameState {
           Letter::drawString("PAUSE", 290, 420, 7);
         }
       }
-      Letter::drawString(GameState.MODE_NAME[self.mode], 540, 400, 5);
+      Letter::drawString(GameState::MODE_NAME[self.mode], 540, 400, 5);
     }
   }
 
@@ -603,9 +615,9 @@ impl GameState {
       glPushMatrix();
       glTranslatef(-10.2 + (i as f32), -7.5, -10.0);
       glScalef(0.6, 0.6, 0.6);
-      playerShape.draw();
+      self.playerShape.draw();
       Screen::setColor(0, 0, 0);
-      playerLineShape.draw();
+      self.playerLineShape.draw();
       glPopMatrix();
     }
   }
@@ -634,7 +646,7 @@ impl GameState {
     self._multiplier
   }
 
-  fn inReplay(&mut self, vv : bool) -> bool {
+  fn inReplay(&mut self, v : bool) -> bool {
     self._inReplay = v;
     v
   }
@@ -644,7 +656,7 @@ impl GameState {
     v
   }
 
-  fn lastGameMode(&mut self, vv : i32) -> i32 {
+  fn lastGameMode(&mut self, v : i32) -> i32 {
     self._lastGameMode = v;
     v
   }

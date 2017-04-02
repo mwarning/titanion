@@ -38,6 +38,7 @@ use ttn::enemy::*;
 use ttn::bullet::*;
 use ttn::shape::*;
 use ttn::field::*;
+use ttn::frame::*;
 use ttn::dummy::*;
 
 
@@ -111,7 +112,7 @@ impl<'a> Player<'a> {
   }
 
   fn checkEnemyHit(&mut self, p : Vector, v : Vector, size : Vector) -> bool {
-    if self.tok.spec.gameState.mode == GameStateMode::MODERN {
+    if self.tok.spec.gameState.mode == Frame::Mode::MODERN {
       return false;
     }
     //with (state) {
@@ -120,8 +121,8 @@ impl<'a> Player<'a> {
       }
       if ((self.state.pos.x - p.x).abs() < size.x) && ((self.state.pos.y - p.y).abs() < size.y) {
         match self.spec.gameState.mode {
-          GameStateMode::CLASSIC => { self.destroy(); },
-          GameStateMode::BASIC => {
+          Frame::Mode::CLASSIC => { self.destroy(); },
+          Frame::Mode::BASIC => {
           self.hitOffset.x = self.pos().x - p.x;
           self.hitOffset.y = self.pos().y - p.y;
           self.tok.spec.addVelocity(self.tok.state, v, self.hitOffset);
@@ -140,7 +141,7 @@ impl<'a> Player<'a> {
   }
 
   fn drawState(&mut self) {
-    if self.tok.spec.gameState.mode == GameStateMode::CLASSIC {
+    if self.tok.spec.gameState.mode == Frame::Mode::CLASSIC {
       self.tok.spec.drawState(self.state);
     }
   }
@@ -191,9 +192,9 @@ impl<'a> Player<'a> {
 
   fn enemiesHasCollision(&self) -> bool {
     match self.tok.spec.gameState.mode {
-      GameStateMode::CLASSIC => self.tok.state.hasCollision,
-      GameStateMode::BASIC => true,
-      GameStateMode::MODERN => false
+      Frame::Mode::CLASSIC => self.tok.state.hasCollision,
+      Frame::Mode::BASIC => true,
+      Frame::Mode::MODERN => false
     }
   }
 }
@@ -452,15 +453,15 @@ impl PlayerSpec {
   fn start(&mut self) {
     self.clear();
     match self.gameState.mode {
-      GameStateMode::CLASSIC => {
+      Frame::Mode::CLASSIC => {
         self.bulletHitWidth = 0.4;
         self.shotMaxNum = 3;
       },
-      GameStateMode::BASIC => {
+      Frame::Mode::BASIC => {
         self.bulletHitWidth = 0.2;
         self.shotMaxNum = 3;
       },
-      GameStateMode::MODERN => {
+      Frame::Mode::MODERN => {
         self.bulletHitWidth = 0.1;
         self.shotMaxNum = 16;
       },
@@ -468,7 +469,7 @@ impl PlayerSpec {
   }
 
   fn respawn(&mut self, ps : &PlayerState) {
-    if self.gameState.mode == GameStateMode::MODERN {
+    if self.gameState.mode == Frame::Mode::MODERN {
       for i in 0..4 {
         if let Some(e) = self.enemies.getInstance() {
           e.set(self.ghostEnemySpec, ps.pos.x, ps.pos.y, 0, 0);
@@ -541,7 +542,7 @@ impl PlayerSpec {
 
       let mut px : f32 = ps.pos.x;
       ps.pos.x += vx * ps.speed;
-      if self.gameState.mode == GameStateMode::CLASSIC {
+      if self.gameState.mode == Frame::Mode::CLASSIC {
         vy *= 0.5;
       }
       ps.pos.y += vy * ps.speed;
@@ -551,7 +552,7 @@ impl PlayerSpec {
       //assert(deg <>= 0);
       ps.pos += ps.vel;
       ps.vel *= 0.9;
-      if self.gameState.mode == GameStateMode::MODERN {
+      if self.gameState.mode == Frame::Mode::MODERN {
         let mut d : f32 = ps.ghostCnt * 0.05;
         for i in 0..self.capturedEnemyNum {
           let e : Enemy = self.capturedEnemies[i];
@@ -560,7 +561,7 @@ impl PlayerSpec {
         }
       }
       match self.gameState.mode {
-       GameStateMode::CLASSIC => {
+       Frame::Mode::CLASSIC => {
         /*if (input.button & PadState.Button.A) {
           if (!aPressed) {
             aPressed = true;
@@ -578,7 +579,7 @@ impl PlayerSpec {
           self.isFirstShot = true;
         }
       },
-      GameStateMode::BASIC => {
+      Frame::Mode::BASIC => {
         if (self.input.button & PadState.Button.A) && !(self.input.button & PadState.Button.B) {
           if self.shotCnt <= 0 {
             self.fireShot(ps);
@@ -587,7 +588,7 @@ impl PlayerSpec {
           self.isFirstShot = true;
         }
       },
-      GameStateMode::MODERN => {
+      Frame::Mode::MODERN => {
         if self.input.button & PadState.Button.A {
           if self.shotCnt <= 0 {
             self.fireShot(ps);
@@ -600,7 +601,7 @@ impl PlayerSpec {
       if self.input.button & PadState.Button.B {
         ps.speed += (BASE_SPEED * 1.2 - ps.speed) * 0.33;
         ps.deg *= 0.9;
-        if self.gameState.mode == GameStateMode::MODERN {
+        if self.gameState.mode == Frame::Mode::MODERN {
           ps.capturedEnemyWidth -= 0.05;
           if ps.capturedEnemyWidth < 0.2 {
             ps.capturedEnemyWidth = 0.2;
@@ -608,7 +609,7 @@ impl PlayerSpec {
         }
       } else {
         ps.speed += (BASE_SPEED * 2.0 - ps.speed) * 0.33;
-        if ps.gameState.mode == GameStateMode::MODERN {
+        if ps.gameState.mode == Frame::Mode::MODERN {
           ps.capturedEnemyWidth += 0.05;
           if ps.capturedEnemyWidth > 1.0 {
             ps.capturedEnemyWidth = 1.0;
@@ -616,7 +617,7 @@ impl PlayerSpec {
         }
       }
       match self.gameState.mode {
-        GameStateMode::CLASSIC => {
+        Frame::Mode::CLASSIC => {
         if (self.input.button & PadState.Button.B) &&
             !self.captureBeamReleased && (self.captureBeamEnergy >= 1.0) &&
             (self.capturedEnemyNum < MAX_CAPTURED_ENEMIES_NUM) {
@@ -637,7 +638,7 @@ impl PlayerSpec {
           }
         }
         },
-      GameStateMode::BASIC => {
+      Frame::Mode::BASIC => {
         if (self.input.button & PadState.Button.B) &&
             (self.capturedEnemyNum < MAX_CAPTURED_ENEMIES_NUM) {
           self.tractorBeam.extendLength();
@@ -645,7 +646,7 @@ impl PlayerSpec {
           self.tractorBeam.reduceLength();
         }
       },
-      GameStateMode::MODERN => {
+      Frame::Mode::MODERN => {
         if (self.input.button & PadState.Button.B) &&
             !(self.input.button & PadState.Button.A) {
           self.tractorBeam.extendLength();
@@ -662,17 +663,17 @@ impl PlayerSpec {
         self.capturedEnemyShotCnt -= 1;
       }
       match self.gameState.mode {
-      GameStateMode::CLASSIC => {
+      Frame::Mode::CLASSIC => {
         if self.pos.y > 0.0 {
           self.pos.y = 0.0;
         }
       },
-      GameStateMode::BASIC => {
+      Frame::Mode::BASIC => {
         if self.pos.y > 0 {
           self.pos.y = 0;
         }
       },
-      GameStateMode::MODERN => {
+      Frame::Mode::MODERN => {
         if self.pos.y > self.field.size.y {
           self.pos.y = self.field.size.y;
         }
@@ -710,7 +711,7 @@ impl PlayerSpec {
         self.addShotParticle(ps.pos, ps.deg);
         Sound.playSe("shot.wav");
         for i in 0..self.capturedEnemyNum {
-          if (self.gameState.mode == GameStateMode::MODERN) && ((i + self.ghostShotCnt) % 4 == 0) {
+          if (self.gameState.mode == Frame::Mode::MODERN) && ((i + self.ghostShotCnt) % 4 == 0) {
             continue;
           }
           if self.capturedEnemies[i as usize].isCaptured {
@@ -719,11 +720,11 @@ impl PlayerSpec {
               break;
             }
             let mut d : f32 = ps.deg;
-            if self.gameState.mode == GameStateMode::MODERN {
+            if self.gameState.mode == Frame::Mode::MODERN {
               d -= (self.capturedEnemies[i].pos.x - self.pos.x) * 0.3;
             }
             ces.set(self.shotSpec, self.capturedEnemies[i].pos, d, 0.66);
-            if self.gameState.mode != GameStateMode::MODERN {
+            if self.gameState.mode != Frame::Mode::MODERN {
               self.ces.setParent(s);
             }
             else {
@@ -732,7 +733,7 @@ impl PlayerSpec {
             self.addShotParticle(self.capturedEnemies[i].pos, ps.deg);
           }
         }
-        if self.gameState.mode == GameStateMode::MODERN {
+        if self.gameState.mode == Frame::Mode::MODERN {
           self.ghostShotCnt += 1;
         }
       }
@@ -846,19 +847,19 @@ impl PlayerSpec {
       else {
         a = 1.0 - ((c - 30) as f32) / 30.0;
       }
-      Screen.setColor(a, a, a);
+      Screen::setColor(a, a, a);
       self.lineShape.draw(p, cd, ps.deg);
     //}
   }
 
   fn drawState(&mut self, ps : &PlayerState) {
     //with (ps) {
-      Screen.setColor(1, 1, 1, 0.5);
+      Screen::setColor(1, 1, 1, 0.5);
       glBegin(GL_TRIANGLE_FAN);
-      glVertex3f(15, 400, 0);
-      glVertex3f(15 + self.captureBeamEnergy * 100, 400, 0);
-      glVertex3f(25 + self.captureBeamEnergy * 100, 420, 0);
-      glVertex3f(25, 420, 0);
+      glVertex3f(15.0, 400.0, 0.0);
+      glVertex3f(15.0 + self.captureBeamEnergy * 100.0, 400.0, 0.0);
+      glVertex3f(25.0 + self.captureBeamEnergy * 100.0, 420.0, 0.0);
+      glVertex3f(25.0, 420.0, 0.0);
       glEnd();
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       let mut a : f32;
@@ -868,21 +869,20 @@ impl PlayerSpec {
         let c  : i32 = ps.colorCnt % 60;
         if c < 30 {
           a = (c / 30) as f32;
-        }
-        else {
+        } else {
           a = 1.0 - ((c - 30) as f32) / 30.0;
         }
       }
-      Screen.setColor(1, 1, 1, a);
+      Screen::setColor(1, 1, 1, a);
       glBegin(GL_LINE_LOOP);
-      glVertex3f(15, 400, 0);
-      glVertex3f(115, 400, 0);
-      glVertex3f(125, 420, 0);
-      glVertex3f(25, 420, 0);
+      glVertex3f(15.0, 400.0, 0.0);
+      glVertex3f(115.0, 400.0, 0.0);
+      glVertex3f(125.0, 420.0, 0.0);
+      glVertex3f(25.0, 420.0, 0.0);
       glEnd();
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
       if self.captureBeamEnergy >= 1.0 {
-        Letter.drawString("READY", 50, 390, 4);
+        Letter::drawString("READY", 50, 390, 4);
       }
     //}
   }
@@ -1140,9 +1140,9 @@ impl TractorBeam {
       }
       glScalef(s, s, s);
       match self.gameState.mode {
-      GameStateMode::CLASSIC => { self.shapes[c % 3].draw(); },
-      GameStateMode::BASIC => { self.shapes[c % 3].draw(); },
-      GameStateMode::MODERN => {
+      Frame::Mode::CLASSIC => { self.shapes[c % 3].draw(); },
+      Frame::Mode::BASIC => { self.shapes[c % 3].draw(); },
+      Frame::Mode::MODERN => {
         if self.playerState.midEnemyProvacated {
           self.shapes[c % 3].draw();
         }
