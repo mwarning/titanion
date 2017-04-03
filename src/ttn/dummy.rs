@@ -41,26 +41,39 @@ pub enum PadStateDir {
 
 pub struct SDL_Event {
   _type : usize,
-  resize : usize,
+  resize : SDL_ResizeEvent,
 }
 
 pub const SDL_VIDEORESIZE : usize = 0;
-pub struct SDL_ResizeEvent;
+pub struct SDL_ResizeEvent {
+  w : u32,
+  h : u32,
+}
 pub const SDL_PRESSED : usize = 0;
 pub const SDLK_ESCAPE : usize = 0;
 pub const SDLK_p : usize = 0;
 
 pub struct ReplayData;
 
+/*
 pub struct Preference;
 
-impl Preference {
+mod Preference {
+#![feature(associated_consts)]
   pub const RANKING_NUM : usize = 10;
-}
+}*/
 
 pub const GL_TEXTURE_2D : usize = 0;
 pub const GL_PROJECTION : usize = 0;
 pub const GL_MODELVIEW : usize = 0;
+
+pub const SDL_USEREVENT : usize = 0;
+pub const SDL_QUIT : usize = 0;
+
+pub fn SDL_Delay(d : u32) {}
+pub fn SDL_GetTicks() -> i64 {}
+pub fn SDL_Quit() {}
+pub fn SDL_PollEvent(e : &SDL_Event) -> u32 {}
 
 pub fn glMatrixMode(mode : usize) {}
 pub fn gluLookAt(x : f32, y : f32, z : f32, a : f32, b : f32, c : f32, d : f32, e : f32, g : f32) {}
@@ -121,6 +134,14 @@ pub fn glEnable() {}
 pub fn glDisable() {}
 pub fn glBlendFunc(a : usize, b : usize) {}
 pub fn glScalef(a : f32, b : f32, c : f32) {}
+
+pub struct File;
+
+impl File {
+  fn new(name : &'static str, mode : usize) -> File {
+    File{}
+  }
+}
 
 
 pub struct Texture;

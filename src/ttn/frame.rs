@@ -35,6 +35,9 @@ use util::vector::*;
 use util::actor::*;
 use util::math::*;
 use util::rand::*;
+use util::sdl::mainloop::*;
+use util::sdl::input::*;
+use ttn::preference::*;
 use ttn::token::*;
 use ttn::shape::*;
 use ttn::bullet::*;
@@ -47,9 +50,16 @@ use ttn::title::*;
 use ttn::dummy::*;
 
 
-static LAST_REPLAY_FILE_NAME : &'static str = "last.rpl";
+const LAST_REPLAY_FILE_NAME : &'static str = "last.rpl";
 
+//public class Frame: src.util.sdl.frame.Frame {
 pub struct Frame {
+  //from src.util.sdl.frame.Frame
+  mainLoop: &MainLoop,
+  abstractScreen: &Screen,
+  abstractInput: &Input,
+  abstractPreference: &Preference,
+
   pad : *mut Pad,
   screen :  *mut Screen,
   field : *mut Field,
@@ -71,18 +81,37 @@ pub struct Frame {
 /**
  * Game frame and actor pools.
  */
-//public class Frame: src.util.sdl.frame.Frame {
 impl Frame {
+  //from src.util.sdl.frame.Frame
+  fn new(
+    mainloop : &MainLoop,
+    abstractScreen : &Screen,
+    abstractInput : &Input,
+    abstractPreference : &Preference
+    ) {
+    Frame{
+      mainLoop : &mainloop,
+      abstractScreen: &abstractScreen,
+      abstractInput : &abstractInput,
+      abstractPreference : &abstractPreference,
+
+      //moved from init()
+      preference : abstractPreference as &Preference,
+      pad : abstractInput as &Pad,
+      screen : abstractScreen as &Screen,
+    }
+  }
+
   fn init(&mut self) {
     Sound::load();
-    let preference = abstractPreference as &Preference;
-    self.preference = preference;
+    //let preference = abstractPreference as &Preference;
+    //self.preference = preference;
     self.preference.load();
     Letter::init();
-    let pad = abstractInput as &Pad;
-    self.pad = pad;
+    //let pad = abstractInput as &Pad;
+    //self.pad = pad;
     self.pad.openJoystick();
-    self.screen = abstractScreen as &Screen;
+    //self.screen = abstractScreen as &Screen;
     let field = Field::new(self, self.screen);
     self.field = field;
     let enemies = EnemyPool::new();
@@ -106,12 +135,12 @@ impl Frame {
     self.bonusParticles.init(256, triangleParticleSpec, lineParticleSpec, quadParticleSpec, bonusParticleSpec);
     self.triangleParticleSpec.setParticles(particles);
     self.pillars.init(48);
-    let gameState = GameState::new(self, preference);
+    let gameState = GameState::new(self, self.preference);
     self.gameState = gameState;
-    self.title = Title::new(preference, pad, self);
-    self.title.setMode(preference.lastMode);
+    self.title = Title::new(self.preference, self.pad, self);
+    self.title.setMode(self.preference.lastMode);
     self.title.init();
-    let playerSpec = PlayerSpec::new(pad, self.gameState, field, enemies, bullets, particles);
+    let playerSpec = PlayerSpec::new(self.pad, self.gameState, field, enemies, bullets, particles);
     self.playerSpec = playerSpec;
     let player = Player::new(playerSpec);
     self.player = player;
@@ -124,6 +153,22 @@ impl Frame {
     self.gameState.setStage(stage);
     self.rand = Rand::new();
     self.loadLastReplay();
+  }
+
+  //from src.util.sdl.frame.Frame
+  fn setMainLoop(&mut self, mainLoop : &MainLoop) {
+    self.mainLoop = mainLoop;
+  }
+
+  //from src.util.sdl.frame.Frame
+  fn setUIs(&mut self, screen : &Screen, input : &Input) {
+    self.abstractScreen = screen;
+    self.abstractInput = input;
+  }
+
+  //from src.util.sdl.frame.Frame
+  fn setPreference(&mut self, preference : &Preference) {
+    self.abstractPreference = preference;
   }
 
   fn quit(&mut self) {

@@ -22,7 +22,6 @@ use std::f32::consts::PI;
 
 use util::vector::*;
 use ttn::frame::*;
-//use ttn::screen::*;
 use ttn::dummy::*;
 
 /**

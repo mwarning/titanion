@@ -25,13 +25,13 @@ use std::f32::consts::PI;
 use std::ptr;
 
 use util::vector::*;
+use util::actor::*;
 use ttn::token::*;
 use ttn::shape::*;
 use ttn::dummy::*;
 use ttn::enemy::*;
 use ttn::field::*;
 use ttn::frame::*;
-use util::actor::*;
 use ttn::player::*;
 
 /*
@@ -52,21 +52,18 @@ impl BulletPool {
   */
   }
 
-  fn removeAround(&mut self, cnt : &i32, pos : Vector,
-            particles : ParticlePool, bonusParticles : &ParticlePool,
-            player : &Player) {
+  fn removeAround(&mut self, cnt : &i32, pos : Vector, particles : ParticlePool, bonusParticles : &ParticlePool, player : &Player) {
     for b in self.actors {
       if b.exists {
         if b.pos.dist(pos) < BULLET_REMOVED_RANGE {
           b.remove();
           player.addScore(cnt);
           cnt += 1;
-          let wc : i32;
-          if cnt <= 50 {
-            wc = cnt;
+          let wc = if cnt <= 50 {
+            cnt;
           } else {
-            wc = 50 + ((cnt - 50) as f32).sqrt() as i32
-          }
+            50 + ((cnt - 50) as f32).sqrt() as i32
+          };
           let mut bp : &Particle = bonusParticles.getInstanceForced();
           bp.set(ParticleShape::BONUS, b.state.pos.x, b.state.pos.y, 0, 0.2,
                  0.5, 1, 1, 1, 60, false, cnt, wc);
@@ -167,7 +164,7 @@ impl BulletSpec {
       }
       bs.ppos.x = bs.ts.pos.x;
       bs.ppos.y = bs.ts.pos.y;
-      let sp : f32 = bs.ts.speed;
+      let mut sp = bs.ts.speed;
       if (self.gameState.mode != Frame::Mode::CLASSIC) && (bs.cnt < 40) {
         sp *= ((bs.cnt + 10) as f32) / 50;
       }
@@ -213,17 +210,11 @@ impl BulletSpec {
       glEnd();
       p = self.field.calcCircularPos(bs.ts.pos);
       let d : f32 = match self.gameState.mode {
-        Frame::Mode::CLASSIC => {
-          PI;
-        }
-        Frame::Mode::BASIC => {
-          bs.ts.deg;
-        }
-        Frame::Mode::MODERN => {
-          bs.ts.deg;
-        }
+        Frame::Mode::CLASSIC => PI,
+        Frame::Mode::BASIC => bs.ts.deg,
+        Frame::Mode::MODERN => bs.ts.deg,
       };
-      let cd : f32 = self.field.calcCircularDeg(bs.ts.pos.x);
+      let cd = self.field.calcCircularDeg(bs.ts.pos.x);
       (self.ts.shape as &BulletShapeBase).draw(p, cd, d, bs.cnt * 3.0);
       Screen::setColor(0.6 * colorAlpha, 0.9 * colorAlpha, 0.9 * colorAlpha);
       (self.lineShape as &BulletShapeBase).draw(p, cd, d, bs.cnt * 3.0);

@@ -10,17 +10,24 @@ module src.util.sdl.input;
 private import derelict.sdl.sdl;
 */
 
+use std::vec::Vec;
+use ttn::dummy::*;
+
 /**
  * Input device interface.
  */
-trait Input {
-  fn handleEvent(event : &SDL_Event);
+pub trait Input {
+  fn handleEvent(&self, event : &SDL_Event);
 }
 
-trait MultipleInputDevice : Input {
-	inputs : Vec!<Input>,
+struct MultipleInputDevice {
+	inputs : Vec<&Input>,
+}
+
+impl Input for MultipleInputDevice {
 	fn handleEvent(&self, event : &SDL_Event) {
-    for let i in self.inputs {
-      i.handleEvent(event);
-    }
+	    for i in &self.inputs {
+	      i.handleEvent(event);
+	    }
+	}
 }

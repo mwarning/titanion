@@ -12,6 +12,8 @@ mod util {
 	pub mod rand;
 	pub mod sdl {
 		pub mod displaylist;
+		pub mod mainloop;
+		pub mod input;
 	}
 }
 
@@ -26,6 +28,7 @@ mod ttn {
 	pub mod pillar;
 	pub mod frame;
 	pub mod title;
+	pub mod preference;
 	pub mod dummy; //skeleton dummies
 }
 

@@ -15,11 +15,14 @@ private import src.util.sdl.input;
 /**
  * Lifecycle of the game.
  */
+
+ //moved to src/ttn/frame.rs
+ /*
 pub struct Frame {
-  mainLoop: MainLoop,
-  abstractScreen: SdlScreen,
-  abstractInput: Input,
-  abstractPreference: Preference,
+  mainLoop: &MainLoop,
+  abstractScreen: &SdlScreen,
+  abstractInput: &Input,
+  abstractPreference: &Preference,
 }
 
 impl Frame {
@@ -51,6 +54,7 @@ impl Frame {
   }
 }
 
+//needed?
 trait Frame {
   fn init();
   fn start();
@@ -58,3 +62,4 @@ trait Frame {
   fn move1();
   fn draw();
 }
+*/
