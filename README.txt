@@ -3,14 +3,11 @@ The old code is written in D, and is placed along the *.rs files until the code 
 
 ##TODO
 
-- --raw conversion of the source code syntax--
-- trait structure of shape.rs
-- mapping of inheritance into Rust via traits
-- sound working
-- rand working
-- sdl bindings added
-- opengl bindings added
-
+- fix lifetimes
+- integrate pad
+- integrate particle
+- integrate sound
+- use sdl
 
 Any help is welcome!
 
