@@ -29,6 +29,7 @@ mod ttn {
 	pub mod frame;
 	pub mod title;
 	pub mod particle;
+	pub mod letter;
 	pub mod preference;
 	pub mod dummy; //skeleton dummies
 }

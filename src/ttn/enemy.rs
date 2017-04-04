@@ -37,6 +37,7 @@ use ttn::field::*;
 use ttn::player::*;
 use ttn::stage::*;
 use ttn::frame::*;
+use ttn::particle::*;
 use ttn::dummy::*;
 
 
@@ -791,9 +792,9 @@ pub trait EnemySpec {
   fn calcCapturePosX(&self, idx : i32) -> f32 {
     let spec = self.get_enemyspec_data();
     if (idx % 2) == 0 {
-      ((idx as f32 / 2.0) + 0.5) * PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH * spec.player.capturedEnemyWidth()
+      ((idx as f32 / 2.0) + 0.5) * Player::CAPTURED_ENEMIES_INTERVAL_LENGTH * spec.player.capturedEnemyWidth()
     } else {
-      -((idx as f32 / 2.0) + 0.5) * PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH * spec.player.capturedEnemyWidth()
+      -((idx as f32 / 2.0) + 0.5) * Player::CAPTURED_ENEMIES_INTERVAL_LENGTH * spec.player.capturedEnemyWidth()
     }
   }
 
@@ -842,11 +843,11 @@ pub trait EnemySpec {
       for i in 0..10 {
         let p : Particle = spec.particles.getInstanceForced();
         let d : f32 = dd + rand.nextSignedFloat(PI / 4.0);
-        p.set(Particle.Shape.LINE, es.ts.pos.x, es.ts.pos.y, d, 0.1 + rand.nextFloat(0.5), 1,
+        p.set(Particle::Shape::LINE, es.ts.pos.x, es.ts.pos.y, d, 0.1 + rand.nextFloat(0.5), 1,
               r, g, b, 30 + rand.nextInt(30));
         p = spec.particles.getInstanceForced();
         d = dd + PI + rand.nextSignedFloat(PI / 4.0);
-        p.set(Particle.Shape.LINE, es.ts.pos.x, es.ts.pos.y, d, 0.1 + rand.nextFloat(0.5), 1,
+        p.set(Particle::Shape::LINE, es.ts.pos.x, es.ts.pos.y, d, 0.1 + rand.nextFloat(0.5), 1,
               r, g, b, 30 + rand.nextInt(30));
       }
       if es.shield <= 0 {
@@ -883,18 +884,18 @@ pub trait EnemySpec {
       let b : f32 = 0.5 + rand.nextFloat(0.5);
       let sz : f32 = (es.ts.targetSize.x + es.ts.targetSize.y) / 2;
       sz = (sz - 1.0) * 2.0 + 1.0;
-      let mut n : i32 = 3 + rand.nextInt(2);
+      let mut n = 3 + rand.nextInt(2);
       n *= sz;
       for i  in 0..n {
         let p : Particle = spec.particles.getInstanceForced();
-        let d : f32 = dd + rand.nextSignedFloat(PI / 5.0);
-        p.set(Particle.Shape.TRIANGLE, es.ts.pos.x, es.ts.pos.y, d, 0.5,
+        let d = dd + rand.nextSignedFloat(PI / 5.0);
+        p.set(Particle::Shape::TRIANGLE, es.ts.pos.x, es.ts.pos.y, d, 0.5,
               (2.0 + rand.nextFloat(0.5)) * sz, r, g, b, 50 + rand.nextInt(100));
       }
       for i in 0..n {{
         let p : Particle = spec.particles.getInstanceForced();
         let d : f32 = rand.nextFloat(PI * 2.0);
-        p.set(Particle.Shape.QUAD, es.ts.pos.x, es.ts.pos.y, d, 0.1 + rand.nextFloat(0.1),
+        p.set(Particle::Shape::QUAD, es.ts.pos.x, es.ts.pos.y, d, 0.1 + rand.nextFloat(0.1),
               (1 + rand.nextFloat(0.5)) * sz, r, g, b, 50 + rand.nextInt(100));
       }
       if !self.isBeingCaptured(es) {
@@ -908,7 +909,7 @@ pub trait EnemySpec {
           } else {
             wc = 50 + (((cnt - 50) as f32).sqrt() as i32);
           }
-          p.set(Particle.Shape.BONUS, es.ts.pos.x, es.ts.pos.y, 0, 0.1,
+          p.set(Particle::Shape::BONUS, es.ts.pos.x, es.ts.pos.y, 0, 0.1,
                 1.0 + (wc as f32) / 75.0, 1, 1, 1, 120, false, cnt, wc);
           spec.player.addScore(spec.score * cnt);
         } else {
@@ -922,7 +923,7 @@ pub trait EnemySpec {
             }
             spec.player.addScore(spec.score * pm);
             let mut p : Particle = spec.bonusParticles.getInstanceForced();
-            p.set(Particle.Shape.BONUS, es.ts.pos.x, es.ts.pos.y, 0, 0.1,
+            p.set(Particle::Shape::BONUS, es.ts.pos.x, es.ts.pos.y, 0, 0.1,
                   0.5, 1, 1, 1, 60, false, pm);
             spec.gameState.setProximityMultiplier(pm);
           } else {
@@ -952,11 +953,11 @@ pub trait EnemySpec {
         es.sizeVel.y = 0.2;
       }
       let mut p : Particle = spec.particles.getInstanceForced();
-      p.set(Particle.Shape.LINE, es.ts.pos.x, es.ts.pos.y, PI / 2.0 + rand.nextSignedFloat(PI / 4.0),
+      p.set(Particle::Shape::LINE, es.ts.pos.x, es.ts.pos.y, PI / 2.0 + rand.nextSignedFloat(PI / 4.0),
             0.1 + rand.nextFloat(0.2), 1,
             1, 0.5, 0.5, 30 + rand.nextInt(30));
       p = spec.particles.getInstanceForced();
-      p.set(Particle.Shape.LINE, es.ts.pos.x, es.ts.pos.y, -PI / 2.0 + rand.nextSignedFloat(PI / 4.0),
+      p.set(Particle::Shape::LINE, es.ts.pos.x, es.ts.pos.y, -PI / 2.0 + rand.nextSignedFloat(PI / 4.0),
             0.1 + rand.nextFloat(0.2), 1,
             1, 0.5, 0.5, 30 + rand.nextInt(30));
       if spec.removeBullets {

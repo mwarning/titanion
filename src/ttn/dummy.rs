@@ -57,21 +57,7 @@ impl Sound {
 	pub fn playMarkedSes() {}
 }
 
-pub struct Letter;
-
-impl Letter {
-	pub fn drawString(name : &str, lx : f32, y : f32, s : f32,
-                                d : i32 /*= Direction.TO_RIGHT*/,
-                                rev : bool /*= false*/, od : f32 /*= 0*/,
-                                r : f32 /*= 1*/, g : f32 /* = 1*/, b : f32 /*= 1*/) {
-	}
-}
-
 pub const TurretSpec_SPEED_RATIO : f32 = 0.0;
-
-
-pub const PlayerSpec_CAPTURED_ENEMIES_INTERVAL_LENGTH : f32 = 1.2;
-
 
 pub const GL_TRIANGLES : usize = 0;
 pub const GL_TRIANGLE_FAN : usize = 0;

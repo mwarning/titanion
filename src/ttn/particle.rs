@@ -431,7 +431,7 @@ enum Shape {
   TRIANGLE, LINE, QUAD, BONUS,
 }
 
-struct Particle {
+pub struct Particle {
   tok : Token<ParticleState, ParticleSpec>,
   triangleParticleSpec : &TriangleParticleSpec,
   lineParticleSpec : &LineParticleSpec,

@@ -39,6 +39,8 @@ use ttn::bullet::*;
 use ttn::shape::*;
 use ttn::field::*;
 use ttn::frame::*;
+use ttn::particle::*;
+use ttn::letter::*;
 use ttn::dummy::*;
 
 
@@ -746,11 +748,11 @@ impl PlayerSpec {
     for i in 0..5  {
       let mut pt : Particle;
       pt = self.particles.getInstanceForced();
-      pt.set(Particle.Shape.LINE, p.x - 0.5, p.y,
+      pt.set(Particle::Shape::LINE, p.x - 0.5, p.y,
              -d + rand.nextSignedFloat(0.5), 0.25 + rand.nextFloat(0.75),
              1, 1.0, 0.25, 0.5, 10);
       pt = self.particles.getInstanceForced();
-      pt.set(Particle.Shape.LINE, p.x + 0.5, p.y,
+      pt.set(Particle::Shape::LINE, p.x + 0.5, p.y,
              -d + rand.nextSignedFloat(0.5), 0.25 + rand.nextFloat(0.75),
              1, 1.0, 0.25, 0.5, 10);
     }
@@ -769,7 +771,7 @@ impl PlayerSpec {
       let mut r : f32 = 0.5 + rand.nextFloat(0.5);
       let mut g : f32 = 0.3 + rand.nextFloat(0.3);
       let mut b : f32 = 0.8 + rand.nextFloat(0.2);
-      pt.set(Particle.Shape.LINE, ps.pos.x, ps.pos.y,
+      pt.set(Particle::Shape::LINE, ps.pos.x, ps.pos.y,
              d + rand.nextSignedFloat(0.3), sp * (1 + rand.nextFloat(2)),
              1, r, g, b, 30 + rand.nextInt(30));
     }
@@ -791,7 +793,7 @@ impl PlayerSpec {
       let mut b : f32 = 0.8 + rand.nextFloat(0.2);
       for i in 0..100 {
         let mut p : Particle = self.particles.getInstanceForced();
-        p.set(Particle.Shape.QUAD, ps.pos.x, ps.pos.y, rand.nextFloat(PI * 2.0), 0.01 + rand.nextFloat(1.0),
+        p.set(Particle::Shape::QUAD, ps.pos.x, ps.pos.y, rand.nextFloat(PI * 2.0), 0.01 + rand.nextFloat(1.0),
               1 + rand.nextFloat(4), r, g, b, 10 + rand.nextInt(200));
       }
       r = 0.5 + rand.nextFloat(0.5);
@@ -799,7 +801,7 @@ impl PlayerSpec {
       b = 0.8 + rand.nextFloat(0.2);
       for i in 0..30 {
         let mut p : Particle = self.particles.getInstanceForced();
-        p.set(Particle.Shape.TRIANGLE, ps.pos.x, ps.pos.y, rand.nextFloat(PI * 2.0), 0.03 + rand.nextFloat(0.3),
+        p.set(Particle::Shape::TRIANGLE, ps.pos.x, ps.pos.y, rand.nextFloat(PI * 2.0), 0.03 + rand.nextFloat(0.3),
               3, r, g, b, 50 + rand.nextInt(150));
       }
       r = 0.5 + rand.nextFloat(0.5);
@@ -807,7 +809,7 @@ impl PlayerSpec {
       b = 0.8 + rand.nextFloat(0.2);
       for i in 0..300 {
         let mut p : Particle = self.particles.getInstanceForced();
-        p.set(Particle.Shape.LINE, ps.pos.x, ps.pos.y, rand.nextFloat(PI * 2.0), 0.07 + rand.nextFloat(0.7),
+        p.set(Particle::Shape::LINE, ps.pos.x, ps.pos.y, rand.nextFloat(PI * 2.0), 0.07 + rand.nextFloat(0.7),
               1, r, g, b, 100 + rand.nextInt(100));
       }
       Sound.playSe("player_explosion.wav");

@@ -35,6 +35,7 @@ use ttn::player::*;
 use ttn::enemy::*;
 use ttn::pillar::*;
 use ttn::frame::*;
+use ttn::letter::*;
 use ttn::dummy::*;
 
 
@@ -459,13 +460,13 @@ impl Stage {
   fn draw(&mut self) {
     if (self.gameState.mode != Frame::Mode::MODERN) &&
         (self.phaseTime < PHASE_RESULT_SHOW_CNT) && (self.phaseNum > 1) {
-      Letter.drawString("SHOTS FIRED", 152, 250, 6, Letter.Direction.TO_RIGHT, false, 0, 1, 1, 0.33);
+      Letter.drawString("SHOTS FIRED", 152, 250, 6, Letter::Direction::TO_RIGHT, false, 0, 1, 1, 0.33);
       Letter.drawNum(self.shotFiredNumRsl, 480, 250, 6);
-      Letter.drawString("NUMBER OF HITS", 152, 280, 6, Letter.Direction.TO_RIGHT, false, 0, 1, 1, 0.33);
+      Letter.drawString("NUMBER OF HITS", 152, 280, 6, Letter::Direction::TO_RIGHT, false, 0, 1, 1, 0.33);
       Letter.drawNum(self.shotHitNumRsl, 480, 280, 6);
       Letter.drawString("HIT-MISS RATIO", 152, 310, 6);
       Letter.drawNum((self.hitRatio * 10000) as i32, 480, 310, 6, 3, -1, 2);
-      Letter.drawString("BONUS", 200, 350, 6, Letter.Direction.TO_RIGHT, false, 0, 1, 0.33, 0.33);
+      Letter.drawString("BONUS", 200, 350, 6, Letter::Direction::TO_RIGHT, false, 0, 1, 0.33, 0.33);
       Letter.drawNum(self.hitRatioBonus, 440, 350, 6);
     } else if self.phaseTime < (PHASE_RESULT_SHOW_CNT + PHASE_START_SHOW_CNT) {
       Letter.drawNum(self.phaseNum, 392, 200, 10);
@@ -478,16 +479,17 @@ impl Stage {
   }
 
   fn drawGameover(&self) {
-  let hr : f32 = 0.0;
-    if self.shotFiredNumTotal > 0 {
-      hr = (self.shotHitNumTotal as f32) / (self.shotFiredNumTotal as f32);
-    }
-    Letter::drawString("SHOTS FIRED", 152, 250, 6, Letter.Direction.TO_RIGHT, false, 0, 1, 1, 0.33);
+    let hr = if self.shotFiredNumTotal > 0 {
+      (self.shotHitNumTotal as f32) / (self.shotFiredNumTotal as f32)
+    } else {
+      0.0
+    };
+    Letter::drawString("SHOTS FIRED", 152, 250, 6, Letter::Direction::TO_RIGHT, false, 0, 1, 1, 0.33);
     Letter::drawNum(self.shotFiredNumTotal, 480, 250, 6);
-    Letter::drawString("NUMBER OF HITS", 152, 280, 6, Letter.Direction.TO_RIGHT, false, 0, 1, 1, 0.33);
+    Letter::drawString("NUMBER OF HITS", 152, 280, 6, Letter::Direction::TO_RIGHT, false, 0, 1, 1, 0.33);
     Letter::drawNum(self.shotHitNumTotal, 480, 280, 6);
     Letter::drawString("HIT-MISS RATIO", 152, 310, 6);
-    Letter::drawNum((hr * 10000) as i32, 480, 310, 6, 3, -1, 2);
+    Letter::drawNum((hr * 10000.0) as i32, 480, 310, 6, 3, -1, 2);
   }
 
   fn attackSmallEnemyNum(&self) -> i32 {

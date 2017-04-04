@@ -32,6 +32,7 @@ use ttn::dummy::*;
 use ttn::enemy::*;
 use ttn::field::*;
 use ttn::frame::*;
+use ttn::particle::*;
 use ttn::player::*;
 
 /*
@@ -46,13 +47,14 @@ pub struct BulletPool {
 
 impl BulletPool {
    fn move1(&self) {
+    self.ap.move1();
     /*
     super.move();
     BulletState.move();
   */
   }
 
-  fn removeAround(&mut self, cnt : &i32, pos : Vector, particles : ParticlePool, bonusParticles : &ParticlePool, player : &Player) {
+  fn removeAround(&mut self, cnt : &i32, pos : Vector, particles : &ParticlePool, bonusParticles : &ParticlePool, player : &Player) {
     for b in self.actors {
       if b.exists {
         if b.pos.dist(pos) < BULLET_REMOVED_RANGE {
@@ -65,10 +67,10 @@ impl BulletPool {
             50 + ((cnt - 50) as f32).sqrt() as i32
           };
           let mut bp : &Particle = bonusParticles.getInstanceForced();
-          bp.set(ParticleShape::BONUS, b.state.pos.x, b.state.pos.y, 0, 0.2,
+          bp.set(Particle::Shape::BONUS, b.state.pos.x, b.state.pos.y, 0, 0.2,
                  0.5, 1, 1, 1, 60, false, cnt, wc);
           let mut p : &Particle = particles.getInstanceForced();
-          p.set(ParticleShape::QUAD, b.state.pos.x, b.state.pos.y,
+          p.set(Particle::Shape::QUAD, b.state.pos.x, b.state.pos.y,
                 b.state.deg, b.state.speed,
                 1.5, 0.5, 0.75, 1.0, 60, false);
           self.removeAround(cnt, b.pos, particles, bonusParticles, player);

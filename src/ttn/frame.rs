@@ -48,6 +48,7 @@ use ttn::stage::*;
 use ttn::enemy::*;
 use ttn::pillar::*;
 use ttn::title::*;
+use ttn::letter::*;
 use ttn::dummy::*;
 
 
