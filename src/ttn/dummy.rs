@@ -3,37 +3,6 @@
 use util::vector::*;
 use util::rand::*;
 
-/*
-//dummy
-pub enum GameStateMode {
-  CLASSIC, BASIC, MODERN,
-}*/
-
-pub struct TriangleParticleSpec;
-impl TriangleParticleSpec {
-  fn new() -> Self { TriangleParticleSpec{} }
-}
-
-pub struct QuadParticleSpec;
-impl QuadParticleSpec {
-  fn new() -> Self { QuadParticleSpec{} }
-}
-
-pub struct LineParticleSpec;
-impl LineParticleSpec {
-  fn new() -> Self { LineParticleSpec{} }
-}
-
-pub struct BonusParticleSpec;
-impl BonusParticleSpec {
-  fn new() -> Self { BonusParticleSpec{} }
-}
-
-//dummy
-pub enum ParticleShape {
-  TRIANGLE, LINE, QUAD, BONUS,
-}
-
 pub enum PadStateDir {
   UP,
   DOWN,
@@ -54,14 +23,6 @@ pub const SDLK_ESCAPE : usize = 0;
 pub const SDLK_p : usize = 0;
 
 pub struct ReplayData;
-
-/*
-pub struct Preference;
-
-mod Preference {
-#![feature(associated_consts)]
-  pub const RANKING_NUM : usize = 10;
-}*/
 
 pub const GL_TEXTURE_2D : usize = 0;
 pub const GL_PROJECTION : usize = 0;
@@ -88,9 +49,6 @@ pub struct RecordablePad;
 pub struct Pad;
 pub struct PadState;
 pub struct ShotShape;
-pub struct Particle;
-pub trait ParticlePool {}
-
 pub struct Sound;
 
 impl Sound {

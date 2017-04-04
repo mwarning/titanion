@@ -166,18 +166,12 @@ impl Field {
     bmvx = self.normalizeX(bmvx);
     inaa = bmvx * bmvx + bmvy * bmvy;
     if inaa > 0.00001 {
-      let mut sofsx : f32;
-      let mut sofsy : f32;
-      let mut inab : f32;
-      let mut hd : f32;
-      sofsx = pos.x;
-      sofsy = pos.y;
-      sofsx -= p.x;
-      sofsy -= p.y;
+      let mut sofsx = pos.x - p.x;
+      let mut sofsy = pos.y - p.y;
       sofsx = self.normalizeX(sofsx);
-      inab = bmvx * sofsx + bmvy * sofsy;
+      let inab = bmvx * sofsx + bmvy * sofsy;
       if (inab >= 0) && (inab <= inaa) {
-        hd = sofsx * sofsx + sofsy * sofsy - inab * inab / inaa;
+        let hd = sofsx * sofsx + sofsy * sofsy - inab * inab / inaa;
         if (hd >= 0) && (hd <= dist) {
           return true;
         }

@@ -113,15 +113,18 @@ impl TokenState {
   }
 */
   fn new() -> TokenState {
-    TokenState{isInitialized : false, deg : 0.0, speed : 0.0, pos : Vector::new() }
+    TokenState{isInitialized : true, deg : 0.0, speed : 0.0, pos : Vector::new() }
   }
   
-  fn clear(&self) {
+  fn clear(&mut self) {
+    self = TokenState::new();
+    /*
     self.pos.x = 0;
     self.pos.y = 0;
     self.deg = 0;
     self.speed = 0;
     self.isInitialized = true;
+    */
   }
 
   fn stepForward(&self) {

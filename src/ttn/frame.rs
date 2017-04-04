@@ -38,6 +38,7 @@ use util::rand::*;
 use util::sdl::mainloop::*;
 use util::sdl::input::*;
 use ttn::preference::*;
+use ttn::particle::*;
 use ttn::token::*;
 use ttn::shape::*;
 use ttn::bullet::*;
