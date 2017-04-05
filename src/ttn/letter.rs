@@ -44,7 +44,7 @@ pub struct Letter {
 impl Letter {
 
   fn init(&mut self) {
-    self.displayList = DisplayList(DISPLAY_LIST_NUM);
+    self.displayList = DisplayList::new(DISPLAY_LIST_NUM);
     self.displayList.resetList();
     for j in  0..3 {
       for i in 0..LETTER_NUM {
@@ -118,7 +118,7 @@ impl Letter {
 
 
   fn drawString(&mut self, str : &String, lx : f32, y : f32, s : f32) {
-    self.drawString11(str, lx, y, s, Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 1.0);
+    Letter::drawString11(str, lx, y, s, Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 1.0);
   }
 
   fn drawString11(&mut self, str : &String, lx : f32, y : f32, s : f32,
@@ -137,25 +137,25 @@ impl Letter {
     ld += od;
     for c in str {
       if c != ' ' {
-        let idx = convertCharToInt(c);
+        let idx = Letter::convertCharToInt(c);
         if (r == 1) && (g == 1) && (b == 1) {
           if rev {
-            drawLetterRev(idx, x, y, s, ld);
+            Letter::drawLetterRev(idx, x, y, s, ld);
           } else {
-            drawLetter(idx, x, y, s, ld);
+            Letter::drawLetter(idx, x, y, s, ld);
           }
         } else {
           Screen::setColor(r, g, b, 0.5);
           if rev {
-            drawLetterRev(idx + LETTER_NUM, x, y, s, ld);
+            Letter::drawLetterRev(idx + LETTER_NUM, x, y, s, ld);
           } else {
-            drawLetter(idx + LETTER_NUM, x, y, s, ld);
+            Letter::drawLetter(idx + LETTER_NUM, x, y, s, ld);
           }
           Screen::setColor(r, g, b);
           if rev {
-            drawLetterRev(idx + LETTER_NUM * 2, x, y, s, ld);
+            Letter::drawLetterRev(idx + LETTER_NUM * 2, x, y, s, ld);
           } else {
-            drawLetter(idx + LETTER_NUM * 2, x, y, s, ld);
+            Letter::drawLetter(idx + LETTER_NUM * 2, x, y, s, ld);
           }
         }
       }
@@ -173,9 +173,7 @@ impl Letter {
     }
   }
 
-  fn drawNum(&mut self, num : i32, lx : f32, y : f32, s : f32,
-                            dg : i32 /*= 0*/,
-                            headChar : f32 /*= -1*/, floatDigit : i32 /*= -1*/) {
+  fn drawNum(num : i32, lx : f32, y : f32, s : f32, dg : i32 /*= 0*/, headChar : f32 /*= -1*/, floatDigit : i32 /*= -1*/) {
     lx += LETTER_WIDTH * s / 2;
     y += LETTER_HEIGHT * s / 2;
     let n : i32 = num;
@@ -185,10 +183,10 @@ impl Letter {
     let fd : i32 = floatDigit;
     loop {
       if fd <= 0 {
-        drawLetter(n % 10, x, y, s, ld);
+        Letter::drawLetter(n % 10, x, y, s, ld);
         x -= s * LETTER_WIDTH;
       } else {
-        drawLetter(n % 10, x, y + s * LETTER_WIDTH * 0.25, s * 0.5, ld);
+        Letter::drawLetter(n % 10, x, y + s * LETTER_WIDTH * 0.25, s * 0.5, ld);
         x -= s * LETTER_WIDTH * 0.5;
       }
       n /= 10;
@@ -198,27 +196,26 @@ impl Letter {
         break;
       }
       if fd == 0 {
-        drawLetter(36, x, y + s * LETTER_WIDTH * 0.25, s * 0.5, ld);
+        Letter::drawLetter(36, x, y + s * LETTER_WIDTH * 0.25, s * 0.5, ld);
         x -= s * LETTER_WIDTH * 0.5;
       }
     }
     if headChar >= 0 {
-      drawLetter(headChar, x + s * LETTER_WIDTH * 0.2, y + s * LETTER_WIDTH * 0.2, s * 0.6, ld);
+      Letter::drawLetter(headChar, x + s * LETTER_WIDTH * 0.2, y + s * LETTER_WIDTH * 0.2, s * 0.6, ld);
     }
   }
 
-  fn drawNumSign(&mut self, num : i32, lx : f32, ly : f32, s : f32,
-                                headChar : i32 /*= -1*/, floatDigit : i32 /*= -1*/, type_ : i32 /* = 0*/) {
+  fn drawNumSign(num : i32, lx : f32, ly : f32, s : f32, headChar : i32 /*= -1*/, floatDigit : i32 /*= -1*/, type_ : i32 /* = 0*/) {
     let x : f32 = lx;
     let y : f32 = ly;
     let n : i32 = num;
     let fd : i32 = floatDigit;
     loop {
       if fd <= 0 {
-        drawLetterRev(n % 10 + type_ * LETTER_NUM, x, y, s, 0);
+        Letter::drawLetterRev(n % 10 + type_ * LETTER_NUM, x, y, s, 0);
         x -= s * LETTER_WIDTH;
       } else {
-        drawLetterRev(n % 10 + type_ * LETTER_NUM, x, y - s * LETTER_WIDTH * 0.25, s * 0.5, 0);
+        Letter::drawLetterRev(n % 10 + type_ * LETTER_NUM, x, y - s * LETTER_WIDTH * 0.25, s * 0.5, 0);
         x -= s * LETTER_WIDTH * 0.5;
       }
       n /= 10;
@@ -227,12 +224,12 @@ impl Letter {
       }
       fd -= 1;
       if fd == 0 {
-        drawLetterRev(36 + type_ * LETTER_NUM, x, y - s * LETTER_WIDTH * 0.25, s * 0.5, 0);
+        Letter::drawLetterRev(36 + type_ * LETTER_NUM, x, y - s * LETTER_WIDTH * 0.25, s * 0.5, 0);
         x -= s * LETTER_WIDTH * 0.5;
       }
     }
     if headChar >= 0 {
-      drawLetterRev(headChar + type_ * LETTER_NUM, x + s * LETTER_WIDTH * 0.2, y - s * LETTER_WIDTH * 0.2, s * 0.6, 0);
+      Letter::drawLetterRev(headChar + type_ * LETTER_NUM, x + s * LETTER_WIDTH * 0.2, y - s * LETTER_WIDTH * 0.2, s * 0.6, 0);
     }
   }
 
@@ -244,16 +241,16 @@ impl Letter {
     let x : f32 = lx;
     for i in 0..7 {
       if i != 4 {
-        drawLetter(n % 10, x, y, s, Direction::TO_RIGHT as f32);
+        Letter::drawLetter(n % 10, x, y, s, Direction::TO_RIGHT as f32);
         n /= 10;
       } else {
-        drawLetter(n % 6, x, y, s, Direction::TO_RIGHT as f32);
+        Letter::drawLetter(n % 6, x, y, s, Direction::TO_RIGHT as f32);
         n /= 6;
       }
       if ((i & 1) == 1) || (i == 0) {
         match i {
-          3 => { drawLetter(41, x + s * 1.16, y, s, Direction::TO_RIGHT as f32); },
-          5 => { drawLetter(40, x + s * 1.16, y, s, Direction::TO_RIGHT as f32); },
+          3 => { Letter::drawLetter(41, x + s * 1.16, y, s, Direction::TO_RIGHT as f32); },
+          5 => { Letter::drawLetter(40, x + s * 1.16, y, s, Direction::TO_RIGHT as f32); },
           _ => break,
         };
         x -= s * LETTER_WIDTH;
@@ -284,9 +281,9 @@ impl Letter {
       y = y;
       deg %= 180;
       match type_ {
-        Shape::NORMAL => drawSegment(x, y, size, length, deg),
-        Shape::POLYGON => drawSegmentPolygon(x, y, size, length, deg),
-        Shape::LINE => drawSegmentLine(x, y, size, length, deg),
+        Shape::NORMAL => Letter::drawSegment(x, y, size, length, deg),
+        Shape::POLYGON => Letter::drawSegmentPolygon(x, y, size, length, deg),
+        Shape::LINE => Letter::drawSegmentLine(x, y, size, length, deg),
       }
       i += 1;
     }
@@ -298,11 +295,11 @@ impl Letter {
     glRotatef(deg, 0.0, 0.0, 1.0);
     Screen::setColor(1.0, 1.0, 1.0, 0.5);
     glBegin(GL_TRIANGLE_FAN);
-    drawSegmentPart(width, height);
+    Letter::drawSegmentPart(width, height);
     glEnd();
     Screen::setColor(1.0, 1.0, 1.0);
     glBegin(GL_LINE_LOOP);
-    drawSegmentPart(width, height);
+    Letter::drawSegmentPart(width, height);
     glEnd();
     glPopMatrix();
   }
@@ -312,7 +309,7 @@ impl Letter {
     glTranslatef(x - width / 2.0, y, 0.0);
     glRotatef(deg, 0.0, 0.0, 1.0);
     glBegin(GL_TRIANGLE_FAN);
-    drawSegmentPart(width, height);
+    Letter::drawSegmentPart(width, height);
     glEnd();
     glPopMatrix();
   }
@@ -322,7 +319,7 @@ impl Letter {
     glTranslatef(x - width / 2.0, y, 0.0);
     glRotatef(deg, 0.0, 0.0, 1.0);
     glBegin(GL_LINE_LOOP);
-    drawSegmentPart(width, height);
+    Letter::drawSegmentPart(width, height);
     glEnd();
     glPopMatrix();
   }
