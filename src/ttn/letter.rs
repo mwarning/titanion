@@ -15,6 +15,13 @@ private import src.util.sdl.displaylist;
 private import src.ttn.screen;
 */
 
+use std::f32::consts::PI;
+
+use ttn::shape::*;
+use util::sdl::displaylist::*;
+use ttn::dummy::*;
+
+
 const LETTER_WIDTH : f32 = 2.1;
 const LETTER_HEIGHT : f32 = 3.0;
 enum Direction {
@@ -57,9 +64,8 @@ impl Letter {
   }
 
   fn getWidthNum(num : i32, s : f32) -> f32 {
-    let dg : i32 = 1;
-    let n : i32 = num;
-    let c : i32 = 1;
+    let n = num;
+    let c = 1;
     loop {
       if n < 10 {
         break;
@@ -119,8 +125,8 @@ impl Letter {
                                 d : i32 /*= Direction::TO_RIGHT*/,
                                 rev : bool /*= false*/, od : f32 /*= 0*/,
                                 r : f32 /*= 1*/, g : f32 /*= 1*/,  b : f32 /*= 1*/) {
-    lx += LETTER_WIDTH * s / 2;
-    y += LETTER_HEIGHT * s / 2;
+    lx += LETTER_WIDTH * s / 2.0;
+    y += LETTER_HEIGHT * s / 2.0;
     let mut x : f32 = lx;
     let ld : f32 = match d {
       Direction::TO_RIGHT => 0.0,
@@ -238,18 +244,17 @@ impl Letter {
     let x : f32 = lx;
     for i in 0..7 {
       if i != 4 {
-        drawLetter(n % 10, x, y, s, Direction::TO_RIGHT);
+        drawLetter(n % 10, x, y, s, Direction::TO_RIGHT as f32);
         n /= 10;
       } else {
-        drawLetter(n % 6, x, y, s, Direction::TO_RIGHT);
+        drawLetter(n % 6, x, y, s, Direction::TO_RIGHT as f32);
         n /= 6;
       }
       if ((i & 1) == 1) || (i == 0) {
         match i {
-          3 => { drawLetter(41, x + s * 1.16, y, s, Direction::TO_RIGHT); },
-          5 => { drawLetter(40, x + s * 1.16, y, s, Direction::TO_RIGHT); },
-        //default:
-         // break;
+          3 => { drawLetter(41, x + s * 1.16, y, s, Direction::TO_RIGHT as f32); },
+          5 => { drawLetter(40, x + s * 1.16, y, s, Direction::TO_RIGHT as f32); },
+          _ => break,
         };
         x -= s * LETTER_WIDTH;
       } else {
@@ -264,14 +269,14 @@ impl Letter {
   fn setLetter(&mut self, idx : i32, type_ : i32 /* = Shape::NORMAL*/) {
     let mut i = 0;
     loop {
-      let deg = spData[idx][i][4] as i32;
+      let deg = self.spData[idx][i][4] as i32;
       if deg > 99990 {
         break;
       }
-      let mut x = -spData[idx][i][0];
-      let mut y = -spData[idx][i][1];
-      let mut size = spData[idx][i][2];
-      let mut length = spData[idx][i][3];
+      let mut x = -self.spData[idx][i][0];
+      let mut y = -self.spData[idx][i][1];
+      let mut size = self.spData[idx][i][2];
+      let mut length = self.spData[idx][i][3];
       y *= 0.9;
       size *= 1.4;
       length *= 1.05;
@@ -287,37 +292,37 @@ impl Letter {
     }
   }
 
-  fn drawSegment(&mut self, x : f32, y : f32, width : f32, height : f32, deg : f32) {
+  fn drawSegment(x : f32, y : f32, width : f32, height : f32, deg : f32) {
     glPushMatrix();
     glTranslatef(x - width / 2.0, y, 0.0);
     glRotatef(deg, 0.0, 0.0, 1.0);
     Screen::setColor(1.0, 1.0, 1.0, 0.5);
     glBegin(GL_TRIANGLE_FAN);
-    self.drawSegmentPart(width, height);
+    drawSegmentPart(width, height);
     glEnd();
     Screen::setColor(1.0, 1.0, 1.0);
     glBegin(GL_LINE_LOOP);
-    self.drawSegmentPart(width, height);
+    drawSegmentPart(width, height);
     glEnd();
     glPopMatrix();
   }
 
-   fn drawSegmentPolygon(&mut self, x : f32, y : f32, width : f32, height : f32, deg : f32) {
+   fn drawSegmentPolygon(x : f32, y : f32, width : f32, height : f32, deg : f32) {
     glPushMatrix();
     glTranslatef(x - width / 2.0, y, 0.0);
     glRotatef(deg, 0.0, 0.0, 1.0);
     glBegin(GL_TRIANGLE_FAN);
-    self.drawSegmentPart(width, height);
+    drawSegmentPart(width, height);
     glEnd();
     glPopMatrix();
   }
 
-  fn drawSegmentLine(&mut self, x : f32, y : f32, width : f32, height : f32, deg : f32) {
+  fn drawSegmentLine(x : f32, y : f32, width : f32, height : f32, deg : f32) {
     glPushMatrix();
     glTranslatef(x - width / 2.0, y, 0.0);
     glRotatef(deg, 0.0, 0.0, 1.0);
     glBegin(GL_LINE_LOOP);
-    self.drawSegmentPart(width, height);
+    drawSegmentPart(width, height);
     glEnd();
     glPopMatrix();
   }

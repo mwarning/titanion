@@ -5,7 +5,7 @@ The old code is written in D, and is placed along the *.rs files until the code 
 
 - fix lifetimes
 - integrate pad
-- integrate particle
+- integrate screen
 - integrate sound
 - use sdl
 

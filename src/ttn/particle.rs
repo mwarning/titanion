@@ -23,6 +23,17 @@ private import src.ttn.letter;
 private import src.ttn.player;
 */
 
+use std::f32::consts::PI;
+
+use util::vector::*;
+use util::actor::*;
+use util::rand::*;
+use ttn::field::*;
+use ttn::shape::*;
+use ttn::token::*;
+use ttn::player::*;
+use ttn::dummy::*;
+
 /**
  * Particles (Triangle / Line / Quad / Bonus).
  */
@@ -135,7 +146,7 @@ impl ParticleState {
 }
 
 //public class ParticleSpec: TokenSpec!(ParticleState) {
-struct ParticleSpec {
+pub struct ParticleSpec {
   ts : TokenSpec<ParticleState>, //inherited
   //mixin StaticRandImpl;
   player : &Player,
@@ -147,7 +158,7 @@ impl ParticleSpec {
     self.player = player;
   }
 
-  fn calcNearPlayerAlpha(pos : Vector) -> f32 {
+  fn calcNearPlayerAlpha(&self, pos : Vector) -> f32 {
     if !self.player.isActive {
       return 1.0;
     }
@@ -164,7 +175,7 @@ impl ParticleSpec {
 const TPS_SLOW_DOWN_RATIO : f32 = 0.05;
 const TPS_GRAVITY : f32 = 0.003;
 
-struct TriangleParticleSpec {
+pub struct TriangleParticleSpec {
   ps : &ParticleSpec, //inherited
   particleShape : &Shape,
   particles : &ParticlePool,
@@ -182,7 +193,7 @@ impl TriangleParticleSpec {
     self.particles = particles;
   }
 
-  fn set(ps : &ParticleState) {
+  fn set(&mut self, ps : &ParticleState) {
     ps.d1 = self.rand.nextFloat(PI * 2.0);
     ps.d2 = self.rand.nextFloat(PI * 2.0);
     ps.vd1 = self.rand.nextSignedFloat(0.1);
@@ -191,8 +202,8 @@ impl TriangleParticleSpec {
 
   fn move2(&mut self, ps : &ParticleState) -> bool {
     //with (ps) {
-      ps.pos += vel;
-      ps.pos.x = self.field.normalizeX(pos.x);
+      ps.pos += ps.vel;
+      ps.pos.x = self.field.normalizeX(ps.pos.x);
       if ps.effectedByGravity {
         ps.vel.y -= TPS_GRAVITY;
       }
@@ -224,7 +235,7 @@ impl TriangleParticleSpec {
         let p = self.particles.getInstanceForced();
         let nc = (ps.cnt * (0.8 + fs * 0.2)) as i32;
         if nc > 0 {
-          p.setByVelocity(pos.x, pos.y, vx, vy, ps.size * fs, ps.r, ps.g, ps.b, ps.a, nc, ps.effectedByGravity);
+          p.setByVelocity(ps.pos.x, ps.pos.y, vx, vy, ps.size * fs, ps.r, ps.g, ps.b, ps.a, nc, ps.effectedByGravity);
         }
         ps.size *= 1 - fs;
         ps.cnt *= cr;
@@ -236,8 +247,8 @@ impl TriangleParticleSpec {
 
   fn draw(&self, ps : &ParticleState) {
     //with (ps) {
-      let p = self.field.calcCircularPos(pos);
-      let aa = ps.a * ps.calcNearPlayerAlpha(pos);
+      let p = self.field.calcCircularPos(ps.pos);
+      let aa = ps.a * ps.calcNearPlayerAlpha(ps.pos);
       Screen::setColor(ps.r, ps.g, ps.b, aa);
       self.particleShape.draw(p, ps.d1, ps.d2);
     //}
@@ -246,7 +257,7 @@ impl TriangleParticleSpec {
 
 const LPS_SLOW_DOWN_RATIO : f32 = 0.03;
 
-struct LineParticleSpec {
+pub struct LineParticleSpec {
   ps : &ParticleSpec,
 }
 
@@ -278,7 +289,7 @@ impl LineParticleSpec {
       ps.b *= cfr;
       ps.a *= cfr;
       ps.cnt -= 1;
-      cnt > 0
+      ps.cnt > 0
     //}
   }
 
@@ -297,10 +308,10 @@ impl LineParticleSpec {
 }
 
 
-const QPC_SLOW_DOWN_RATIO : f32 = 0.07;
+const QPS_SLOW_DOWN_RATIO : f32 = 0.07;
 const QPS_GRAVITY : f32 = 0.002;
 
-struct QuadParticleSpec {
+pub struct QuadParticleSpec {
   ps : &ParticleSpec,
 }
 
@@ -312,7 +323,7 @@ impl QuadParticleSpec {
   fn move1(&mut self, ps : &ParticleState) -> bool {
     //with (ps) {
       ps.pos += ps.vel;
-      ps.pos.x = self.field.normalizeX(pos.x);
+      ps.pos.x = self.field.normalizeX(ps.pos.x);
       if ps.effectedByGravity {
         ps.vel.y -= QPS_GRAVITY;
       }
@@ -321,13 +332,13 @@ impl QuadParticleSpec {
       if cfr < 0.0 {
         cfr = 0.0;
       }
-      pos.r *= cfr;
-      pos.g *= cfr;
-      pos.b *= cfr;
-      pos.a *= cfr;
+      ps.pos.r *= cfr;
+      ps.pos.g *= cfr;
+      ps.pos.b *= cfr;
+      ps.pos.a *= cfr;
       ps.size *= 1 - (1 - cfr) * 0.5;
       ps.cnt -= 1;
-      cnt > 0
+      ps.cnt > 0
     //}
   }
 
@@ -335,28 +346,28 @@ impl QuadParticleSpec {
    // with (ps) {
       let mut p : Vector3;
       let sz = ps.size * 0.5;
-      let aa = ps.a * calcNearPlayerAlpha(pos);
+      let aa = ps.a * self.calcNearPlayerAlpha(ps.pos);
       Screen::setColor(ps.r, ps.g, ps.b, ps.aa);
       glBegin(GL_QUADS);
-      p = self.field.calcCircularPos(pos.x - sz, pos.y - sz);
+      p = self.field.calcCircularPos(ps.pos.x - sz, ps.pos.y - sz);
       Screen::glVertex(p);
-      p = self.field.calcCircularPos(pos.x + sz, pos.y - sz);
+      p = self.field.calcCircularPos(ps.pos.x + sz, ps.pos.y - sz);
       Screen::glVertex(p);
-      p = self.field.calcCircularPos(pos.x + sz, pos.y + sz);
+      p = self.field.calcCircularPos(ps.pos.x + sz, ps.pos.y + sz);
       Screen::glVertex(p);
-      p = self.field.calcCircularPos(pos.x - sz, pos.y + sz);
+      p = self.field.calcCircularPos(ps.pos.x - sz, ps.pos.y + sz);
       Screen::glVertex(p);
       glEnd();
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       Screen::setColor(0, 0, 0, aa * 0.66);
       glBegin(GL_LINE_LOOP);
-      p = self.field.calcCircularPos(pos.x - sz, pos.y - sz);
+      p = self.field.calcCircularPos(ps.pos.x - sz, ps.pos.y - sz);
       Screen::glVertex(p);
-      p = self.field.calcCircularPos(pos.x + sz, pos.y - sz);
+      p = self.field.calcCircularPos(ps.pos.x + sz, ps.pos.y - sz);
       Screen::glVertex(p);
-      p = self.field.calcCircularPos(pos.x + sz, pos.y + sz);
+      p = self.field.calcCircularPos(ps.pos.x + sz, ps.pos.y + sz);
       Screen::glVertex(p);
-      p = self.field.calcCircularPos(pos.x - sz, pos.y + sz);
+      p = self.field.calcCircularPos(ps.pos.x - sz, ps.pos.y + sz);
       Screen::glVertex(p);
       glEnd();
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -366,7 +377,7 @@ impl QuadParticleSpec {
 
 const BPS_SLOW_DOWN_RATIO : f32 = 0.04;
 
-struct BonusParticleSpec {
+pub struct BonusParticleSpec {
  ps : &ParticleSpec,
 }
 
@@ -391,8 +402,8 @@ impl BonusParticleSpec {
       ps.stepForward();
       ps.speed *= 1 - BPS_SLOW_DOWN_RATIO;
       self.field.addSlowdownRatio(0.01);
-      ps.pos.x = field.normalizeX(pos.x);
-      let mut cfr = 1.0 - (1.0 / (startCnt as f32));
+      ps.pos.x = self.field.normalizeX(ps.pos.x);
+      let mut cfr = 1.0 - (1.0 / (ps.startCnt as f32));
       if cfr < 0.0 {
         cfr = 0.0;
       }
@@ -413,8 +424,8 @@ impl BonusParticleSpec {
         return;
       }
       glPushMatrix();
-      let p : Vector3 = self.field.calcCircularPos(pos);
-      let aa = ps.a * self.calcNearPlayerAlpha(pos);
+      let p : Vector3 = self.field.calcCircularPos(ps.pos);
+      let aa = ps.a * self.calcNearPlayerAlpha(ps.pos);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       Screen::setColor(1, 1, 1, aa * 0.5);
       Screen::glTranslate(p);
@@ -474,10 +485,10 @@ impl Particle {
           x : f32, y : f32, deg : f32, speed : f32, sz : f32, r : f32, g : f32, b : f32,
           c : i32 /*= 60*/, ebg : bool /*= true*/, num : f32 /*= 0*/, waitCnt : i32 /*= 0*/) {
     self.spec = match type_ {
-      Shape::TRIANGLE => triangleParticleSpec,
-      Shape::LINE => lineParticleSpec,
-      Shape::QUAD => quadParticleSpec,
-      Shape::BONUS => bonusParticleSpec,
+      Shape::TRIANGLE => self.triangleParticleSpec,
+      Shape::LINE => self.lineParticleSpec,
+      Shape::QUAD => self.quadParticleSpec,
+      Shape::BONUS => self.bonusParticleSpec,
     };
     self.tok.set(x, y, deg, speed);
     self.state.size = sz;
@@ -486,12 +497,13 @@ impl Particle {
     self.state.r = r;
     self.state.g = g;
     self.state.b = b;
-    self.state.cnt = state.startCnt = c;
+    self.state.cnt = c;
+    self.state.startCnt = c;
     self.state.effectedByGravity = ebg;
     self.state.trgNum = num;
     self.state.waitCnt = waitCnt;
     if type_ == Shape::BONUS {
-      (spec as BonusParticleSpec).setSize(&self.state, sz);
+      (self.tok.spec as &BonusParticleSpec).setSize(&self.state, sz);
     }
   }
 

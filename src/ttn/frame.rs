@@ -178,7 +178,7 @@ impl Frame {
     self.playerSpec.close();
     self.gameState.close();
     self.stage.close();
-    Letter.close();
+    Letter::close();
   }
 
   fn start(&mut self) {
@@ -631,7 +631,7 @@ impl GameState {
     Letter::drawNum(self.score, 132, 5, 7);
     Letter::drawNum(self.nextExtendScore, 134, 25, 5);
     if self._lastGameScore >= 0 {
-      Letter.drawNum(self._lastGameScore, 360, 5, 7);
+      Letter::drawNum(self._lastGameScore, 360, 5, 7);
       //Letter.drawString(GameState.MODE_NAME[_lastGameMode], 292, 24, 5);
     }
     Letter::drawNum((self._multiplier * 100) as i32, 626, 4, 9, 3, 33, 2);

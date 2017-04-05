@@ -1,7 +1,6 @@
 
 
 use util::vector::*;
-use util::rand::*;
 
 pub enum PadStateDir {
   UP,
