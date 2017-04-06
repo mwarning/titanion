@@ -36,6 +36,7 @@ use ttn::enemy::*;
 use ttn::pillar::*;
 use ttn::frame::*;
 use ttn::letter::*;
+use ttn::particle::*;
 use ttn::dummy::*;
 
 

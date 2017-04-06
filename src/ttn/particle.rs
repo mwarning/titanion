@@ -32,6 +32,7 @@ use ttn::field::*;
 use ttn::shape::*;
 use ttn::token::*;
 use ttn::player::*;
+use ttn::letter::*;
 use ttn::dummy::*;
 
 /**
