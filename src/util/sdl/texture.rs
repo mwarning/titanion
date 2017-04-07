@@ -93,7 +93,7 @@ impl Texture {
     let mut maskNum : GLuint = 0;
 
     glGenTextures(textureNum, &num);
-    if maskColor != 0xffffffffu {
+    if maskColor != 0xffffffffu32 {
       maskTextureNum = textureNum;
       glGenTextures(maskTextureNum, &maskNum);
     }
@@ -122,7 +122,7 @@ impl Texture {
         gluBuild2DMipmaps(GL_TEXTURE_2D, 4, panelWidth, panelHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels.ptr);
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-        if maskColor != 0xffffffffu {
+        if maskColor != 0xffffffffu32 {
           glBindTexture(GL_TEXTURE_2D, maskNum + ti);
           gluBuild2DMipmaps(GL_TEXTURE_2D, 4, panelWidth, panelHeight, GL_RGBA, GL_UNSIGNED_BYTE, self.maskPixels.ptr);
           glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);

@@ -3,8 +3,12 @@
 #![allow(unused_variables)]
 #![allow(unused_mut)]
 
+
+use util::sdl::mainloop::*;
+
 use std::env;
 
+/*
 struct Screen {
   brightness : f32,
   window_mode : bool,
@@ -51,12 +55,13 @@ impl MainLoop {
 
   }
 }
+*/
 
 fn usage(progName : &str ) {
   println!("Usage: {} [-fullscreen] [-res x y] [-brightness [0-100]] [-nosound] [-bgmvol [0-128]] [-sevol [0-128]] [-exchange] [-trail] [-noslowdown] [-randomized]", progName);
 }
 
-fn parse_args(args : &mut env::Args, main_loop : &mut MainLoop) {
+fn parse_args(args : &mut env::Args, main_loop : &mut MainLoop) -> bool {
   let progName = args.next().unwrap();
 
   while let Some(arg) = args.next() {
@@ -146,23 +151,24 @@ fn parse_args(args : &mut env::Args, main_loop : &mut MainLoop) {
 }
 
 enum EXIT {
- SUCCESS = 0,
- FAILURE = 1,
+  SUCCESS = 0,
+  FAILURE = 1,
 }
 
 fn boot() -> i32 {
-	let mut screen = Screen::new();
-	let mut input = RecordablePad::new();
-	let mut frame = Frame::new();
-	let mut preference = Preference::new();
-	let mut main_loop = MainLoop::new(screen, input, frame, preference);
+  let mut screen = Screen::new();
+  let mut input = RecordablePad::new();
+  let mut frame = Frame::new();
+  let mut preference = Preference::new();
+  let mut main_loop = MainLoop::new(screen, input, frame, preference);
 
   let mut args = env::args();
-	parse_args(&mut args, &mut main_loop);
-
-	main_loop.loop1();
-
-  std::process::exit(EXIT::SUCCESS as i32)
+  if !parse_args(&mut args, &mut main_loop) {
+    main_loop.loop1();
+    EXIT::SUCCESS as i32
+  } else {
+    EXIT::FAILURE as i32
+  }
 }
 
 // Boot as the general executable.

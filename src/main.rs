@@ -4,6 +4,8 @@
 #![allow(unused_variables)]
 #![allow(non_upper_case_globals)]
 
+use std::path::Path;
+use std::env;
 
 mod util {
 	pub mod vector;
@@ -31,9 +33,17 @@ mod ttn {
 	pub mod particle;
 	pub mod letter;
 	pub mod preference;
+	pub mod boot;
 	pub mod dummy; //skeleton dummies
 }
 
 fn main() {
-	//call boot...
+	// Change working directory
+	if let Some(arg0) = env::args().nth(0) {
+		let path = Path::new(&arg0).parent().unwrap();
+		env::set_current_dir(path);
+	}
+
+	let exit_code = boot();
+	std::process::exit(exit_code);
 }
