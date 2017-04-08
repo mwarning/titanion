@@ -16,39 +16,42 @@ private import src.util.sdl.input;
 private import src.util.sdl.recordableinput;
 */
 
+use util::sdl::input::*;
+
 /**
  * Inputs from a joystick and a keyboard.
  */
 
 
-let JOYSTICK_AXIS : i32 = 16384;
+const JOYSTICK_AXIS : i32 = 16384;
 
-struct Pad: Input {
-  keys : &u8;
-  buttonsExchanged : bool;
-  stick : &SDL_Joystick, //= null;
-  state : PadState;
+struct Pad {
+  keys : &u8,
+  buttonsExchanged : bool,
+  stick : Some(&SDL_Joystick), //= null;
+  state : PadState,
 }
 
 impl Pad {
   fn new() -> Pad {
-    Pad{keys : SDL_GetKeyState(null),
+    Pad{
+      keys : SDL_GetKeyState(0),
       buttonsExchanged : false,
-      stick : SDL_JoystickOpen(0),
-      state : PadState::default(),
+      stick : Some(SDL_JoystickOpen(0)),
+      state : PadState::new(),
     }
   }
 
-  fn openJoystick(&mut self, st &SDL_Joystick /*= null*/) -> &SDL_Joystick {
-    if st == null {
+  fn openJoystick(&mut self, st : Option(&SDL_Joystick) /*= null*/) -> Option(&SDL_Joystick) {
+    if st == None {
       if SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0 {
-        return null;
+        return None;
       }
-      self.stick = SDL_JoystickOpen(0);
+      self.stick = Some(SDL_JoystickOpen(0));
     } else {
       self.stick = st;
     }
-    self.stick;
+    self.stick
   }
 
   fn handleEvent(&mut self, event : &SDL_Event) {
@@ -59,36 +62,36 @@ impl Pad {
     let x : i32 = 0;
     let y : i32 = 0;
     self.state.dir = 0;
-    if self.stick {
-      x = SDL_JoystickGetAxis(self.stick, 0);
-      y = SDL_JoystickGetAxis(self.stick, 1);
+    if let Some(stick) = self.stick {
+      x = SDL_JoystickGetAxis(stick, 0);
+      y = SDL_JoystickGetAxis(stick, 1);
     }
-    if (self.keys[SDLK_RIGHT] == SDL_PRESSED || self.keys[SDLK_KP6] == SDL_PRESSED || 
+    if self.keys[SDLK_RIGHT] == SDL_PRESSED || self.keys[SDLK_KP6] == SDL_PRESSED || 
         self.keys[SDLK_d] == SDL_PRESSED || self.keys[SDLK_l] == SDL_PRESSED ||
-        x > JOYSTICK_AXIS) {
-      self.state.dir |= PadState.Dir.RIGHT;
+        x > JOYSTICK_AXIS {
+      self.state.dir |= Dir::RIGHT;
     }
-    if (self.keys[SDLK_LEFT] == SDL_PRESSED || self.keys[SDLK_KP4] == SDL_PRESSED ||
+    if self.keys[SDLK_LEFT] == SDL_PRESSED || self.keys[SDLK_KP4] == SDL_PRESSED ||
         self.keys[SDLK_a] == SDL_PRESSED || self.keys[SDLK_j] == SDL_PRESSED ||
-        x < -JOYSTICK_AXIS) {
-      self.state.dir |= PadState.Dir.LEFT;
+        x < -JOYSTICK_AXIS {
+      self.state.dir |= Dir::LEFT;
     }
-    if (self.keys[SDLK_DOWN] == SDL_PRESSED || self.keys[SDLK_KP2] == SDL_PRESSED ||
+    if self.keys[SDLK_DOWN] == SDL_PRESSED || self.keys[SDLK_KP2] == SDL_PRESSED ||
         self.keys[SDLK_s] == SDL_PRESSED || self.keys[SDLK_k] == SDL_PRESSED ||
-        y > JOYSTICK_AXIS) {
-      self.state.dir |= PadState.Dir.DOWN;
+        y > JOYSTICK_AXIS {
+      self.state.dir |= Dir::DOWN;
     }
-    if (self.keys[SDLK_UP] == SDL_PRESSED ||  self.keys[SDLK_KP8] == SDL_PRESSED ||
+    if self.keys[SDLK_UP] == SDL_PRESSED ||  self.keys[SDLK_KP8] == SDL_PRESSED ||
         self.keys[SDLK_w] == SDL_PRESSED || self.keys[SDLK_i] == SDL_PRESSED ||
-        y < -JOYSTICK_AXIS) {
-      self.state.dir |= PadState.Dir.UP;
+        y < -JOYSTICK_AXIS {
+      self.state.dir |= Dir::UP;
     }
     self.state.button = 0;
     let btn1 : i32 = 0;
     let btn2 : i32 = 0;
     let leftTrigger : f32 = 0.0;
     let rightTrigger : f32  = 0.0;
-    if self.stick {
+    if let Some(stick) = self.stick {
       btn1 = SDL_JoystickGetButton(stick, 0) + SDL_JoystickGetButton(stick, 2) +
              SDL_JoystickGetButton(stick, 4) + SDL_JoystickGetButton(stick, 6) +
              SDL_JoystickGetButton(stick, 8) + SDL_JoystickGetButton(stick, 10);
@@ -100,9 +103,9 @@ impl Pad {
         self.keys[SDLK_LCTRL] == SDL_PRESSED || self.keys[SDLK_RCTRL] == SDL_PRESSED || 
         btn1 {
       if !self.buttonsExchanged {
-        self.state.button |= PadState.Button.A;
+        self.state.button |= Button::A;
       } else {
-        self.state.button |= PadState.Button.B;
+        self.state.button |= Button::B;
       }
     }
     if self.keys[SDLK_x] == SDL_PRESSED || self.keys[SDLK_SLASH] == SDL_PRESSED ||
@@ -111,9 +114,9 @@ impl Pad {
         self.keys[SDLK_RETURN] == SDL_PRESSED ||
         btn2 {
       if !self.buttonsExchanged {
-        self.state.button |= PadState.Button.B;
+        self.state.button |= Button::B;
       } else {
-        self.state.button |= PadState.Button.A;
+        self.state.button |= Button::A;
       }
     }
     self.state
@@ -125,20 +128,24 @@ impl Pad {
   }
 }
 
+impl Inut for Pad {
+
+}
+
 enum Dir {
   NONE,
   UP, // = 1,
   DOWN, // = 2,
   LEFT, // = 4,
   RIGHT, // = 8,
-};
+}
 
 enum Button {
   NONE,
   A, // = 16,
   B, // = 32,
   ANY, // = 48,
-};
+}
 
 
 struct PadState {
@@ -180,10 +187,10 @@ impl PadState {
   }
 
   fn read(&mut self, fd : &File) {
-    let mut s; : i32;
+    let mut s : i32;
     fd.read(s);
-    self.dir = s & (Dir.UP | Dir.DOWN | Dir.LEFT | Dir.RIGHT);
-    self.button = s & Button.ANY;
+    self.dir = s & (Dir::UP | Dir::DOWN | Dir::LEFT | Dir::RIGHT);
+    self.button = s & Button::ANY;
   }
 
   fn write(&mut self, fd : &File) {
@@ -200,7 +207,7 @@ impl PadState {
 trait RecordablePad : Pad {
   //mixin RecordableInput!(PadState);
 
-  fn getState(&self, bool doRecord /*= true*/) -> PadState {
+  fn getState(&self, doRecord : bool /*= true*/) -> PadState {
     let s : PadState = super.getState();
     if doRecord {
       self.record(s);
