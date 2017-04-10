@@ -14,8 +14,10 @@ mod util {
 	pub mod rand;
 	pub mod sdl {
 		pub mod displaylist;
+		pub mod recordableinput;
 		pub mod mainloop;
 		pub mod input;
+		pub mod pad;
 	}
 }
 
@@ -34,6 +36,7 @@ mod ttn {
 	pub mod letter;
 	pub mod preference;
 	pub mod boot;
+	pub mod screen;
 	pub mod dummy; //skeleton dummies
 }
 

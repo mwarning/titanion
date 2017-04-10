@@ -15,15 +15,22 @@ private import src.util.sdl.screen3d;
 private import src.ttn.field;
 */
 
-/**
+use std::f32::consts::PI;
+use std::ptr;
+
+use util::vector::*;
+use ttn::field::*;
+use ttn::dummy::*;
+
+/*
  * OpenGL screen.
  */
 
-let CAPTION = "Titanion";
-let ICON_FILE_NAME = "images/ttn_icon32.bmp";
+const CAPTION : &'static str = "Titanion";
+const ICON_FILE_NAME : &'static str= "images/ttn_icon32.bmp";
 
 struct Screen {
-	field : *mut Field;
+	//field : *mut Field; //must be passed to methods via frame
 
 // from Screen3D
   /*static*/ _brightness : f32,
@@ -31,17 +38,17 @@ struct Screen {
   _nearPlane : f32,
   _width : i32,
   _height : i32,
-  _windowMode : bool;
+  _windowMode : bool,
 }
 
 impl SdlScreen3D for Screen { //was Screen3D
 
   fn setIcon() {
-    SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE_NAME), null);
+    SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE_NAME), ptr::null());
   }
 
-  fn init() {
-    setCaption(CAPTION);
+  fn init(&self) {
+    self.setCaption(CAPTION);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glEnable(GL_BLEND);
     glEnable(GL_LINE_SMOOTH);
@@ -50,7 +57,7 @@ impl SdlScreen3D for Screen { //was Screen3D
     glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
-    setClearColor(0, 0, 0, 1);
+    self.setClearColor(0, 0, 0, 1);
   }
 
   fn setField(&mut self, field : *mut Field) {
@@ -63,7 +70,7 @@ impl SdlScreen3D for Screen { //was Screen3D
   fn screenResized(&mut self) {
     self.screenResized();
     let lw : f32 = ((self.width as f32) / 640.0 + (self.height as f32) / 480.0) / 2.0;
-    if (lw < 1.0) {
+    if lw < 1.0 {
       lw = 1.0;
     }  else if lw > 4.0 {
       lw = 4.0;
@@ -79,7 +86,7 @@ impl SdlScreen3D for Screen { //was Screen3D
 
 impl SizableScreen for Screen {
   fn windowMode2(&mut self, v : bool) ->  bool {
-    self._windowMode = v
+    self._windowMode = v;
     v
   }
 
@@ -109,9 +116,9 @@ impl SizableScreen for Screen {
 impl SdlScreen for Screen {
   fn initSDL(&mut self) {
     //derelict specific
-    DerelictGL.load();
-    DerelictGLU.load();
-    DerelictSDL.load();
+    DerelictGL::load();
+    DerelictGLU::load();
+    DerelictSDL::load();
       
     // Initialize SDL.
     if SDL_Init(SDL_INIT_VIDEO) < 0 {
@@ -125,14 +132,14 @@ impl SdlScreen for Screen {
       SDL_OPENGL | SDL_FULLSCREEN;
     };
 
-    if SDL_SetVideoMode(_width, _height, 0, videoFlags) == None {
-      panic!("Unable to create SDL screen: []", SDL_GetError());
+    if SDL_SetVideoMode(self._width, self._height, 0, videoFlags) == None {
+      panic!("Unable to create SDL screen: {}", SDL_GetError());
     }
     glViewport(0, 0, self.width, self.height);
     glClearColor(0.0, 0.0, 0.0, 0.0);
     self.resized(self._width, self._height);
     SDL_ShowCursor(SDL_DISABLE);
-    init();
+    self.init();
   }
 
   fn closeSDL() {
@@ -151,7 +158,7 @@ impl SdlScreen for Screen {
 }
 
 impl Screen {
-  fn new(field : mut* Field) -> Screen {
+  fn new(/*field : mut* Field*/) -> Screen {
     Screen{
       brightness : 1.0,
      _farPlane : 1000.0,
@@ -179,8 +186,8 @@ impl Screen {
     //gluPerspective(45.0f, cast(GLfloat) width / cast(GLfloat) height, nearPlane, farPlane);
     glFrustum(-self._nearPlane,
               self._nearPlane,
-              -self._nearPlane * (self._height as GLfloat) / (self._width as Glfloat),
-              self._nearPlane * (self._height as GLfloat) / (self._width as Glfloat),
+              -self._nearPlane * (self._height as f32) / (self._width as f32),
+              self._nearPlane * (self._height as f32) / (self._width as f32),
               0.1, self._farPlane);
   }
 
@@ -200,7 +207,7 @@ impl Screen {
   }
 
   fn setCaption(name : &string) {
-    SDL_WM_SetCaption(name, null);
+    SDL_WM_SetCaption(name, ptr::null());
   }
 
   fn glVertex(v : Vector) {

@@ -47,14 +47,19 @@ use ttn::dummy::*;
  * Enemies and turrets.
  */
 
-static /*mut*/ trailEffect : bool = false;
+//static /*mut*/ trailEffect : bool = false;
 
 pub struct EnemyPool<'a> {
   ap : ActorPool<Enemy<'a>>,
-  _field : Field,
+  trailEffect : bool, //was static global
+  _field : &Field,
 }
 
 impl<'a> EnemyPool<'a> {
+  fn new(n : i32 /*, field : &Field*/) -> EnemyPool<'a> {
+    EnemyPool{ap : ActorPool::<Enemy<'a>>::new(n), trailEffect : false} //, _field : field}
+  }
+
   fn getNearestEnemy(&self, p : Vector) -> Option<&Enemy> {
     let dst : f32 = 99999.0;
     let ne : Option<&Enemy> = None;
@@ -180,7 +185,7 @@ impl<'a> EnemyPool<'a> {
   }
 
   fn drawFront(&self) {
-    if trailEffect {
+    if self.trailEffect {
       for a in &self.ap.actors {
         if a.getExists() && (a.tok.state.ts.pos.y <= (self._field.size().y * 1.5)) {
           a.drawTrails();
@@ -195,7 +200,7 @@ impl<'a> EnemyPool<'a> {
   }
 
   fn drawBack(&self) {
-    if trailEffect {
+    if self.trailEffect {
       for a in &self.ap.actors {
         if a.getExists() &&
             a.tok.state.ts.pos.y > self._field.size().y * 1.5 &&
@@ -216,7 +221,7 @@ impl<'a> EnemyPool<'a> {
   }
 
   fn drawPillarBack(&self) {
-    if trailEffect {
+    if self.trailEffect {
       for a in &self.ap.actors {
         if a.getExists() &&
             a.tok.state.ts.pos.y > self._field.size().y * 1.5 &&

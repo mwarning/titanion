@@ -4,58 +4,16 @@
 #![allow(unused_mut)]
 
 
-use util::sdl::mainloop::*;
-
 use std::env;
+use std::process::exit;
 
-/*
-struct Screen {
-  brightness : f32,
-  window_mode : bool,
-  width : i32,
-  height : i32,
-}
+use util::sdl::pad::*;
+use util::sdl::mainloop::*;
+use util::sdl::pad::*;
+use ttn::screen::*;
+use ttn::frame::*;
+use ttn::preference::*;
 
-impl Screen {
-  fn new () -> Screen {
-    Screen {window_mode: false, width: 800, height: 600, brightness: 0.0}
-  }
-}
-
-struct Frame {
-}
-
-struct RecordablePad {
-}
-
-struct Preference {
-}
-
-struct Sound {
-  noSound : bool,
-  bgmVol : i32,
-  seVol : i32,
-}
-
-impl Sound {
-  fn new() -> Sound {
-    Sound {noSound: false, bgmVol: 100, setVol: 600}
-  }
-}
-
-struct MainLoop {
-  screen : Screen,
-  input : RecordablePad,
-  frame : Frame,
-  preference : Preference,
-}
-
-impl MainLoop {
-  fn loop1(&self) {
-
-  }
-}
-*/
 
 fn usage(progName : &str ) {
   println!("Usage: {} [-fullscreen] [-res x y] [-brightness [0-100]] [-nosound] [-bgmvol [0-128]] [-sevol [0-128]] [-exchange] [-trail] [-noslowdown] [-randomized]", progName);
@@ -131,16 +89,16 @@ fn parse_args(args : &mut env::Args, main_loop : &mut MainLoop) -> bool {
         }
       },
       "-exchange" => {
-        pad.buttonsExchanged = true;
+        main_loop.frame.pad.buttonsExchanged = true;
       },
       "-trail" => {
-        EnemyPool.trailEffect = true;
+        main_loop.enemies.trailEffect = true;
       },
       "-noslowdown" => {
-        mainLoop.noSlowdown = true;
+        main_loop.noSlowdown = true;
       },
       "-randomized" => {
-        GameState.stageRandomized = true;
+        main_loop.frame.gameState.stageRandomized = true;
       },
       _ => {
         usage(progName);
@@ -156,11 +114,11 @@ enum EXIT {
 }
 
 fn boot() -> i32 {
-  let mut screen = Screen::new();
-  let mut input = RecordablePad::new();
-  let mut frame = Frame::new();
-  let mut preference = Preference::new();
-  let mut main_loop = MainLoop::new(screen, input, frame, preference);
+  let screen = Screen::new();
+  let input = RecordablePad::new();
+  let preference = Preference::new();
+  let frame = Frame::new(screen, input, preference);
+  let mut main_loop = MainLoop::new(frame);
 
   let mut args = env::args();
   if !parse_args(&mut args, &mut main_loop) {
@@ -178,5 +136,5 @@ fn main() {
 	//Environment.cwd(path);
 
 	let exit_code = boot();
-  std::process::exit(exit_code);
+  exit(exit_code);
 }

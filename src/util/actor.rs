@@ -38,7 +38,10 @@ impl<T : Actor> ActorPool<T> {
   pub fn new(n : i32) -> ActorPool<T> {
    let mut actors = Vec::with_capacity(10);
    for i in 0..n {
-    actors.push(T::new());
+    let mut actor = T::new();
+    actor.setExists(false);
+    //actor.init();
+    actors.push(actor);
    }
    ActorPool{actorIdx : 0, hasNoActor : false, actors : actors}
   }

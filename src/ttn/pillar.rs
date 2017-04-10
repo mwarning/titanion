@@ -26,11 +26,15 @@ use util::actor::*;
  * Pillars at the center and on the background.
  */
 
-pub struct PillarPool {
-  ap : ActorPool<Pillar>,
+pub struct PillarPool<'a> {
+  ap : ActorPool<Pillar<'a>>,
 }
 
-impl PillarPool {
+impl<'a> PillarPool<'a> {
+  fn new(n : i32) -> PillarPool<'a> {
+    PillarPool{ap : PillarPool::<Pillar<'a>>::new(n)}
+  }
+
   fn setEnd(&mut self) {
     for a in &self.ap.actors {
       if a.exists {

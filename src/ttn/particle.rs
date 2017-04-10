@@ -460,16 +460,15 @@ impl Actor for Particle {
     self._exists = v;
     v
   }
-  /*
-  fn init(&mut self) { //, args : &[Object]) {
-    self.tok.init()
-  }*/
-  fn init(&mut self, args : &Vec<Object>) {
+
+  fn init(&mut self) { //, args : &Vec<Object>) {
+    /*
     self.tok.init(args);
     self.triangleParticleSpec = args[0] as &TriangleParticleSpec;
     self.lineParticleSpec = args[1] as &LineParticleSpec;
     self.quadParticleSpec = args[2] as &QuadParticleSpec;
     self.bonusParticleSpec = args[3] as &BonusParticleSpec;
+    */
   }
 
   fn move1(&self) {
@@ -482,10 +481,24 @@ impl Actor for Particle {
 }
 
 impl Particle {
+  //replacement for Particle::init()
+  fn new() -> Particle {
+    Particle {
+      tok : Token::<ParticleState, ParticleSpec>::new(), //call new() instead of init()
+
+      //field / player must be given on method call
+      triangleParticleSpec  : TriangleParticleSpec::new(),
+      lineParticleSpec : LineParticleSpec::new(),
+      quadParticleSpec : QuadParticleSpec::new(),
+      bonusParticleSpec : BonusParticleSpec::new(),
+      _exists : false,
+    }
+  }
+
   fn set(&mut self, type_ : i32,
           x : f32, y : f32, deg : f32, speed : f32, sz : f32, r : f32, g : f32, b : f32,
           c : i32 /*= 60*/, ebg : bool /*= true*/, num : f32 /*= 0*/, waitCnt : i32 /*= 0*/) {
-    self.spec = match type_ {
+    self.tok.spec = match type_ {
       Shape::TRIANGLE => self.triangleParticleSpec,
       Shape::LINE => self.lineParticleSpec,
       Shape::QUAD => self.quadParticleSpec,
@@ -493,7 +506,7 @@ impl Particle {
     };
     self.tok.set(x, y, deg, speed);
     self.state.size = sz;
-    self.state.vel.x = -(deg.sin()) * speed;
+    self.state.vel.x = -deg.sin() * speed;
     self.state.vel.y = deg.cos() * speed;
     self.state.r = r;
     self.state.g = g;

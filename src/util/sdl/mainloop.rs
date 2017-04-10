@@ -35,7 +35,7 @@ const MAX_SKIP_FRAME : i32 = 5;
 pub struct MainLoop {
   noSlowdown : bool,
   event : SDL_Event,
-  screen : &Screen,
+  //screen : &Screen, //we use frame.screen instead
   input : &Input,
   frame : &Frame,
   preference : &Preference,
@@ -47,11 +47,10 @@ pub struct MainLoop {
 }
 
 impl MainLoop {
-	fn new(screen : &Screen, input : &Input, frame : &Frame, preference : &Preference) -> MainLoop {
+	fn new(input : &Input, frame : &Frame, preference : &Preference) -> MainLoop {
 		MainLoop{
 			noSlowdown : false,
 			event : SDL_Event::new(),
-			screen : screen,
 			input : input,
 			frame : frame,
 			preference : preference,
@@ -80,7 +79,7 @@ impl MainLoop {
 		self.frame.quit();
 		Sound.close();
 		self.preference.save();
-		self.screen.closeSDL();
+		self.frame.screen.closeSDL();
 		SDL_Quit();
 	}
 
@@ -89,46 +88,46 @@ impl MainLoop {
 	}
 
 	fn loop1(&mut self) {
-	    self.done = false;
-	    let mut prvTickCount : i64 = 0;
-	    self.screen.initSDL();
-	    self.initFirst();
-	    self.frame.start();
-	    while !self.done {
-	      if SDL_PollEvent(&self.event) == 0 {
-	        self.event._type = SDL_USEREVENT;
-	      }
-	      self.input.handleEvent(&self.event);
-	      if self.event._type == SDL_QUIT {
-	        self.breakLoop();
-	  	  }
-	      let nowTick = SDL_GetTicks();
-	      let itv  = self.interval as i32;
-	      let mut frameNum = ((nowTick - prvTickCount) / itv) as i32;
-	      if frameNum <= 0 {
-	        frameNum = 1;
-	        SDL_Delay((prvTickCount + itv - nowTick) as u32);
-	        prvTickCount += self.interval;
-	      } else if frameNum > MAX_SKIP_FRAME {
-	        frameNum = MAX_SKIP_FRAME;
-	        prvTickCount = nowTick;
-	      } else {
-	        //prvTickCount += frame * interval;
-	        prvTickCount = nowTick;
-	      }
-	      self.slowdownRatio = 0.0;
-		  for _ in 0..frameNum {
-		    self.frame.move();
-		  }
-	      self.slowdownRatio /= frameNum as f32;
-	      self.screen.clear();
-	      self.frame.draw();
-	      self.screen.flip();
-	      if !self.noSlowdown {
-	        self.calcInterval();
-	      }
-	    }
-   	self.quitLast();
+		self.done = false;
+		let mut prvTickCount : i64 = 0;
+		self.frame.screen.initSDL();
+		self.initFirst();
+		self.frame.start();
+		while !self.done {
+			if SDL_PollEvent(&self.event) == 0 {
+				self.event._type = SDL_USEREVENT;
+			}
+			self.input.handleEvent(&self.event);
+			if self.event._type == SDL_QUIT {
+				self.breakLoop();
+			}
+			let nowTick = SDL_GetTicks();
+			let itv = self.interval as i32;
+			let mut frameNum = ((nowTick - prvTickCount) / itv) as i32;
+			if frameNum <= 0 {
+				frameNum = 1;
+				SDL_Delay((prvTickCount + itv - nowTick) as u32);
+				prvTickCount += self.interval;
+			} else if frameNum > MAX_SKIP_FRAME {
+				frameNum = MAX_SKIP_FRAME;
+				prvTickCount = nowTick;
+			} else {
+				//prvTickCount += frame * interval;
+				prvTickCount = nowTick;
+			}
+			self.slowdownRatio = 0.0;
+			for _ in 0..frameNum {
+				self.frame.move1();
+			}
+			self.slowdownRatio /= frameNum as f32;
+			self.frame.screen.clear();
+			self.frame.draw();
+			self.frame.screen.flip();
+			if !self.noSlowdown {
+				self.calcInterval();
+			}
+		}
+		self.quitLast();
   }
 
   // Intentional slowdown.

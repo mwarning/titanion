@@ -41,12 +41,16 @@ use ttn::player::*;
 
 const BULLET_REMOVED_RANGE : f32 = 2.0;
 
-pub struct BulletPool {
-  ap : ActorPool<Bullet>,
+pub struct BulletPool<'a> {
+  ap : ActorPool<Bullet<'a>>,
 }
 
-impl BulletPool {
-   fn move1(&self) {
+impl<'a> BulletPool<'a> {
+  fn new(n : i32) -> BulletPool<'a> {
+    BulletPool{ap : ActorPool::<Bullet<'a>>::new(n)}
+  }
+
+  fn move1(&self) {
     self.ap.move1();
     /*
     super.move();

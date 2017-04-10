@@ -35,7 +35,6 @@ use util::vector::*;
 use util::actor::*;
 use util::math::*;
 use util::rand::*;
-use util::sdl::mainloop::*;
 use util::sdl::input::*;
 use ttn::preference::*;
 use ttn::particle::*;
@@ -57,27 +56,26 @@ const LAST_REPLAY_FILE_NAME : &'static str = "last.rpl";
 //public class Frame: src.util.sdl.frame.Frame {
 pub struct Frame {
   //from src.util.sdl.frame.Frame
-  mainLoop: &MainLoop,
-  abstractScreen: &Screen,
-  abstractInput: &Input,
-  abstractPreference: &Preference,
+  abstractScreen: Screen,
+  abstractInput: Input,
+  abstractPreference: Preference,
 
-  pad : *mut Pad,
-  screen :  *mut Screen,
-  field : *mut Field,
-  player : *mut Player,
-  playerSpec : *mut PlayerSpec,
-  enemies : &mut EnemyPool<'static>,
-  bullets : *mut BulletPool,
-  particles : *mut ParticlePool,
-  bonusParticles : *mut ParticlePool,
-  pillars : *mut PillarPool,
-  stage : *mut Stage,
-  title : *mut Title,
-  preference : *mut Preference,
-  gameState : *mut GameState,
-  replayData : *mut ReplayData,
-  rand : *mut Rand,
+  pad : Pad,
+  screen : Screen,
+  field : Field,
+  player : Player,
+  playerSpec : PlayerSpec,
+  enemies : EnemyPool,
+  bullets : BulletPool,
+  particles : ParticlePool,
+  bonusParticles : ParticlePool,
+  pillars : PillarPool,
+  stage : Stage,
+  title : Title,
+  preference : Preference,
+  gameState : GameState,
+  replayData : ReplayData,
+  rand : Rand,
 }
 
 /**
@@ -86,21 +84,28 @@ pub struct Frame {
 impl Frame {
   //from src.util.sdl.frame.Frame
   fn new(
-    mainloop : &MainLoop,
-    abstractScreen : &Screen,
-    abstractInput : &Input,
-    abstractPreference : &Preference
+    abstractScreen : Screen,
+    abstractInput : Input,
+    abstractPreference : Preference
     ) {
-    Frame{
-      mainLoop : &mainloop,
-      abstractScreen: &abstractScreen,
-      abstractInput : &abstractInput,
-      abstractPreference : &abstractPreference,
 
-      //moved from init()
-      preference : abstractPreference as &Preference,
-      pad : abstractInput as &Pad,
-      screen : abstractScreen as &Screen,
+    Frame {
+      abstractScreen : abstractScreen,
+      abstractInput : abstractInput,
+      abstractPreference : abstractPreference,
+
+      stage : Stage::new(), //field, enemies, bullets, player, particles, bonusParticles, pillars, gameState);
+      playerSpec : PlayerSpec::new(), //self.pad, self.gameState, field, enemies, bullets, particles);
+      player : Player::new(), //playerSpec);
+      title : Title::new(), //self.preference, self.pad, self);
+      field : Field::new(),
+      gameState : GameState::new(), //self, self.preference);
+      particles : ParticlePool::new(1024), //, tps, lps, qps, bps),
+      bonusParticles : ParticlePool::new(256), //, tps, lps, qps, bps),
+      enemies : EnemyPool::new(128), //, field),
+      bullets : BulletPool::new(1024),
+      pillars : PillarPool::new(48),
+      rand : Rand::new(),
     }
   }
 
@@ -114,49 +119,49 @@ impl Frame {
     //self.pad = pad;
     self.pad.openJoystick();
     //self.screen = abstractScreen as &Screen;
-    let field = Field::new(self, self.screen);
-    self.field = field;
-    let enemies = EnemyPool::new();
-    self.enemies = enemies;
-    self.enemies.field = field;
-    let bullets = BulletPool::new();
-    self.bullets = bullets;
-    let particles = ParticlePool::new();
-    self.particles = particles;
-    let bonusParticles = ParticlePool::new();
-    self.bonusParticles = bonusParticles;
-    let pillars = PillarPool::new();
-    self.pillars = pillars;
-    self.enemies.init(128);
-    self.bullets.init(1024);
-    let triangleParticleSpec = TriangleParticleSpec::new(field);
-    let lineParticleSpec = LineParticleSpec::new(field);
-    let quadParticleSpec = QuadParticleSpec::new(field);
-    let bonusParticleSpec = BonusParticleSpec::new(field);
-    self.particles.init(1024, triangleParticleSpec, lineParticleSpec, quadParticleSpec, bonusParticleSpec);
-    self.bonusParticles.init(256, triangleParticleSpec, lineParticleSpec, quadParticleSpec, bonusParticleSpec);
-    self.triangleParticleSpec.setParticles(particles);
-    self.pillars.init(48);
-    let gameState = GameState::new(self, self.preference);
-    self.gameState = gameState;
-    self.title = Title::new(self.preference, self.pad, self);
+    //let field = Field::new(self, self.screen);
+    //self.field = field;
+    //let enemies = EnemyPool::new();
+    //self.enemies = enemies;
+    //self.enemies.field = field;
+    //let bullets = BulletPool::new();
+    //self.bullets = bullets;
+    //let particles = ParticlePool::new();
+    //self.particles = particles;
+    //let bonusParticles = ParticlePool::new();
+    //self.bonusParticles = bonusParticles;
+    //let pillars = PillarPool::new();
+    //self.pillars = pillars;
+    //self.enemies.init(128);
+    //self.bullets.init(1024);
+    //let triangleParticleSpec = TriangleParticleSpec::new(field);
+    //let lineParticleSpec = LineParticleSpec::new(field);
+    //let quadParticleSpec = QuadParticleSpec::new(field);
+    //let bonusParticleSpec = BonusParticleSpec::new(field);
+    //self.particles.init(1024, triangleParticleSpec, lineParticleSpec, quadParticleSpec, bonusParticleSpec);
+    //self.bonusParticles.init(256, triangleParticleSpec, lineParticleSpec, quadParticleSpec, bonusParticleSpec);
+    self.triangleParticleSpec.setParticles(self.particles);
+    //self.pillars.init(48);
+    //let gameState = GameState::new(self, self.preference);
+    //self.gameState = gameState;
+    //self.title = Title::new(self.preference, self.pad, self);
     self.title.setMode(self.preference.lastMode);
     self.title.init();
-    let playerSpec = PlayerSpec::new(self.pad, self.gameState, field, enemies, bullets, particles);
-    self.playerSpec = playerSpec;
-    let player = Player::new(playerSpec);
-    self.player = player;
-    self.triangleParticleSpec.setPlayer(player);
-    self.lineParticleSpec.setPlayer(player);
-    self.quadParticleSpec.setPlayer(player);
-    self.bonusParticleSpec.setPlayer(player);
-    let stage = Stage::new(field, enemies, bullets, player, particles, bonusParticles, pillars, gameState);
-    self.stage = stage;
-    self.gameState.setStage(stage);
-    self.rand = Rand::new();
+    //let playerSpec = PlayerSpec::new(self.pad, self.gameState, field, enemies, bullets, particles);
+    //self.playerSpec = playerSpec;
+    //let player = Player::new(playerSpec);
+    //self.player = player;
+    //self.triangleParticleSpec.setPlayer(player);
+    //self.lineParticleSpec.setPlayer(player);
+    //self.quadParticleSpec.setPlayer(player);
+    //self.bonusParticleSpec.setPlayer(player);
+    //let stage = Stage::new(field, enemies, bullets, player, particles, bonusParticles, pillars, gameState);
+    //self.stage = stage;
+    //self.gameState.setStage(self.stage);
+    //self.rand = Rand::new();
     self.loadLastReplay();
   }
-
+/*
   //from src.util.sdl.frame.Frame
   fn setMainLoop(&mut self, mainLoop : &MainLoop) {
     self.mainLoop = mainLoop;
@@ -172,6 +177,7 @@ impl Frame {
   fn setPreference(&mut self, preference : &Preference) {
     self.abstractPreference = preference;
   }
+*/
 
   fn quit(&mut self) {
     self.title.close();
