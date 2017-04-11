@@ -113,7 +113,7 @@ enum EXIT {
   FAILURE = 1,
 }
 
-fn boot() -> i32 {
+pub fn boot() -> i32 {
   let screen = Screen::new();
   let input = RecordablePad::new();
   let preference = Preference::new();
@@ -127,14 +127,4 @@ fn boot() -> i32 {
   } else {
     EXIT::FAILURE as i32
   }
-}
-
-// Boot as the general executable.
-fn main() {
-	//set working directory to binary location
-	//char[] path = dirname(args[0]);
-	//Environment.cwd(path);
-
-	let exit_code = boot();
-  exit(exit_code);
 }

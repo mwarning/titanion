@@ -13,14 +13,18 @@ pub struct SDL_Event {
   resize : SDL_ResizeEvent,
 }
 
+
+pub struct GLenum;
+pub fn glGetError() -> GLenum { GLenum{} }
+
 pub struct SDL_Joystick;
 pub fn SDL_Init(flags : u32) {}
+pub fn SDL_WM_SetCaption(title : &str, icon : &str) {}
 
 pub struct SDL_Surface;
 pub fn SDL_WM_SetIcon(icon : *const SDL_Surface, mask : *const u8) {}
 
-
-pub const fn SDL_LoadBMP(file : &str) {}
+pub fn SDL_LoadBMP(file : &str) {}
 pub const SDL_INIT_VIDEO : u32 = 0;
 
 pub const SDL_VIDEORESIZE : usize = 0;

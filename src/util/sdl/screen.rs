@@ -9,15 +9,15 @@
 /**
  * SDL screen handler interface.
  */
-trait SdlScreen { //was Screen
+pub trait SdlScreen { //was Screen
   fn initSDL();
   fn closeSDL();
   fn flip();
   fn clear();
 }
 
-trait SizableScreen {
+pub trait SizableScreen {
   fn windowMode1(&self) -> bool;
-  fn width(&self) -> i32;
-  fn height(&self) -> i32;
+  fn width1(&self) -> i32;
+  fn height1(&self) -> i32;
 }

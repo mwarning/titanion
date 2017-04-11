@@ -18,6 +18,7 @@ private import src.ttn.field;
 use std::f32::consts::PI;
 use std::ptr;
 
+use util::sdl::screen::*;
 use util::vector::*;
 use ttn::field::*;
 use ttn::dummy::*;
@@ -29,7 +30,7 @@ use ttn::dummy::*;
 const CAPTION : &'static str = "Titanion";
 const ICON_FILE_NAME : &'static str= "images/ttn_icon32.bmp";
 
-struct Screen {
+pub struct Screen {
 	//field : *mut Field; //must be passed to methods via frame
 
 // from Screen3D
@@ -41,71 +42,14 @@ struct Screen {
   _windowMode : bool,
 }
 
-impl SdlScreen3D for Screen { //was Screen3D
-
-  fn setIcon() {
-    SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE_NAME), ptr::null());
-  }
-
-  fn init(&self) {
-    self.setCaption(CAPTION);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glEnable(GL_BLEND);
-    glEnable(GL_LINE_SMOOTH);
-    glDisable(GL_TEXTURE_2D);
-    glDisable(GL_COLOR_MATERIAL);
-    glDisable(GL_LIGHTING);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    self.setClearColor(0, 0, 0, 1);
-  }
-
-  fn setField(&mut self, field : *mut Field) {
-    self.field = field;
-    self.screenResized();
-  }
-
-  fn close() {}
-
-  fn screenResized(&mut self) {
-    self.screenResized();
-    let lw : f32 = ((self.width as f32) / 640.0 + (self.height as f32) / 480.0) / 2.0;
-    if lw < 1.0 {
-      lw = 1.0;
-    }  else if lw > 4.0 {
-      lw = 4.0;
-    }
-    glLineWidth(lw);
-    glViewport(0, 0, self.width, self.height);
-    if self.field {
-      self.field.setLookAt();
-    }
-  }
-}
-
-
 impl SizableScreen for Screen {
-  fn windowMode2(&mut self, v : bool) ->  bool {
-    self._windowMode = v;
-    v
-  }
 
   fn windowMode1(&self) -> bool {
     self._windowMode
   }
 
-  fn width2(&mut self, v : i32) -> i32 {
-    self._width = v;
-    v
-  }
-
   fn width1(&self) -> i32 {
     self._width;
-  }
-
-  fn height2(&mut self, v : i32) -> i32 {
-    self._height = v;
-    v
   }
 
   fn height1(&self) -> i32 {
@@ -143,12 +87,12 @@ impl SdlScreen for Screen {
   }
 
   fn closeSDL() {
-    close();
+    Screen::close();
     SDL_ShowCursor(SDL_ENABLE);
   }
 
   fn flip() {
-    handleError();
+    Screen::handleError();
     SDL_GL_SwapBuffers();
   }
 
@@ -167,6 +111,21 @@ impl Screen {
      _height : 480,
      _windowMode : true,
    }
+  }
+
+  fn windowMode2(&mut self, v : bool) ->  bool {
+    self._windowMode = v;
+    v
+  }
+
+  fn width2(&mut self, v : i32) -> i32 {
+    self._width = v;
+    v
+  }
+
+  fn height2(&mut self, v : i32) -> i32 {
+    self._height = v;
+    v
   }
 
   //protected abstract void init();
@@ -202,12 +161,12 @@ impl Screen {
     if error == GL_NO_ERROR {
       return;
     }
-    closeSDL();
+    Screen::closeSDL();
     panic!("OpenGL error({})", error);
   }
 
-  fn setCaption(name : &string) {
-    SDL_WM_SetCaption(name, ptr::null());
+  fn setCaption(name : &str) {
+    SDL_WM_SetCaption(name, "");
   }
 
   fn glVertex(v : Vector) {
@@ -241,6 +200,51 @@ impl Screen {
   fn brightness(&self, v : f32) -> f32 {
     self._brightness = v;
     v
+  }
+
+
+  // inlined from util/sdl/screen3d.d
+  fn setIcon() {
+    SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE_NAME), "");
+  }
+
+  // inlined from util/sdl/screen3d.d
+  fn init(&self) {
+    self.setCaption(CAPTION);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    glEnable(GL_BLEND);
+    glEnable(GL_LINE_SMOOTH);
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_COLOR_MATERIAL);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    self.setClearColor(0, 0, 0, 1);
+  }
+
+  // inlined from util/sdl/screen3d.d
+  fn setField(&mut self, field : *mut Field) {
+    self.field = field;
+    self.screenResized();
+  }
+
+  // inlined from util/sdl/screen3d.d
+  fn close() {}
+
+  // inlined from util/sdl/screen3d.d
+  fn screenResized(&mut self) {
+    self.screenResized();
+    let lw : f32 = ((self.width as f32) / 640.0 + (self.height as f32) / 480.0) / 2.0;
+    if lw < 1.0 {
+      lw = 1.0;
+    }  else if lw > 4.0 {
+      lw = 4.0;
+    }
+    glLineWidth(lw);
+    glViewport(0, 0, self.width, self.height);
+    if self.field {
+      self.field.setLookAt();
+    }
   }
 }
 

@@ -4,9 +4,6 @@
 #![allow(unused_variables)]
 #![allow(non_upper_case_globals)]
 
-use std::path::Path;
-use std::env;
-
 mod util {
 	pub mod vector;
 	pub mod actor;
@@ -16,6 +13,7 @@ mod util {
 		pub mod displaylist;
 		pub mod recordableinput;
 		pub mod mainloop;
+		pub mod screen;
 		pub mod input;
 		pub mod pad;
 	}
@@ -39,6 +37,12 @@ mod ttn {
 	pub mod screen;
 	pub mod dummy; //skeleton dummies
 }
+
+use std::path::Path;
+use std::env;
+
+use ttn::boot::*;
+
 
 fn main() {
 	// Change working directory
