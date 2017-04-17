@@ -86,17 +86,17 @@ impl SdlScreen for Screen {
     self.init();
   }
 
-  fn closeSDL() {
+  fn closeSDL(&mut self) {
     Screen::close();
     SDL_ShowCursor(SDL_ENABLE);
   }
 
-  fn flip() {
+  fn flip(&mut self) {
     Screen::handleError();
     SDL_GL_SwapBuffers();
   }
 
-  fn clear() {
+  fn clear(&mut self) {
     glClear(GL_COLOR_BUFFER_BIT);
   }
 }

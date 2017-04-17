@@ -59,7 +59,7 @@ pub struct Frame<'a> {
   //from src.util.sdl.frame.Frame
   //mainLoop: MainLoop, // need to be passed down
   abstractScreen: RefCell<Screen>,
-  abstractInput: RefCell<Input>, //same as pad
+  abstractInput: RefCell<RecordablePad>, //same as pad
   abstractPreference: RefCell<Preference>,
 
   //pad : Pad, //same as abstractInput
@@ -85,12 +85,7 @@ pub struct Frame<'a> {
  */
 impl<'a> Frame<'a> {
   //from src.util.sdl.frame.Frame
-  fn new(
-    abstractScreen : Screen,
-    abstractInput : Input,
-    abstractPreference : Preference
-    ) -> Frame<'a> {
-
+  fn new(abstractScreen : Screen, abstractInput : RecordablePad /* was Input */, abstractPreference : Preference) -> Frame<'a> {
     Frame {
       abstractScreen : RefCell::new(abstractScreen),
       abstractInput : RefCell::new(abstractInput),

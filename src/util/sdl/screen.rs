@@ -10,10 +10,10 @@
  * SDL screen handler interface.
  */
 pub trait SdlScreen { //was Screen
-  fn initSDL();
-  fn closeSDL();
-  fn flip();
-  fn clear();
+  fn initSDL(&mut self);
+  fn closeSDL(&mut self);
+  fn flip(&mut self);
+  fn clear(&mut self);
 }
 
 pub trait SizableScreen {

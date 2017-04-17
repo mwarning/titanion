@@ -36,106 +36,6 @@ struct Pad {
   state : PadState,
 }
 
-/*
-//inlined into RecordablePad
-
-impl Pad {
-  fn new() -> Pad {
-    Pad{
-      keys : SDL_GetKeyState(0),
-      buttonsExchanged : false,
-      stick : Some(SDL_JoystickOpen(0)),
-      state : PadState::new(),
-    }
-  }
-
-  fn openJoystick(&mut self, st : Option(&SDL_Joystick) /*= null*/) -> Option(&SDL_Joystick) {
-    if st == None {
-      if SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0 {
-        return None;
-      }
-      self.stick = Some(SDL_JoystickOpen(0));
-    } else {
-      self.stick = st;
-    }
-    self.stick
-  }
-
-  fn handleEvent(&mut self, event : &SDL_Event) {
-    self.keys = SDL_GetKeyState(ptr::null());
-  }
-
-  fn getState(&mut self) -> PadState {
-    let x : i32 = 0;
-    let y : i32 = 0;
-    self.state.dir = 0;
-    if let Some(stick) = self.stick {
-      x = SDL_JoystickGetAxis(stick, 0);
-      y = SDL_JoystickGetAxis(stick, 1);
-    }
-    if (self.keys[SDLK_RIGHT] == SDL_PRESSED) || (self.keys[SDLK_KP6] == SDL_PRESSED) || 
-        (self.keys[SDLK_d] == SDL_PRESSED) || (self.keys[SDLK_l] == SDL_PRESSED) ||
-        (x > JOYSTICK_AXIS) {
-      self.state.dir |= Dir::RIGHT;
-    }
-    if self.keys[SDLK_LEFT] == SDL_PRESSED || (self.keys[SDLK_KP4] == SDL_PRESSED) ||
-        self.keys[SDLK_a] == SDL_PRESSED || (self.keys[SDLK_j] == SDL_PRESSED) ||
-        (x < -JOYSTICK_AXIS) {
-      self.state.dir |= Dir::LEFT;
-    }
-    if (self.keys[SDLK_DOWN] == SDL_PRESSED) || (self.keys[SDLK_KP2] == SDL_PRESSED) ||
-        (self.keys[SDLK_s] == SDL_PRESSED) || (self.keys[SDLK_k] == SDL_PRESSED) ||
-        (y > JOYSTICK_AXIS) {
-      self.state.dir |= Dir::DOWN;
-    }
-    if (self.keys[SDLK_UP] == SDL_PRESSED) || (self.keys[SDLK_KP8] == SDL_PRESSED) ||
-        (self.keys[SDLK_w] == SDL_PRESSED) || (self.keys[SDLK_i] == SDL_PRESSED) ||
-        (y < -JOYSTICK_AXIS) {
-      self.state.dir |= Dir::UP;
-    }
-    self.state.button = 0;
-    let btn1 : i32 = 0;
-    let btn2 : i32 = 0;
-    let leftTrigger : f32 = 0.0;
-    let rightTrigger : f32  = 0.0;
-    if let Some(stick) = self.stick {
-      btn1 = SDL_JoystickGetButton(stick, 0) + SDL_JoystickGetButton(stick, 2) +
-             SDL_JoystickGetButton(stick, 4) + SDL_JoystickGetButton(stick, 6) +
-             SDL_JoystickGetButton(stick, 8) + SDL_JoystickGetButton(stick, 10);
-      btn2 = SDL_JoystickGetButton(stick, 1) + SDL_JoystickGetButton(stick, 3) +
-             SDL_JoystickGetButton(stick, 5) + SDL_JoystickGetButton(stick, 7) +
-             SDL_JoystickGetButton(stick, 9) + SDL_JoystickGetButton(stick, 11);
-    }
-    if (self.keys[SDLK_z] == SDL_PRESSED) || (self.keys[SDLK_PERIOD] == SDL_PRESSED) ||
-        (self.keys[SDLK_LCTRL] == SDL_PRESSED) || (self.keys[SDLK_RCTRL] == SDL_PRESSED) || 
-        btn1 {
-      if !self.buttonsExchanged {
-        self.state.button |= Button::A;
-      } else {
-        self.state.button |= Button::B;
-      }
-    }
-    if (self.keys[SDLK_x] == SDL_PRESSED) || (self.keys[SDLK_SLASH] == SDL_PRESSED) ||
-        (self.keys[SDLK_LALT] == SDL_PRESSED) || (self.keys[SDLK_RALT] == SDL_PRESSED) ||
-        (self.keys[SDLK_LSHIFT] == SDL_PRESSED) || (self.keys[SDLK_RSHIFT] == SDL_PRESSED) ||
-        (self.keys[SDLK_RETURN] == SDL_PRESSED) ||
-        btn2 {
-      if !self.buttonsExchanged {
-        self.state.button |= Button::B;
-      } else {
-        self.state.button |= Button::A;
-      }
-    }
-    self.state
-  }
-
-  fn getNullState(&mut self) -> PadState {
-    self.state.clear();
-    self.state
-  }
-}
-*/
-
 enum Dir {
   NONE,
   UP = 1,
@@ -217,6 +117,10 @@ pub struct RecordablePad {
 }
 
 impl Input for RecordablePad {
+  //inlined from class Pad
+  fn handleEvent(&mut self, event : &'static SDL_Event) {
+    self.keys = SDL_GetKeyState(ptr::null());
+  }
 }
 
 impl RecordablePad {
@@ -255,11 +159,6 @@ impl RecordablePad {
       self.stick = st;
     }
     self.stick
-  }
-
-  //inlined from class Pad
-  fn handleEvent(&mut self, event : &'static SDL_Event) {
-    self.keys = SDL_GetKeyState(ptr::null());
   }
 
   //inlined from class Pad

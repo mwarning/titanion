@@ -389,8 +389,8 @@ const BASE_SPEED : f32 = 0.15;
 const BASE_VELOCITY : f32 = 0.03;
 const CAPTURED_ENEMIES_INTERVAL_LENGTH : f32 = 1.2;
 const TILT_DEG : f32 = 1.0;
-const SHOT_INTERVAL : f32 = 3;
-const FIRST_SHOT_INTERVAL : f32 = 6;
+const SHOT_INTERVAL : i32 = 3;
+const FIRST_SHOT_INTERVAL : i32 = 6;
 const TWIN_SHOT_MAX_NUM : i32 = 2;
 
 pub struct PlayerSpec<'a> {

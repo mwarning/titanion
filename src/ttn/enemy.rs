@@ -1150,7 +1150,7 @@ pub trait EnemySpec {
 
   fn setRank(&mut self, rank : f32);
   fn init2(&mut self, es : &mut EnemyState);
-  fn gotoNextPhase(&self, es : &mut EnemyState) -> bool;
+  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool;
   fn isInAttack(&self, es : &EnemyState) -> bool;
   fn calcStandByTime(&self, es : &EnemyState) -> i32;
 
@@ -1225,7 +1225,7 @@ impl<'a> GhostEnemySpec<'a> {
 }
 
 impl<'a> EnemySpec for GhostEnemySpec<'a> {
-  fn get_enemyspec_data(&mut self) -> &'a mut EnemySpecData {
+  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
     &mut self.es
   }
 
@@ -1247,7 +1247,7 @@ impl<'a> EnemySpec for GhostEnemySpec<'a> {
   fn destroyed(&mut self, es : &mut EnemyState, dd : f32 /*= 0*/) {}
   fn setRank(&mut self, rank : f32) {}
   fn init2(&mut self, es : &mut EnemyState) {}
-  fn gotoNextPhase(&self, es : &mut EnemyState) -> bool { false }
+  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool { false }
   fn isInAttack(&self, ses : &EnemyState) -> bool { false }
   fn calcStandByTime(&self, es : &EnemyState) -> i32 { 0 }
   fn isBeingCaptured(&self, es : &EnemyState) -> bool { true }
@@ -1295,7 +1295,7 @@ impl<'a> MiddleEnemySpec<'a> {
 }
 
 impl<'a> EnemySpec for MiddleEnemySpec<'a> {
-  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData<'a> {
+  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
     &mut self.es
   }
 
@@ -1393,7 +1393,7 @@ impl<'a> EnemySpec for MiddleEnemySpec<'a> {
     }
   }
 
-  fn gotoNextPhase(&self, es : &mut EnemyState) -> bool {
+  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool {
     let rand = &self.es.gameState.enemy_spec_rand;
 
     //with (es) {
@@ -1584,7 +1584,7 @@ impl<'a> SmallEnemySpec for SE1Spec<'a> {
 }
 
 impl<'a> EnemySpec for SE1Spec<'a> {
-  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData<'a> {
+  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
     self.es.get_enemyspec_data()
   }
 
@@ -1612,7 +1612,7 @@ impl<'a> EnemySpec for SE1Spec<'a> {
     //SmallEnemySpec_calcStandByTime(self, es)
   }
 
-  fn gotoNextPhase(&self, es : &mut EnemyState) -> bool {
+  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool {
     //with (es) {
       if es.phase < 0 {
         return self.es.gotoNextPhaseInAppearing(es);
@@ -1683,7 +1683,7 @@ impl<'a> SE2Spec<'a> {
 }
 
 impl<'a> EnemySpec for SE2Spec<'a> {
-  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData<'a> {
+  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
     self.es.get_enemyspec_data()
   }
 
