@@ -12,6 +12,7 @@ use ttn::shape::*;
 use ttn::token::*;
 use ttn::player::*;
 use ttn::letter::*;
+use ttn::screen::*;
 use ttn::dummy::*;
 
 /**

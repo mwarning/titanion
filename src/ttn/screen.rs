@@ -15,18 +15,20 @@ use ttn::dummy::*;
  */
 
 const CAPTION : &'static str = "Titanion";
-const ICON_FILE_NAME : &'static str= "images/ttn_icon32.bmp";
+const ICON_FILE_NAME : &'static str = "images/ttn_icon32.bmp";
+
+static mut _brightness : f32 = 1.0; // from screen3d.d
 
 pub struct Screen {
 	//field : *mut Field; //must be passed to methods via frame
 
 // from Screen3D
-  /*static*/ _brightness : f32,
+  // static _brightness : f32,
   _farPlane : f32,
   _nearPlane : f32,
   _width : i32,
   _height : i32,
-  _windowMode : bool,
+  pub _windowMode : bool,
 }
 
 impl SizableScreen for Screen {
@@ -168,24 +170,24 @@ impl Screen {
     glTranslatef(v.x, v.y, 0.0);
   }
 
-  fn glTranslate3(v : Vector3) {
+  pub fn glTranslate3(v : Vector3) {
     glTranslatef(v.x, v.y, v.z);
   }
 
-  fn glRotate(d : f32, x : f32/*= 0*/, y : f32 /*= 0*/, z : f32 /*= 1*/) {
+  pub fn glRotate(d : f32, x : f32/*= 0*/, y : f32 /*= 0*/, z : f32 /*= 1*/) {
     glRotatef(d * 180.0 / PI, x, y, z);
   }
 
-  fn setColor(&self, r : f32, g : f32, b : f32, a : f32 /*= 1*/) {
-    glColor4f(r * self._brightness, g * self._brightness, b * self._brightness, a);
+  pub fn setColor(r : f32, g : f32, b : f32, a : f32 /*= 1*/) {
+    glColor4f(r * _brightness, g * _brightness, b * _brightness, a);
   }
 
-  fn setClearColor(&self, r : f32, g : f32, b : f32, a : f32 /*= 1*/) {
-    glClearColor(r * self._brightness, g * self._brightness, b * self._brightness, a);
+  pub fn setClearColor(r : f32, g : f32, b : f32, a : f32 /*= 1*/) {
+    glClearColor(r * _brightness, g * _brightness, b * _brightness, a);
   }
 
-  fn brightness(&self, v : f32) -> f32 {
-    self._brightness = v;
+  fn brightness(v : f32) -> f32 {
+    _brightness = v;
     v
   }
 

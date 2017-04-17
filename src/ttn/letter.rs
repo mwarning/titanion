@@ -5,8 +5,9 @@
 
 use std::f32::consts::PI;
 
-use ttn::shape::*;
 use util::sdl::displaylist::*;
+use ttn::shape::*;
+use ttn::screen::*;
 use ttn::dummy::*;
 
 

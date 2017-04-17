@@ -15,6 +15,7 @@ use ttn::player::*;
 use ttn::stage::*;
 use ttn::frame::*;
 use ttn::particle::*;
+use ttn::screen::*;
 use ttn::dummy::*;
 
 
@@ -1135,7 +1136,7 @@ pub trait EnemySpec {
     let spec = self.get_enemyspec_data();
     let mut p : Vector3 = spec.field.calcCircularPos(es.ts.pos);
     let mut cd : f32 = spec.field.calcCircularDeg(es.ts.pos.x);
-    (spec.ts.shape as EnemyShape).draw(p, cd, es.deg, es.cnt, es.size);
+    (spec.ts.shape as &EnemyShape).draw(p, cd, es.deg, es.cnt, es.size);
     for i in 1..spec.turretNum {
       let x : f32 = es.ts.pos.x;
       match i {
@@ -1149,7 +1150,7 @@ pub trait EnemySpec {
       p = spec.field.calcCircularPos(x, es.ts.pos.y);
       cd = spec.field.calcCircularDeg(x);
       Screen::setColor(0.5, 0.5, 1);
-      (spec.trailShape as EnemyShape).draw(p, cd, es.deg, es.cnt, es.size.x * 0.5, es.size.y * 0.5);
+      (spec.trailShape as &EnemyShape).draw(p, cd, es.deg, es.cnt, es.size.x * 0.5, es.size.y * 0.5);
     }
   }
 

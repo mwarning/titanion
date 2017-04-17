@@ -15,6 +15,7 @@ use ttn::pillar::*;
 use ttn::frame::*;
 use ttn::letter::*;
 use ttn::preference::*;
+use ttn::screen::*;
 use ttn::dummy::*;
 
 /**
@@ -111,7 +112,7 @@ impl<'a> Title<'a> {
   }
 
   fn draw(&mut self) {
-    Screen.setColor(1, 1, 1);
+    Screen::setColor(1, 1, 1);
     glEnable(GL_TEXTURE_2D);
     self.titleTexture.bind();
     self.drawBoard(self.titlePos.x, self.titlePos.y, 280 * self.titleSize, 64 * self.titleSize);
@@ -158,13 +159,13 @@ impl<'a> Title<'a> {
     glRotatef(d, 0.0, 0.0, 1.0);
     glScalef(5.0, 5.0, 1.0);
     glBegin(GL_TRIANGLE_FAN);
-    Screen.setColor(1, 1, 1, 0.5);
+    Screen::setColor(1, 1, 1, 0.5);
     glVertex3f(0.0, 1.7, 0.0);
     glVertex3f(1.0, 0.0, 0.0);
     glVertex3f(-1.0, 0.0, 0.0);
     glEnd();
     glBegin(GL_LINE_LOOP);
-    Screen.setColor(1, 1, 1, 1);
+    Screen::setColor(1, 1, 1, 1);
     glVertex3f(0.0, 1.7, 0.0);
     glVertex3f(1.0, 0.0, 0.0);
     glVertex3f(-1.0, 0.0, 0.0);

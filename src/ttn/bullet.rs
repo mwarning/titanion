@@ -15,6 +15,7 @@ use ttn::field::*;
 use ttn::frame::*;
 use ttn::particle::*;
 use ttn::player::*;
+use ttn::screen::*;
 
 /*
  * Enemies' bullets.

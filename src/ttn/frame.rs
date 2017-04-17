@@ -21,6 +21,7 @@ use ttn::enemy::*;
 use ttn::pillar::*;
 use ttn::title::*;
 use ttn::letter::*;
+use ttn::screen::*;
 use ttn::dummy::*;
 
 
@@ -35,20 +36,20 @@ pub struct Frame<'a> {
   abstractPreference: RefCell<Preference>,
 
   //pad : Pad, //same as abstractInput
-  screen : RefCell<Screen>,
-  field : RefCell<Field<'a>>,
-  player : RefCell<Player<'a>>,
-  playerSpec : RefCell<PlayerSpec<'a>>,
-  enemies : RefCell<EnemyPool<'a>>,
-  bullets : RefCell<BulletPool<'a>>,
-  particles : RefCell<ParticlePool<'a>>,
-  bonusParticles : RefCell<ParticlePool<'a>>,
-  pillars : RefCell<PillarPool<'a>>,
-  stage : RefCell<Stage<'a>>,
-  title : RefCell<Title<'a>>,
-  preference : RefCell<Preference>,
-  gameState : RefCell<GameState<'a>>,
-  replayData : RefCell<Option<ReplayData>>,
+  pub screen : RefCell<Screen>,
+  pub field : RefCell<Field<'a>>,
+  pub player : RefCell<Player<'a>>,
+  pub playerSpec : RefCell<PlayerSpec<'a>>,
+  pub enemies : RefCell<EnemyPool<'a>>,
+  pub bullets : RefCell<BulletPool<'a>>,
+  pub particles : RefCell<ParticlePool<'a>>,
+  pub bonusParticles : RefCell<ParticlePool<'a>>,
+  pub pillars : RefCell<PillarPool<'a>>,
+  pub stage : RefCell<Stage<'a>>,
+  pub title : RefCell<Title<'a>>,
+  pub preference : RefCell<Preference>,
+  pub gameState : RefCell<GameState<'a>>,
+  pub replayData : RefCell<Option<ReplayData>>,
   rand : RefCell<Rand>,
 }
 

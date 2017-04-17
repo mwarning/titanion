@@ -9,6 +9,7 @@ use util::vector::Vector;
 use util::vector::Vector3;
 use util::sdl::displaylist::DisplayList;
 use ttn::field::*;
+use ttn::screen::*;
 use ttn::dummy::*;
 
 /*

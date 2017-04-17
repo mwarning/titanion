@@ -188,14 +188,3 @@ impl Texture {
     Texture{}
   }
 }
-
-pub struct Screen;
-
-impl Screen {
-  pub fn setColor(r : f32, g : f32, b : f32, a : f32) {}
-  pub fn glTranslate(v : Vector3) {}
-  pub fn glRotate(deg : f32) {}
-  pub fn glVertex(v : Vector3) {}
-}
-
-pub fn drawPillar(a : f32, b : f32, c : f32) {}
