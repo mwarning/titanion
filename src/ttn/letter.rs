@@ -1,19 +1,7 @@
 /*
- * $Id: letter.d,v 1.1.1.1 2006/11/19 07:54:55 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
- /*
-module src.ttn.letter;
 
-
-private import std.math;
-
-private import derelict.opengl.gl;
-
-private import src.util.sdl.displaylist;
-private import src.ttn.screen;
-*/
 
 use std::f32::consts::PI;
 

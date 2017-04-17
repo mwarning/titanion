@@ -1,27 +1,6 @@
 /*
- * $Id: particle.d,v 1.3 2006/12/04 16:04:26 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
- /*
-module src.ttn.particle;
-
-
-private import std.math;
-
-private import derelict.opengl.gl;
-
-private import src.util.vector;
-private import src.util.math;
-private import src.util.actor;
-private import src.util.rand;
-private import src.ttn.token;
-private import src.ttn.field;
-private import src.ttn.screen;
-private import src.ttn.shape;
-private import src.ttn.letter;
-private import src.ttn.player;
-*/
 
 use std::f32::consts::PI;
 

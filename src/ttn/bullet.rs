@@ -1,25 +1,6 @@
 /*
- * $Id: bullet.d,v 1.4 2006/12/04 16:04:26 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-/*
-module src.ttn.bullet;
-
-
-private import derelict.opengl.gl;
-private import src.util.vector;
-private import src.util.actor;
-private import src.util.math;
-private import src.ttn.token;
-private import src.ttn.field;
-private import src.ttn.shape;
-private import src.ttn.player;
-private import src.ttn.particle;
-private import src.ttn.enemy;
-private import src.ttn.screen;
-private import src.ttn.frame;
-*/
 
 use std::f32::consts::PI;
 use std::ptr;
