@@ -1,17 +1,7 @@
 /*
- * $Id: sound.d,v 1.1.1.1 2006/11/19 07:54:55 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
 
- /*
-module src.ttn.sound;
-
-
-private import src.util.rand;
-private import src.util.logger;
-private import src.util.sdl.sound;
-*/
 use std::collections::HashMap;
 
 /**

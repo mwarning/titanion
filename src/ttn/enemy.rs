@@ -1,29 +1,6 @@
 /*
- * $Id: enemy.d,v 1.7 2006/12/09 04:17:40 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
- /*
-module src.ttn.enemy;
-
-
-private import derelict.opengl.gl;
-
-private import src.util.rand;
-private import src.util.vector;
-private import src.util.actor;
-private import src.util.math;
-private import src.ttn.token;
-private import src.ttn.field;
-private import src.ttn.shape;
-private import src.ttn.bullet;
-private import src.ttn.player;
-private import src.ttn.particle;
-private import src.ttn.stage;
-private import src.ttn.screen;
-private import src.ttn.sound;
-private import src.ttn.frame;
-*/
 
 use std::f32::consts::PI;
 

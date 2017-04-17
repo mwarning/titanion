@@ -1,20 +1,6 @@
 /*
- * $Id: sound.d,v 1.2 2006/12/04 16:04:27 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
- /*
-module src.util.sdl.sound;
-
-
-private import std.string;
-private import core.stdc.string;
-
-private import derelict.sdl.sdl;
-private import derelict.sdl.mixer;
-
-private import src.util.sdl.sdlexception;
-*/
 
 /**
  * Initialize and close SDL_mixer.

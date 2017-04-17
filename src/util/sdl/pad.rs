@@ -1,20 +1,7 @@
 /*
- * $Id: pad.d,v 1.1.1.1 2006/11/19 07:54:55 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-/*
-module src.util.sdl.pad;
 
-
-private import std.string;
-private import std.stream;
-
-private import derelict.sdl.sdl;
-
-private import src.util.sdl.input;
-private import src.util.sdl.recordableinput;
-*/
 use std::ptr;
 use std::ops::BitOr;
 

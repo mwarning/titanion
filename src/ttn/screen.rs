@@ -1,19 +1,6 @@
 /*
- * $Id: screen.d,v 1.2 2006/12/04 16:04:26 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
- /*
-module src.ttn.screen;
-
-
-private import derelict.sdl.sdl;
-private import derelict.opengl.gl;
-private import derelict.opengl.glu;
-
-private import src.util.sdl.screen3d;
-private import src.ttn.field;
-*/
 
 use std::f32::consts::PI;
 use std::ptr;

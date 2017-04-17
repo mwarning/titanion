@@ -1,29 +1,10 @@
 /*
- * $Id: screen3d.d,v 1.1.1.1 2006/11/19 07:54:55 kenta Exp $
- *
  * Copyright 2005 Kenta Cho. Some rights reserved.
  */
 
 //######### Moved to ttn/screen.rs #########
 
 /*
-module src.util.sdl.screen3d;
-
-
-private import std.string;
-private import core.stdc.string;
-private import std.math;
-private import std.conv;
-
-private import derelict.sdl.sdl;
-private import derelict.opengl.gl;
-private import derelict.opengl.glu;
-
-private import src.util.vector;
-private import src.util.sdl.screen;
-private import src.util.sdl.sdlexception;
-
-
 string fromStringz(char* str) {
     return (str[0..strlen(str)]).idup;
 }

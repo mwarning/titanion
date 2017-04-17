@@ -1,16 +1,6 @@
 /*
- * $Id: frame.d,v 1.1.1.1 2006/11/19 07:54:55 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
- /*
-module src.util.sdl.frame;
-
-private import src.util.preference;
-private import src.util.sdl.mainloop;
-private import src.util.sdl.screen;
-private import src.util.sdl.input;
-*/
 
 /**
  * Lifecycle of the game.

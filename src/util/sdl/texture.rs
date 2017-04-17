@@ -1,20 +1,7 @@
 /*
- * $Id: texture.d,v 1.1.1.1 2006/11/19 07:54:55 kenta Exp $
- *
  * Copyright 2005 Kenta Cho. Some rights reserved.
  */
- /*
-module src.util.sdl.texture;
 
-
-private import std.string;
-
-private import derelict.opengl.gl;
-private import derelict.opengl.glu;
-private import derelict.sdl.sdl;
-
-private import src.util.sdl.sdlexception;
-*/
 use std::collections::HashMap;
 
 /**

@@ -1,17 +1,6 @@
 /*
- * $Id: replay.d,v 1.4 2006/12/04 16:04:26 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
- /*
-module src.ttn.replay;
-
-
-import std.stream;
-
-private import src.util.sdl.pad;
-private import src.util.sdl.recordableinput;
-*/
 
 fn read(T)(fd : &File, dst : &T)
 {

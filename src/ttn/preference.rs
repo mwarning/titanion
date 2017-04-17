@@ -1,14 +1,6 @@
 /*
- * $Id: preference.d,v 1.4 2006/12/04 16:04:26 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
-/*
-module src.ttn.preference;
-
-
-private import src.util.preference;
-*/
 
 use ttn::dummy::*;
 

@@ -1,21 +1,6 @@
 /*
- * $Id: shape.d,v 1.5 2006/12/04 16:04:27 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
- /*
-module src.ttn.shape;
-
-
-private import std.math;
-
-private import derelict.opengl.gl;
-
-private import src.util.vector;
-private import src.util.sdl.displaylist;
-private import src.ttn.screen;
-private import src.ttn.field;
-*/
 
 use std::f32::consts::PI;
 use std::marker::Sized;

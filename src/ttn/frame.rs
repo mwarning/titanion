@@ -1,35 +1,7 @@
 /*
- * $Id: frame.d,v 1.5 2006/12/04 16:04:26 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
- /*
-module src.ttn.frame;
 
-
-private import derelict.sdl.sdl;
-private import derelict.opengl.gl;
-
-private import src.util.rand;
-private import src.util.vector;
-private import src.util.sdl.frame;
-private import src.util.sdl.pad;
-private import src.ttn.field;
-private import src.ttn.screen;
-private import src.ttn.token;
-private import src.ttn.player;
-private import src.ttn.enemy;
-private import src.ttn.bullet;
-private import src.ttn.particle;
-private import src.ttn.pillar;
-private import src.ttn.stage;
-private import src.ttn.letter;
-private import src.ttn.replay;
-private import src.ttn.sound;
-private import src.ttn.title;
-private import src.ttn.preference;
-private import src.ttn.shape;
-*/
 use std::cell::RefCell;
 
 use util::vector::*;

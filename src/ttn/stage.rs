@@ -1,26 +1,6 @@
 /*
- * $Id: stage.d,v 1.6 2006/12/09 04:17:40 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
- /*
-module src.ttn.stage;
-
-
-private import src.util.rand;
-private import src.util.vector;
-private import src.ttn.field;
-private import src.ttn.token;
-private import src.ttn.enemy;
-private import src.ttn.bullet;
-private import src.ttn.player;
-private import src.ttn.particle;
-private import src.ttn.pillar;
-private import src.ttn.shape;
-private import src.ttn.sound;
-private import src.ttn.frame;
-private import src.ttn.letter;
-*/
 
 use std::f32::consts::PI;
 

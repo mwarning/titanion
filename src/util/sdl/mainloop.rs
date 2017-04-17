@@ -1,23 +1,6 @@
 /*
- * $Id: mainloop.d,v 1.1.1.1 2006/11/19 07:54:55 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
- /*
-module src.util.sdl.mainloop;
-
-
-private import derelict.sdl.sdl;
-
-private import src.util.logger;
-private import src.util.rand;
-private import src.util.preference;
-private import src.util.sdl.frame;
-private import src.util.sdl.screen;
-private import src.util.sdl.input;
-private import src.util.sdl.sound;
-private import src.util.sdl.sdlexception;
-*/
 
 use ttn::dummy::*;
 use ttn::field::*;

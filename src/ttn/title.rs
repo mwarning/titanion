@@ -1,22 +1,6 @@
 /*
- * $Id: title.d,v 1.4 2006/12/04 16:04:27 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
- /*
-module src.ttn.title;
-
-
-private import derelict.opengl.gl;
-
-private import src.util.vector;
-private import src.util.sdl.pad;
-private import src.util.sdl.texture;
-private import src.ttn.screen;
-private import src.ttn.letter;
-private import src.ttn.preference;
-private import src.ttn.frame;
-*/
 
 use util::vector::*;
 use util::actor::*;
