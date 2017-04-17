@@ -133,27 +133,37 @@ impl BulletState {
 
 const DISAPPEAR_CNT : f32 = 300.0;
 
-pub struct BulletSpec {
-  ts : TokenSpec<BulletState>,
-  player : &'static Player<'static>,
-  enemies : &'static EnemyPool<'static>,
-  particles : *mut ParticlePool,
-  lineShape : *mut Shape,
-  gameState : *mut GameState,
+pub struct BulletSpec<'a> {
+  //ts : TokenSpec<BulletState>, //inlined
+  field : &'a mut Field<'a>,
+  shape : &'a mut Shape,
+  player : &'a Player<'a>,
+  enemies : &'a EnemyPool<'a>,
+  particles : &'a mut ParticlePool<'a>,
+  lineShape : &'a mut Shape,
+  gameState : &'a GameState<'a>,
 }
 
-impl BulletSpec {
-  fn new(field : *mut Field, player : &'static Player, enemies : &'static EnemyPool<'static>, particles : *mut ParticlePool,
-              shape : *mut Shape, lineShape : *mut Shape, gameState : *mut GameState) {
+impl<'a> TokenSpec<BulletState> for BulletSpec<'a> {
+} 
+
+impl<'a> BulletSpec<'a> {
+  fn new(field : &'a mut Field, player : &'a Player, enemies : &'a EnemyPool<'a>, particles : &'a mut ParticlePool,
+              shape : &'a mut Shape, lineShape : &'a mut Shape, gameState : &'a mut GameState) -> BulletSpec<'a> {
     BulletSpec{
-      ts : TokenSpec::<BulletState>::new(field, shape),
-      field : field, player : player, enemies : enemies,
-      particles : particles, shape : shape, lineShape : lineShape,
+      //ts : TokenSpec::<BulletState>::new(field, shape),
+      shape : shape,
+      field : field,
+      player : player,
+      enemies : enemies,
+      particles : particles,
+      shape : shape,
+      lineShape : lineShape,
       gameState : gameState
     }
   }
 
-  fn set(&mut self, bs : &BulletState) {
+  fn set(&mut self, bs : &mut BulletState) {
     //with bs {
       bs.ppos.x = self.ts.pos.x;
       bs.ppos.y = self.ts.pos.y;
@@ -227,10 +237,10 @@ impl BulletSpec {
     }
 }
 
-pub struct Bullet {
+pub struct Bullet<'a> {
   //tok : Token<BulletState, BulletSpec>, //inlined
-  state : *mut BulletState,
-  spec : *mut BulletSpec,
+  state : &'a mut BulletState,
+  spec : &'a mut BulletSpec<'a>,
   _exists : bool, //inherited by Actor class
 }
 
@@ -238,13 +248,13 @@ pub struct Bullet {
 //impl Token<BulletState, BulletSpec> for Bullet {
 //}
 
-impl Bullet {
+impl<'a> Bullet<'a> {
   fn setWaitCnt(&mut self, c : i32) {
     self.tok.state.waitCnt = c;
   }
 }
 
-impl Actor for Bullet {
+impl<'a> Actor for Bullet<'a> {
   fn getExists(&self) -> bool {
     self._exists
   }

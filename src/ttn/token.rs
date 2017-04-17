@@ -31,7 +31,6 @@ use ttn::dummy::*;
  /*
  //inlined
 pub struct Token<ST, SP> {
-  //actor : Actor,
   pub _exists : bool, //from Actor
   pub state : *mut ST,
   pub spec : *mut SP,
@@ -138,16 +137,19 @@ use std::marker::PhantomData;
 /**
  * Base class of a token's specification.
  */
-pub struct TokenSpec<T> {
-  pub field : &'static mut Field,
-  pub shape : &'static mut Shape,
+/*
+pub struct TokenSpec<'a, T> {
+  pub field : &'a mut Field<'a>,
+  pub shape : &'a mut Shape<'a>,
   phantom: PhantomData<T>, //dummy
 }
+*/
 
-impl<T> TokenSpec<T> {
-  fn new(field : *mut Field, shape : *mut Shape) -> Self {
-    Self{field : field, shape : shape}
-  }
+pub trait TokenSpec<T : ?Sized> {
+//impl<'a, T> TokenSpec<'a, T> {
+//  fn new(field : &mut Field<'a>, shape : &mut Shape<'a>) -> Self<'a, T> {
+//    TokenSpec{field : field, shape : shape}
+//  }
 
   fn set(&self, state : T) {}
   fn removed(&self, state : T) {}

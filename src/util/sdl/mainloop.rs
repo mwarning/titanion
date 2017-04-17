@@ -32,13 +32,13 @@ const MAX_SKIP_FRAME : i32 = 5;
 /**
  * SDL main loop.
  */
-pub struct MainLoop {
+pub struct MainLoop<'a> {
   noSlowdown : bool,
   event : SDL_Event,
   //screen : &Screen, //we use frame.screen instead
-  input : &Input,
-  frame : &Frame,
-  preference : &Preference,
+  //input : &Input,
+  frame : Frame<'a>,
+  //preference : &Preference,
   slowdownRatio : f32, 
   interval : f32,
   _slowdownStartRatio : f32,
@@ -46,14 +46,14 @@ pub struct MainLoop {
   done : bool,
 }
 
-impl MainLoop {
-	fn new(input : &Input, frame : &Frame, preference : &Preference) -> MainLoop {
+impl<'a> MainLoop<'a> {
+	fn new(/*input : &Input,*/ frame : Frame /*, preference : &Preference*/) -> MainLoop<'a> {
 		MainLoop{
 			noSlowdown : false,
 			event : SDL_Event::new(),
-			input : input,
+			//input : input, //moved into frame
 			frame : frame,
-			preference : preference,
+			//preference : preference, //moved into frame
 			slowdownRatio : false,
 			interval : INTERVAL_BASE,
 			_slowdownStartRatio : 1.0,

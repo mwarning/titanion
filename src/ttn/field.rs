@@ -36,9 +36,9 @@ const X_EXPANSION_RATIO : f32 = 1.0;
 const SIDEWALL_WIDTH : f32 = 145.0;
 const TORUS_Y : f32 = -24.0;
 
-pub struct Field {
-  frame : *mut Frame,
-  screen : *mut Screen,
+pub struct Field<'a> {
+  frame : &'a mut Frame<'a>,
+  screen : &'a mut Screen,
   _size : Vector,
   _outerSize : Vector,
   _eyePos : Vector3,
@@ -47,8 +47,8 @@ pub struct Field {
   cnt : i32,
 }
 
-impl Field {
-  pub fn new(frame : *mut Frame, screen : *mut Screen) -> Field {
+impl<'a> Field<'a> {
+  pub fn new(frame : &mut Frame<'a>, screen : &mut Screen) -> Field<'a> {
     Field{
       frame : frame,
       screen : screen,

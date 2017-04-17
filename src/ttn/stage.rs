@@ -47,39 +47,39 @@ use ttn::dummy::*;
 const PHASE_RESULT_SHOW_CNT : i32 = 150;
 const PHASE_START_SHOW_CNT : i32 = 90;
 
-pub struct Stage {
+pub struct Stage<'a> {
   randomized : bool,
-  field : &Field,
-  enemies : &EnemyPool,
-  bullets : &BulletPool,
-  player : &Player,
-  particles : &ParticlePool,
-  bonusParticles : &ParticlePool,
-  pillars : &PillarPool,
-  gameState : &GameState,
-  rand : &Rand,
+  field : &'a Field<'a>,
+  enemies : &'a EnemyPool<'a>,
+  bullets : &'a BulletPool<'a>,
+  player : &'a Player<'a>,
+  particles : &'a ParticlePool<'a>,
+  bonusParticles : &'a ParticlePool<'a>,
+  pillars : &'a PillarPool<'a>,
+  gameState : &'a GameState<'a>,
+  rand : Rand,
   appCnt : i32,
-  middleEnemySpec : &EnemySpec,
-  smallEnemy1Spec : &EnemySpec,
-  smallEnemy2Spec : &EnemySpec,
-  enemy1Shape : &EnemySpec,
-  enemy2Shape : &EnemySpec,
-  enemy3Shape : &EnemySpec,
-  enemy1TrailShape : &EnemySpec,
-  enemy2TrailShape : &EnemySpec,
-  enemy3TrailShape : &EnemySpec,
-  bulletSpec : &BulletSpec,
-  middleBulletSpec : &BulletSpec,
-  counterBulletSpec : &BulletSpec,
-  bulletShape : &BulletShapeBase,
-  bulletLineShape : &BulletShapeBase,
-  middleBulletShape : &BulletShapeBase,
-  middleBulletLineShape : &BulletShapeBase,
-  counterBulletShape : &RollBulletShapeBase,
-  counterBulletLineShape : &RollBulletShapeBase,
-  pillarSpec : PillarSpec,
-  pillarShapes : Vec<&PillarShape>,
-  outsidePillarShape : &PillarShape,
+  middleEnemySpec : MiddleEnemySpec<'a>,
+  smallEnemy1Spec : SE1Spec<'a>,
+  smallEnemy2Spec : SE2Spec<'a>,
+  enemy1Shape : Enemy1Shape,
+  enemy2Shape : Enemy2Shape,
+  enemy3Shape : Enemy3Shape,
+  enemy1TrailShape : Enemy1TrailShape,
+  enemy2TrailShape : Enemy2TrailShape,
+  enemy3TrailShape : Enemy3TrailShape,
+  bulletSpec : BulletSpec<'a>,
+  middleBulletSpec : BulletSpec<'a>,
+  counterBulletSpec : BulletSpec<'a>,
+  bulletShape : BulletShape,
+  bulletLineShape : BulletLineShape,
+  middleBulletShape : MiddleBulletShape,
+  middleBulletLineShape : MiddleBulletLineShape,
+  counterBulletShape : CounterBulletShape,
+  counterBulletLineShape : CounterBulletLineShape,
+  pillarSpec : PillarSpec<'a>,
+  pillarShapes : Vec<&'a PillarShape>,
+  outsidePillarShape : &'a PillarShape,
   smallEnemyNum : i32,
   smallEnemyFormationNum : i32,
   rank : f32,
@@ -105,16 +105,26 @@ pub struct Stage {
   _existsCounterBullet : bool,
 }
 
-impl Stage {
-  fn new(field : &Field, enemies : &EnemyPool, bullets : &BulletPool,
-            player : &Player, particles : &ParticlePool,
-            bonusParticles : &ParticlePool, pillars : &PillarPool, gameState : &GameState) -> Stage {
+impl<'a> Stage<'a> {
+  fn new(field : &'a Field, enemies : &'a EnemyPool, bullets : &'a BulletPool,
+            player : &'a Player, particles : &'a ParticlePool,
+            bonusParticles : &'a ParticlePool, pillars : &'a PillarPool, gameState : &'a GameState) -> Stage<'a> {
     let bulletShape = BulletShape::new();
     let bulletLineShape = BulletLineShape::new();
     let middleBulletShape = MiddleBulletShape::new();
     let middleBulletLineShape = MiddleBulletLineShape::new();
     let counterBulletShape = CounterBulletShape::new();
     let counterBulletLineShape = CounterBulletLineShape::new();
+    let enemy1Shape = Enemy1Shape::new();
+    let enemy2Shape = Enemy2Shape::new();
+    let enemy3Shape = Enemy3Shape::new();
+    let enemy1TrailShape = Enemy1TrailShape::new();
+    let enemy2TrailShape = Enemy2TrailShape::new();
+    let enemy3TrailShape = Enemy3TrailShape::new();
+    let middleBulletSpec = BulletSpec::new(field, player, enemies, particles, middleBulletShape, middleBulletLineShape, gameState);
+    let counterBulletSpec = BulletSpec::new(field, player, enemies, particles, counterBulletShape, counterBulletLineShape, gameState);
+    let bulletSpec = BulletSpec::new(field, player, enemies, particles, bulletShape, bulletLineShape, gameState);
+
     Stage{
       field : field,
       enemies : enemies,
@@ -125,6 +135,12 @@ impl Stage {
       pillars : pillars,
       gameState : gameState,
       rand : Rand::new(),
+
+      // moved here from setEnemySpecs(), some arguments were moved
+      middleEnemySpec : MiddleEnemySpec::new(enemy3Shape, enemy3TrailShape, middleBulletSpec, counterBulletSpec),
+      smallEnemy1Spec : SE1Spec::new(enemy1Shape, enemy1TrailShape, bulletSpec, counterBulletSpec),
+      smallEnemy2Spec : SE2Spec::new(enemy2Shape, enemy2TrailShape, bulletSpec, counterBulletSpec),
+
       enemy1Shape : Enemy1Shape::new(),
       enemy2Shape : Enemy2Shape::new(),
       enemy3Shape : Enemy3Shape::new(),
@@ -137,15 +153,37 @@ impl Stage {
       middleBulletLineShape : middleBulletLineShape,
       counterBulletShape : counterBulletShape,
       counterBulletLineShape : counterBulletLineShape,
-      bulletSpec : BulletSpec::new(field, player, enemies, particles,
-                                  bulletShape, bulletLineShape, gameState),
-      middleBulletSpec : BulletSpec::new(field, player, enemies, particles,
-                                        middleBulletShape, middleBulletLineShape, gameState),
-      counterBulletSpec : BulletSpec::new(field, player, enemies, particles,
-                                         counterBulletShape, counterBulletLineShape, gameState),
+      bulletSpec : bulletSpec,
+      middleBulletSpec : middleBulletSpec,
+      counterBulletSpec : counterBulletSpec,
       pillarSpec : PillarSpec::new(field),
-      pillarShapes :  [Pillar1Shape::new(), Pillar2Shape::new(), Pillar3Shape::new(), Pillar4Shape::new()],
+      pillarShapes : [Pillar1Shape::new(), Pillar2Shape::new(), Pillar3Shape::new(), Pillar4Shape::new()],
       outsidePillarShape : OutsidePillarShape::new(),
+
+      // from clear()
+      smallEnemyNum : 0,
+      smallEnemyFormationNum : 0,
+      rank : 0.0,
+      phaseTime : 0,
+      stageStarted : false,
+      waitNextFormationPhase : false,
+      middleEnemyAppInterval : 0,
+      _attackSmallEnemyNum : 0,
+      goingDownBeforeStandByRatio : 0.0,
+      appCntInterval : 0,
+      formationIdx : 0,
+      cnt : 0,
+      rankTrg : 0.0,
+      phaseNum : 0,
+      shotFiredNum : 0,
+      shotHitNum : 0,
+      shotFiredNumRsl : 0,
+      shotHitNumRsl : 0,
+      shotFiredNumTotal : 0,
+      shotHitNumTotal : 0,
+      hitRatio : 0,
+      hitRatioBonus : 0,
+      _existsCounterBullet : false,
     }
   }
 
@@ -295,21 +333,30 @@ impl Stage {
       }
     }
     self.smallEnemyFormationNum = ((en / self.smallEnemyNum) + 1) as i32;
+    //moved to ctor
+    /*
     self.middleEnemySpec = MiddleEnemySpec::new
       (self.field, self.bullets, self.player, self.particles, self.bonusParticles, self.enemies,
        self, self.enemy3Shape, self.enemy3TrailShape,
        self.middleBulletSpec, self.counterBulletSpec, self.gameState);
+    */
     self.middleEnemySpec.setRank(self.rank * 0.15);
+    //moved to ctor
+    /*
     self.smallEnemy1Spec = SE1Spec::new
       (self.field, self.bullets, self.player, self.particles, self.bonusParticles, self.enemies,
        self, self.enemy1Shape, self.enemy1TrailShape,
        self.bulletSpec, self.counterBulletSpec, self.gameState);
-    (self.smallEnemy1Spec as SE1Spec).setRank(self.rank * 0.22);
+    */
+    self.smallEnemy1Spec.setRank(self.rank * 0.22);
+    /*
+    //moved to ctor
     self.smallEnemy2Spec = SE2Spec::new
       (self.field, self.bullets, self.player, self.particles, self.bonusParticles, self.enemies,
        self, self.enemy2Shape, self.enemy2TrailShape,
        self.bulletSpec, self.counterBulletSpec, self.gameState);
-    (self.smallEnemy2Spec as SE2Spec).setRank(self.rank * 0.22);
+      */
+    self.smallEnemy2Spec.setRank(self.rank * 0.22);
     self._attackSmallEnemyNum = (self.rank + 2.0).sqrt() as i32;
     self.goingDownBeforeStandByRatio = 0.0;
     if self.rand.nextFloat(self.rank + 1.0) > 2.0 {

@@ -50,8 +50,8 @@ use ttn::dummy::*;
 pub struct Player<'a> {
   //tok : Token!(PlayerState, PlayerSpec),
   pub _exists : bool, //from Actor
-  pub state : &'a mut PlayerState,
-  pub spec : &'a mut PlayerSpec,
+  pub state : &'a mut PlayerState<'a>,
+  pub spec : &'a mut PlayerSpec<'a>,
 
   hitOffset : Vector,
 }
@@ -71,11 +71,11 @@ impl<'a> Actor for Player<'a> {
   }
 }
 
-impl<'a> Token<PlayerState, PlayerSpec> for Player<'a> {
+impl<'a> Token<PlayerState<'a>, PlayerSpec<'a>> for Player<'a> {
 }
 
 impl<'a> Player<'a> {
-  fn new(spec : &PlayerSpec) -> Player<'a> {
+  fn new(spec : &PlayerSpec<'a>) -> Player<'a> {
     let mut ins = Player {
       state : PlayerState::new(),
       spec : spec,
@@ -205,11 +205,11 @@ const RESPAWN_INTERVAL : i32 = 72;
 const INVINCIBLE_INTERVAL_RESPAWN : i32 = 240;
 const MAX_CAPTURED_ENEMIES_NUM : i32 = 10;
 
-struct PlayerState {
+struct PlayerState<'a> {
   ts : TokenState,
   replayMode : bool,
-  spec : PlayerSpec,
-  capturedEnemies : Vec<&'static Enemy<'static>>,
+  spec : PlayerSpec<'a>,
+  capturedEnemies : Vec<&'a Enemy<'a>>,
   capturedEnemyNum : i32,
   respawnCnt : i32,
   isInRespawn : bool,
@@ -240,8 +240,8 @@ struct PlayerState {
   }
 */
 
-impl PlayerState {
-  fn new() -> PlayerState {
+impl<'a> PlayerState<'a> {
+  fn new() -> PlayerState<'a> {
       PlayerState{
         ts : TokenState::new(),
         replayMode : false,
@@ -393,31 +393,39 @@ const SHOT_INTERVAL : f32 = 3;
 const FIRST_SHOT_INTERVAL : f32 = 6;
 const TWIN_SHOT_MAX_NUM : i32 = 2;
 
-pub struct PlayerSpec {
-  ts : TokenSpec<PlayerState>,
+pub struct PlayerSpec<'a> {
+  //ts : TokenSpec<PlayerState>, //inlined
+  field : &'a mut Field<'a>,
+  shape : &'a mut Shape,
   //mixin StaticRandImpl;
-  shots : &'static ShotPool<'static>,
-  capturedEnemiesShots : &'static ShotPool<'static>,
-  shotSpec : &'static ShotSpec,
-  enemies : &'static EnemyPool<'static>,
-  bullets : &'static BulletPool,
-  particles : &'static ParticlePool,
-  pad : &'static RecordablePad,
-  gameState : &'static GameState,
-  playerState : Option(&PlayerState),
-  tractorBeam : Option(&TractorBeam),
-  lineShape : &'static Shape,
+  shots : &'a ShotPool<'a>,
+  capturedEnemiesShots : &'a ShotPool<'a>,
+  shotSpec : &'a ShotSpec<'a>,
+  enemies : &'a EnemyPool<'a>,
+  bullets : &'a BulletPool<'a>,
+  particles : &'a ParticlePool<'a>,
+  pad : &'a RecordablePad,
+  gameState : &'a GameState<'a>,
+  playerState : Option<&'a PlayerState<'a>>,
+  tractorBeam : Option<&'a TractorBeam<'a>>,
+  lineShape : &'a Shape,
   bulletHitWidth : f32,
-  ghostEnemySpec : &'static GhostEnemySpec,
-  ghostEnemyShape : &'static EnemyShape,
+  ghostEnemySpec : &'a GhostEnemySpec<'a>,
+  ghostEnemyShape : &'a EnemyShape,
   shotMaxNum : i32,
 }
 
-impl PlayerSpec {
+impl<'a> TokenSpec<PlayerState<'a>> for PlayerSpec<'a> {
+}
+
+
+impl<'a> PlayerSpec<'a> {
   fn new(pad : &Pad, gameState : &GameState,  field : &Field, enemies : &EnemyPool, bullets : &BulletPool, particles : &ParticlePool) {
     let ghostEnemyShape = Enemy1TrailShape::new();
     let mut ins = PlayerSpec {
-      ts : TokenSpec::<PlayerState>::new(field, PlayerShape::new()),
+      //ts : TokenSpec::<PlayerState>::new(field, PlayerShape::new()),
+      field : field,
+      shape : PlayerShape::new(),
       //mixin StaticRandImpl;
       shots : ShotPool::new(),
       capturedEnemiesShots : ShotPool::new(),
@@ -891,7 +899,7 @@ impl PlayerSpec {
 }
 
 struct ShotPool<'a> {
-  ap : ActorPool<Box<&'a Shot<'a>>>,
+  ap : ActorPool<Shot<'a>>,
 }
 
 impl<'a> ShotPool<'a> {
@@ -918,8 +926,8 @@ impl<'a> ShotPool<'a> {
 
 struct Shot<'a> {
   //tok : Token<ShotState, ShotSpec>,
-  pub state : &'a mut ShotState,
-  pub spec : &'a mut ShotSpec,
+  pub state : &'a mut ShotState<'a>,
+  pub spec : &'a mut ShotSpec<'a>,
   _exists : bool, //from Actor
 }
 
@@ -947,7 +955,7 @@ impl<'a> Actor for Shot<'a> {
   }
 }
 
-impl<'a> Token<ShotState, ShotSpec> for Shot<'a> {
+impl<'a> Token<ShotState<'a>, ShotSpec<'a>> for Shot<'a> {
 }
 
 impl<'a> Shot<'a> {
@@ -956,13 +964,21 @@ impl<'a> Shot<'a> {
   }
 }
 
-struct ShotState {
+struct ShotState<'a> {
   ts : TokenState,
-  parent : &'static Shot<'static>,
+  parent : Option<&'a Shot<'a>>,
   cnt : i32,
 }
 
-impl ShotState {
+impl<'a> ShotState<'a> {
+  fn new() -> ShotState<'a> {
+    ShotState {
+      ts : TokenState::new(),
+      parent : None,
+      cnt : 0,
+    }
+  }
+
   fn clear(&mut self) {
     self.parent = None;
     self.cnt = 0;
@@ -970,18 +986,26 @@ impl ShotState {
   }
 }
 
-struct ShotSpec {
-  ts : TokenSpec<ShotState>,
-  enemies : &'static EnemyPool<'static>,
-  bullets : &'static BulletPool<'static>,
-  playerState : &'static PlayerState<'static>,
-  gameState : &'static GameState<'static>,
+struct ShotSpec<'a> {
+  //ts : TokenSpec<ShotState>, //inlined
+  field : &'a mut Field<'a>,
+  shape : &'a mut Shape,
+  enemies : &'a EnemyPool<'a>,
+  bullets : &'a BulletPool<'a>,
+  playerState : &'a PlayerState<'a>,
+  gameState : &'a GameState<'a>,
 }
 
-impl ShotSpec {
-  fn new(&field : &mut Field, enemies : &mut EnemyPool, bullets : &mut BulletPool, gameState : &mut GameState) {
+impl<'a> TokenSpec<ShotState<'a>> for ShotSpec<'a> {
+}
+
+
+impl<'a> ShotSpec<'a> {
+  fn new(&field : &mut Field, enemies : &mut EnemyPool, bullets : &mut BulletPool, gameState : &mut GameState) -> ShotSpec<'a> {
     ShotSpec{
-      ts : TokenSpec::new(field, ShotShape::new()),
+      //ts : TokenSpec::new(field, ShotShape::new()),
+      field : field,
+      shape : ShotShape::new(),
       enemies : enemies,
       bullets : bullets,
       gameState : gameState,
@@ -1045,10 +1069,10 @@ const WIDTH : f32 = 3.0;
 const SHAPE_INTERVAL_TIME : f32 = 10.0;
 const SHAPE_INTERVAL_LENGTH : f32 = 0.5;
 
-struct TractorBeam {
-  field : Field,
-  playerState : PlayerState,
-  gameState : GameState,
+struct TractorBeam<'a> {
+  field : Field<'a>,
+  playerState : &'a PlayerState<'a>,
+  gameState : &'a GameState<'a>,
   shapes : Vec<Box<TractorBeamShape>>,
   length : f32, //= 0;
   cnt : i32,
@@ -1060,8 +1084,8 @@ struct TractorBeam {
   }
 */
 
-impl TractorBeam {
-  fn new(field : &Field, playerState : &PlayerState, gameState : &GameState) {
+impl<'a> TractorBeam<'a> {
+  fn new(field : &Field, playerState : &'a PlayerState, gameState : &'a GameState) -> TractorBeam<'a> {
     TractorBeam {
       field : field,
       playerState : playerState,

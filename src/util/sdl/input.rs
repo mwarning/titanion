@@ -17,15 +17,15 @@ use ttn::dummy::*;
  * Input device interface.
  */
 pub trait Input {
-  fn handleEvent(&self, event : &SDL_Event);
+  fn handleEvent(&mut self, event : SDL_Event);
 }
 
-struct MultipleInputDevice {
-	inputs : Vec<&Input>,
+struct MultipleInputDevice<'a> {
+	inputs : Vec<&'a Input>,
 }
 
-impl Input for MultipleInputDevice {
-	fn handleEvent(&self, event : &SDL_Event) {
+impl<'a> Input for MultipleInputDevice<'a> {
+	fn handleEvent(&mut self, event : SDL_Event) {
 	    for i in &self.inputs {
 	      i.handleEvent(event);
 	    }

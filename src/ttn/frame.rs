@@ -30,6 +30,7 @@ private import src.ttn.title;
 private import src.ttn.preference;
 private import src.ttn.shape;
 */
+use std::cell::RefCell;
 
 use util::vector::*;
 use util::actor::*;
@@ -54,62 +55,64 @@ use ttn::dummy::*;
 const LAST_REPLAY_FILE_NAME : &'static str = "last.rpl";
 
 //public class Frame: src.util.sdl.frame.Frame {
-pub struct Frame {
+pub struct Frame<'a> {
   //from src.util.sdl.frame.Frame
-  abstractScreen: Screen,
-  abstractInput: Input,
-  abstractPreference: Preference,
+  //mainLoop: MainLoop, // need to be passed down
+  abstractScreen: RefCell<Screen>,
+  abstractInput: RefCell<Input>, //same as pad
+  abstractPreference: RefCell<Preference>,
 
-  pad : Pad,
-  screen : Screen,
-  field : Field,
-  player : Player,
-  playerSpec : PlayerSpec,
-  enemies : EnemyPool,
-  bullets : BulletPool,
-  particles : ParticlePool,
-  bonusParticles : ParticlePool,
-  pillars : PillarPool,
-  stage : Stage,
-  title : Title,
-  preference : Preference,
-  gameState : GameState,
-  replayData : ReplayData,
-  rand : Rand,
+  //pad : Pad, //same as abstractInput
+  screen : RefCell<Screen>,
+  field : RefCell<Field<'a>>,
+  player : RefCell<Player<'a>>,
+  playerSpec : RefCell<PlayerSpec<'a>>,
+  enemies : RefCell<EnemyPool<'a>>,
+  bullets : RefCell<BulletPool<'a>>,
+  particles : RefCell<ParticlePool<'a>>,
+  bonusParticles : RefCell<ParticlePool<'a>>,
+  pillars : RefCell<PillarPool<'a>>,
+  stage : RefCell<Stage<'a>>,
+  title : RefCell<Title<'a>>,
+  preference : RefCell<Preference>,
+  gameState : RefCell<GameState<'a>>,
+  replayData : RefCell<Option<ReplayData>>,
+  rand : RefCell<Rand>,
 }
 
 /**
  * Game frame and actor pools.
  */
-impl Frame {
+impl<'a> Frame<'a> {
   //from src.util.sdl.frame.Frame
   fn new(
     abstractScreen : Screen,
     abstractInput : Input,
     abstractPreference : Preference
-    ) {
+    ) -> Frame<'a> {
 
     Frame {
-      abstractScreen : abstractScreen,
-      abstractInput : abstractInput,
-      abstractPreference : abstractPreference,
+      abstractScreen : RefCell::new(abstractScreen),
+      abstractInput : RefCell::new(abstractInput),
+      abstractPreference : RefCell::new(abstractPreference),
 
-      stage : Stage::new(), //field, enemies, bullets, player, particles, bonusParticles, pillars, gameState);
-      playerSpec : PlayerSpec::new(), //self.pad, self.gameState, field, enemies, bullets, particles);
-      player : Player::new(), //playerSpec);
-      title : Title::new(), //self.preference, self.pad, self);
-      field : Field::new(),
-      gameState : GameState::new(), //self, self.preference);
-      particles : ParticlePool::new(1024), //, tps, lps, qps, bps),
-      bonusParticles : ParticlePool::new(256), //, tps, lps, qps, bps),
-      enemies : EnemyPool::new(128), //, field),
-      bullets : BulletPool::new(1024),
-      pillars : PillarPool::new(48),
-      rand : Rand::new(),
+      stage : RefCell::new(Stage::new()), //field, enemies, bullets, player, particles, bonusParticles, pillars, gameState);
+      playerSpec : RefCell::new(PlayerSpec::new()), //self.pad, self.gameState, field, enemies, bullets, particles);
+      player : RefCell::new(Player::new()), //playerSpec);
+      title : RefCell::new(Title::new()), //self.preference, self.pad, self);
+      field : RefCell::new(Field::new()),
+      gameState : RefCell::new(GameState::new()), //self, self.preference);
+      particles : RefCell::new(ParticlePool::new(1024)), //, tps, lps, qps, bps),
+      bonusParticles : RefCell::new(ParticlePool::new(256)), //, tps, lps, qps, bps),
+      enemies : RefCell::new(EnemyPool::new(128)), //, field),
+      bullets : RefCell::new(BulletPool::new(1024)),
+      pillars : RefCell::new(PillarPool::new(48)),
+      replayData : RefCell::new(Option::<ReplayData>::new()),
+      rand : RefCell::new(Rand::new()),
     }
   }
 
-  fn init(&mut self) {
+  fn init(&self) {
     Sound::load();
     //let preference = abstractPreference as &Preference;
     //self.preference = preference;
@@ -117,7 +120,7 @@ impl Frame {
     Letter::init();
     //let pad = abstractInput as &Pad;
     //self.pad = pad;
-    self.pad.openJoystick();
+    self.abstractInput.openJoystick(); // was self.pad.openJoystick();
     //self.screen = abstractScreen as &Screen;
     //let field = Field::new(self, self.screen);
     //self.field = field;
@@ -179,7 +182,7 @@ impl Frame {
   }
 */
 
-  fn quit(&mut self) {
+  fn quit(&self) {
     self.title.close();
     self.playerSpec.close();
     self.gameState.close();
@@ -187,77 +190,81 @@ impl Frame {
     Letter::close();
   }
 
-  fn start(&mut self) {
+  fn start(&self) {
     self.startTitle();
   }
 
-  fn startInGame(&mut self, mode : i32) {
-    self.gameState.startInGame(mode as GameState::Mode);
-    self.player.replayMode = false;
+  fn startInGame(&self, mode : i32) {
+    self.gameState.borrow_mut().startInGame(mode as GameState::Mode);
+    self.player.borrow_mut().replayMode = false;
     let rp : RecordablePad = self.pad as &RecordablePad;
     rp.startRecord();
     let replayData = ReplayData::new();
     replayData.inputRecord = rp.inputRecord;
     replayData.seed = self.rand.nextInt32();
     self.clearAll();
-    self.field.set();
-    self.player.set();
-    self.stage.start(replayData.seed);
+    self.field.borrow_mut().set();
+    self.player.borrow_mut().set();
+    self.stage.borrow_mut().start(replayData.seed);
     Sound::clearMarkedSes();
     Sound::playBgm();
   }
 
-  fn startTitle(&mut self) {
+  fn startTitle(&self) {
     self.startReplay();
-    self.title.start();
+    self.title.borrow_mut().start();
   }
 
-  fn startReplay(&mut self) {
-    self.gameState.startTitle();
-    if self.replayData {
-      self.player.replayMode = true;
+  fn startReplay(&self) {
+    let mut gameState = self.gameState.borrow_mut();
+    let mut player = self.player.borrow_mut();
+    let mut field = self.field.borrow_mut();
+    gameState.startTitle();
+    if let Some(replayData) = self.replayData.borrow_mut() {
+      player.replayMode = true;
       let rp : RecordablePad = self.pad as &RecordablePad;
-      rp.startReplay(self.replayData.inputRecord);
+      rp.startReplay(replayData.inputRecord);
     }
     self.clearAll();
-    self.field.set();
-    if self.replayData {
-      self.gameState.mode = self.replayData.mode as GameState::Mode;
-      self.gameState.setExtendScore();
-      self.gameState.inReplay = true;
-      self.player.set();
-      self.stage.start(self.replayData.seed);
+    field.set();
+    if let Some(replayData) = self.replayData.borrow_mut() {
+      gameState.mode = replayData.mode as GameState::Mode;
+      gameState.setExtendScore();
+      gameState.inReplay = true;
+      player.set();
+      self.stage.start(replayData.seed);
     } else {
-      self.field.setEyePos(Vector::new(0.0, 0.0));
+      field.setEyePos(Vector::new(0.0, 0.0));
     }
     Sound::clearMarkedSes();
     Sound::haltBgm();
   }
 
-  fn clearAll(&mut self) {
-    self.enemies.clear();
-    self.bullets.clear();
-    self.particles.clear();
-    self.bonusParticles.clear();
-    self.pillars.clear();
+  fn clearAll(&self) {
+    self.enemies.borrow_mut().clear();
+    self.bullets.borrow_mut().clear();
+    self.particles.borrow_mut().clear();
+    self.bonusParticles.borrow_mut().clear();
+    self.pillars.borrow_mut().clear();
   }
 
-  fn breakLoop(&mut self) {
+  fn breakLoop(&self) {
     self.mainLoop.breakLoop();
   }
 
-  fn move1(&mut self) {
-    self.gameState.move1();
-    self.field.move1();
-    if self.gameState.isInGame || self.replayData {
+  fn move1(&self) {
+    let gameState = self.gameState.borrow_mut();
+    gameState.move1();
+    self.field.borrow_mut().move1();
+    if self.gameState.isInGame || (self.replayData != None) {
       if !self.gameState.paused {
-        self.stage.move1();
-        self.pillars.move1();
-        self.player.move1();
-        self.enemies.move1();
-        self.bullets.move1();
-        self.particles.move1();
-        self.bonusParticles.move1();
+        self.stage.borrow_mut().move1();
+        self.pillars.borrow_mut().move1();
+        self.player.borrow_mut().move1();
+        self.enemies.borrow_mut().move1();
+        self.bullets.borrow_mut().move1();
+        self.particles.borrow_mut().move1();
+        self.bonusParticles.borrow_mut().move1();
       }
     }
     if self.gameState.isTitle {
@@ -269,45 +276,51 @@ impl Frame {
     Sound::playMarkedSes();
   }
 
-  fn addSlowdownRatio(&mut self, sr : f32) {
-    self.mainLoop.addSlowdownRatio(sr);
+  fn addSlowdownRatio(&self, sr : f32) {
+    self.mainLoop.borrow_mut().addSlowdownRatio(sr);
   }
 
-  fn draw(&mut self) {
+  fn draw(&self) {
     let e : SDL_Event = self.mainLoop.event;
     if e._type == SDL_VIDEORESIZE {
       let re : SDL_ResizeEvent = e.resize;
       if (re.w > 150) && (re.h > 100) {
-        self.screen.resized(re.w, re.h);
+        self.screen.borrow_mut().resized(re.w, re.h);
       }
     }
-    self.field.setLookAt();
-    if self.gameState.isInGame || self.replayData {
-      self.pillars.drawOutside();
-      self.field.drawBack();
-      self.enemies.drawPillarBack();
-      self.pillars.drawCenter();
-      self.enemies.drawBack();
-      self.field.drawFront();
+    let mut field = self.field.borrow_mut();
+    let mut player = self.player.borrow_mut();
+    let mut enemies = self.enemies.borrow_mut();
+    let mut gameState = self.gameState.borrow_mut();
+    let mut pillars = self.pillars.borrow_mut();
+    let mut bullets = self.bullets.borrow_mut();
+    field.setLookAt();
+    if gameState.isInGame || (self.replayData != None) {
+      pillars.drawOutside();
+      field.drawBack();
+      enemies.drawPillarBack();
+      pillars.drawCenter();
+      enemies.drawBack();
+      field.drawFront();
       self.particles.draw();
       self.bonusParticles.draw();
-      self.enemies.drawFront();
-      self.player.draw();
-      self.bullets.draw();
-      self.field.beginDrawingFront();
-      self.gameState.draw();
-      if self.gameState.isTitle {
+      enemies.drawFront();
+      player.draw();
+      bullets.draw();
+      field.beginDrawingFront();
+      gameState.draw();
+      if gameState.isTitle {
         self.title.draw();
       }
-      self.player.drawState();
-      self.field.resetLookAt();
-      self.gameState.drawLeft();
+      player.drawState();
+      field.resetLookAt();
+      gameState.drawLeft();
     } else {
-      self.pillars.drawOutside();
-      self.field.drawBack();
-      self.field.drawFront();
-      self.field.beginDrawingFront();
-      if self.gameState.isTitle {
+      pillars.drawOutside();
+      field.drawBack();
+      field.drawFront();
+      field.beginDrawingFront();
+      if gameState.isTitle {
         self.title.draw();
       }
     }
@@ -318,37 +331,51 @@ impl Frame {
   }
 
   // Handle a replay data.
-  fn saveLastReplay(&mut self) {
+  fn saveLastReplay(&self) {
     //try {
-      self.replayData.score = self.gameState.score;
-      self.replayData.mode = self.gameState.mode;
-      self.replayData.stageRandomized = self.stage.randomized;
+    if let Some(replayData) = self.replayData.borrow_mut() {
+      let gameState = self.gameState.borrow();
+      let stage = self.stage.borrow();
+      replayData.score = gameState.score;
+      replayData.mode = gameState.mode;
+      replayData.stageRandomized = stage.randomized;
       self.saveReplay(LAST_REPLAY_FILE_NAME);
+    }
     //} catch (Throwable o) {}
   }
 
-  fn loadLastReplay(&mut self) {
+  fn loadLastReplay(&self) {
     //try {
+    if let Some(replayData) = self.replayData {
+      let mut gameState = self.gameState.borrow_mut();
+      let mut stage = self.stage.borrow_mut();
       self.loadReplay(LAST_REPLAY_FILE_NAME);
-      self.gameState.lastGameScore = self.replayData.score;
-      self.gameState.lastGameMode = self.replayData.mode;
-      self.stage.randomized = self.replayData.stageRandomized;
+      gameState.lastGameScore = replayData.score;
+      gameState.lastGameMode = replayData.mode;
+      stage.randomized = replayData.stageRandomized;
+    }
     //} catch (Throwable o) {
     //  resetReplay();
     //}
   }
 
-  fn saveReplay(&mut self, fileName : String) {
-    self.replayData.save(fileName);
+  fn saveReplay(&self, fileName : String) {
+    if let Some(replayData) = self.replayData.borrow_mut() {
+      replayData.save(fileName);
+    }
   }
 
-  fn loadReplay(&mut self, fileName : String) {
-    self.replayData = ReplayData();
-    self.replayData.load(fileName);
+  fn loadReplay(&self, fileName : String) {
+    if let mut replayData = self.replayData.borrow_mut() {
+      replayData = Some(ReplayData::new());
+      replayData.load(fileName);
+    }
   }
 
-  fn resetReplay(&mut self) {
-    self.replayData = None;
+  fn resetReplay(&self) {
+    if let mut replayData = self.replayData.borrow_mut() {
+      replayData = None;
+    }
   }
 }
 
@@ -366,11 +393,11 @@ pub enum Scene {
 
 const MAX_LEFT : i32 = 4;
 
-pub struct GameState {
-  frame : *mut Frame,
-  preference : *mut Preference,
-  scene : *mut Scene,
-  stage : *mut Stage,
+pub struct GameState<'a> {
+  frame : &'a Frame<'a>,
+  preference : &'a Preference,
+  scene : Scene,
+  stage : &'a Stage<'a>,
   score : i32,
   _lastGameScore : i32,
   _lastGameMode : i32,
@@ -383,8 +410,8 @@ pub struct GameState {
   pauseCnt : i32,
   _isGameOver : bool,
   gameOverCnt : i32,
-  playerShape : &PlayerShape,
-  playerLineShape : &PlayerLineShape,
+  playerShape : &'a PlayerShape,
+  playerLineShape : &'a PlayerLineShape,
   _inReplay : bool,
   _mode : Mode,
   extendScore : i32,
@@ -398,9 +425,9 @@ pub struct GameState {
   sound_rand : Rand,
 }
 
-impl GameState {
+impl<'a> GameState<'a> {
 
-  fn new(frame : *mut Frame, preference : *mut Preference) -> GameState {
+  fn new(frame : &'a Frame<'a>, preference : &'a Preference) -> GameState<'a> {
     GameState {
       frame : frame,
       preference : preference,
@@ -514,6 +541,7 @@ impl GameState {
         return;
       }
     }
+
     if self.isInGame {
       if !self._isGameOver {
         self.frame.handleSound();
@@ -718,7 +746,7 @@ impl GameState {
     self._mode
   }
 
-  fn mode(&mut self, v : Mode) -> Mode {
+  fn mode2(&mut self, v : Mode) -> Mode {
     self._mode = v;
     v
   }

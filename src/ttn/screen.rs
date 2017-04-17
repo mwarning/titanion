@@ -130,10 +130,10 @@ impl Screen {
 
   //protected abstract void init();
   //protected abstract void close();
-  fn setIcon() {}
+  //fn setIcon() {}
 
   // Reset a viewport when the screen is resized.
-  fn screenResized(&mut self) {
+  fn screenResized1(&mut self) {
     glViewport(0, 0, self._width, self._height);
     glMatrixMode(GL_PROJECTION);
     self.setPerspective();
@@ -173,7 +173,7 @@ impl Screen {
     glVertex3f(v.x, v.y, 0.0);
   }
 
-  fn glVertex(v : Vector3) {
+  fn glVertex3(v : Vector3) {
     glVertex3f(v.x, v.y, v.z);
   }
 
@@ -181,7 +181,7 @@ impl Screen {
     glTranslatef(v.x, v.y, 0.0);
   }
 
-  fn glTranslate(v : Vector3) {
+  fn glTranslate3(v : Vector3) {
     glTranslatef(v.x, v.y, v.z);
   }
 
@@ -201,7 +201,6 @@ impl Screen {
     self._brightness = v;
     v
   }
-
 
   // inlined from util/sdl/screen3d.d
   fn setIcon() {
@@ -233,7 +232,7 @@ impl Screen {
 
   // inlined from util/sdl/screen3d.d
   fn screenResized(&mut self) {
-    self.screenResized();
+    self.screenResized1();
     let lw : f32 = ((self.width as f32) / 640.0 + (self.height as f32) / 480.0) / 2.0;
     if lw < 1.0 {
       lw = 1.0;

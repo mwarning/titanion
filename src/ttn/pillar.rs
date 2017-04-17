@@ -64,8 +64,8 @@ impl<'a> PillarPool<'a> {
 pub struct Pillar<'a> {
   //tok : Token!(PillarState, PillarSpec),
   _exists : bool, //from Actor
-  pub state : &'a mut PillarState,
-  pub spec : &'a mut PillarSpec,
+  pub state : &'a mut PillarState<'a>,
+  pub spec : &'a mut PillarSpec<'a>,
 }
 
 impl<'a> Actor for Pillar<'a> {
@@ -92,7 +92,7 @@ impl<'a> Actor for Pillar<'a> {
   }
 }
 
-impl<'a> Token<PillarState, PillarSpec> for Pillar<'a> {
+impl<'a> Token<PillarState<'a>, PillarSpec<'a>> for Pillar<'a> {
 }
 
 impl<'a> Pillar<'a> {
@@ -120,18 +120,32 @@ impl<'a> Pillar<'a> {
   }
 }
 
-pub struct PillarState {
+pub struct PillarState<'a> {
   ts : TokenState,
-  previousPillar : Option(&Pillar),
+  previousPillar : Option<&'a Pillar<'a>>,
   vy : f32,
   vdeg: f32,
   maxY : f32,
-  pshape : PillarShape,
+  pshape : Option<&'a PillarShape>,
   isEnded : bool,
   isOutside : bool,
 }
 
-impl PillarState {
+impl<'a> PillarState<'a> {
+  fn new() -> PillarState<'a> {
+    //taken from clear()
+    PillarState {
+      previousPillar : None,
+      vy : 0,
+      vdeg : 0,
+      maxY : 0,
+      pshape : None,
+      isEnded : false,
+      isOutside : false,
+      ts : TokenState::new(),
+    }
+  }
+
   fn clear(&mut self) {
     self.previousPillar = None;
     self.vy = 0;
@@ -145,14 +159,19 @@ impl PillarState {
 
 static VELOCITY_Y : f32 = 0.025;
 
-pub struct PillarSpec {
-  ts : TokenSpec<PillarState>,
+pub struct PillarSpec<'a> {
+  //ts : TokenSpec<PillarState>, //inline
+  field : &'a mut Field<'a>,
+  shape : &'a mut Shape,
 }
 
-impl PillarSpec {
+impl<'a> TokenSpec<PillarState<'a>> for PillarSpec<'a> {
+}
 
-  fn new(field : Field) -> PillarSpec {
-    PillarSpec { ts : TokenSpec::<PillarState>::new(), field : field }
+impl<'a> PillarSpec<'a> {
+
+  fn new(field : &mut Field<'a>) -> PillarSpec<'a> {
+    PillarSpec { shape : PillarState::new(), field : field }
   }
 
   fn move2(&mut self, ps : &PillarState) -> bool {

@@ -6,6 +6,7 @@
 
 use std::env;
 use std::process::exit;
+use std::cell::RefCell;
 
 use util::sdl::pad::*;
 use util::sdl::mainloop::*;

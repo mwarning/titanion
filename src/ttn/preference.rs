@@ -34,8 +34,8 @@ fn write<T>(fd : &File, dst : &mut T) {
 }
 
 
-pub const RANKING_NUM : i32 = 10;
-const MODE_NUM : i32 = 3;
+pub const RANKING_NUM : usize = 10;
+const MODE_NUM : usize = 3;
 const VERSION_NUM : i32 = 30;
 const PREF_FILE_NAME : &'static str = "ttn.prf";
 

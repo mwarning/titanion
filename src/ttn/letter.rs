@@ -37,22 +37,27 @@ enum Shape {
 /**
  * Letters.
  */
-pub struct Letter {
-  displaylist : &DisplayList,
+pub struct Letter<'a> {
+  displaylist : &'a DisplayList,
 }
 
-impl Letter {
+impl<'a> Letter<'a> {
+  //was init()
+  fn new() -> Letter<'a> {
+    let mut letter = Letter {
+      displayList : DisplayList::new(DISPLAY_LIST_NUM),
+    };
 
-  fn init(&mut self) {
-    self.displayList = DisplayList::new(DISPLAY_LIST_NUM);
-    self.displayList.resetList();
+    letter.displayList.resetList();
     for j in  0..3 {
       for i in 0..LETTER_NUM {
-        self.displayList.newList();
-        self.setLetter(i, j);
-        self.displayList.endList();
+        letter.displayList.newList();
+        letter.setLetter(i, j);
+        letter.displayList.endList();
       }
     }
+
+    letter
   }
 
   fn close(&mut self) {
@@ -84,7 +89,7 @@ impl Letter {
     self.displayList.call(n);
   }
 
-  fn drawLetter(&mut self, n : i32, x : f32, y : f32, s : f32, d : f32) {
+  fn drawLetter6(&mut self, n : i32, x : f32, y : f32, s : f32, d : f32) {
     glPushMatrix();
     glTranslatef(x, y, 0);
     glScalef(s, s, s);

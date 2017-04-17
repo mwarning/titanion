@@ -37,10 +37,10 @@ use ttn::dummy::*;
  * Title screen.
  */
 
-pub struct Title {
-  preference : &Preference,
-  pad : &RecordablePad,
-  frame : &Frame,
+pub struct Title<'a> {
+  preference : &'a Preference,
+  pad : &'a RecordablePad,
+  frame : &'a Frame<'a>,
   cnt : i32,
   aPressed : bool,
   udPressed : bool,
@@ -50,11 +50,11 @@ pub struct Title {
   cursorIdx : i32,
 }
 
-impl Title {
-  fn new(preference : &Preference, pad : &Pad, frame : &Frame) -> Title {
+impl<'a> Title<'a> {
+  fn new(preference : &'a Preference, pad : &'a RecordablePad, frame : &'a Frame<'a>) -> Title<'a> {
     Title{
       preference : preference,
-      pad : (pad as &RecordablePad),
+      pad : pad, //(pad as &RecordablePad),
       frame : frame,
       cnt : 0,
       aPressed : false,

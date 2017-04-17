@@ -147,18 +147,27 @@ impl ParticleState {
 }
 
 //public class ParticleSpec: TokenSpec!(ParticleState) {
-pub struct ParticleSpec {
-  ts : TokenSpec<ParticleState>, //inherited
+pub struct ParticleSpec<'a> {
+  //ts : TokenSpec<ParticleState>, //inlined
+  field : &'a mut Field<'a>,
+  shape : &'a mut Shape,
   //mixin StaticRandImpl;
-  player : &Player,
+  player : &'a mut Player<'a>,
   rand : Rand,
 }
 
-impl ParticleSpec {
+impl<'a> TokenSpec<ParticleSpec<'a>> for ParticleSpec<'a> {
+}
+
+impl<'a> ParticleSpec<'a> {
+  fn new(field : &mut Field<'a>, shape : &mut Shape, player : &mut Player<'a>) -> ParticleSpec<'a> {
+   ParticleSpec{ field : field, shape : shape, player : player, rand : Rand::new() }
+  }
+/*
   fn setPlayer(&mut self, player : &Player) {
     self.player = player;
   }
-
+*/
   fn calcNearPlayerAlpha(&self, pos : Vector) -> f32 {
     if !self.player.isActive {
       return 1.0;
@@ -176,14 +185,14 @@ impl ParticleSpec {
 const TPS_SLOW_DOWN_RATIO : f32 = 0.05;
 const TPS_GRAVITY : f32 = 0.003;
 
-pub struct TriangleParticleSpec {
-  ps : &ParticleSpec, //inherited
-  particleShape : &Shape,
-  particles : &ParticlePool,
+pub struct TriangleParticleSpec<'a> {
+  ps : &'a ParticleSpec<'a>, //inherited
+  particleShape : &'a Shape,
+  particles : &'a ParticlePool<'a>,
 }
 
-impl TriangleParticleSpec {
-  fn new(field : &Field) -> TriangleParticleSpec {
+impl<'a> TriangleParticleSpec<'a> {
+  fn new(field : &'a Field<'a>) -> TriangleParticleSpec<'a> {
     TriangleParticleSpec {
       field : field,
       particleShape : TriangleParticleShape::new(),
@@ -258,12 +267,12 @@ impl TriangleParticleSpec {
 
 const LPS_SLOW_DOWN_RATIO : f32 = 0.03;
 
-pub struct LineParticleSpec {
-  ps : &ParticleSpec,
+pub struct LineParticleSpec<'a> {
+  ps : &'a ParticleSpec<'a>,
 }
 
-impl LineParticleSpec {
-  fn new(field : &Field) {
+impl<'a> LineParticleSpec<'a> {
+  fn new(field : &Field) -> LineParticleSpec<'a> {
     LineParticleSpec{ ps : ParticleSpec::new(field) }
   }
 
@@ -312,12 +321,12 @@ impl LineParticleSpec {
 const QPS_SLOW_DOWN_RATIO : f32 = 0.07;
 const QPS_GRAVITY : f32 = 0.002;
 
-pub struct QuadParticleSpec {
-  ps : &ParticleSpec,
+pub struct QuadParticleSpec<'a> {
+  ps : &'a ParticleSpec<'a>,
 }
 
-impl QuadParticleSpec {
-  fn new(field : &Field) {
+impl<'a> QuadParticleSpec<'a> {
+  fn new(field : &Field) -> QuadParticleSpec<'a> {
     QuadParticleSpec{ ps : ParticleSpec::new(field) }
   }
 
@@ -378,12 +387,12 @@ impl QuadParticleSpec {
 
 const BPS_SLOW_DOWN_RATIO : f32 = 0.04;
 
-pub struct BonusParticleSpec {
- ps : &ParticleSpec,
+pub struct BonusParticleSpec<'a> {
+ ps : &'a ParticleSpec<'a>,
 }
 
-impl BonusParticleSpec {
-  fn mew(&mut self, field : Field) -> BonusParticleSpec {
+impl<'a> BonusParticleSpec<'a> {
+  fn mew(&mut self, field : Field) -> BonusParticleSpec<'a> {
     BonusParticleSpec{ ps : ParticleSpec::new(field), }
   }
 
@@ -443,16 +452,19 @@ enum Shape {
   TRIANGLE, LINE, QUAD, BONUS,
 }
 
-pub struct Particle {
-  tok : Token<ParticleState, ParticleSpec>,
-  triangleParticleSpec : &TriangleParticleSpec,
-  lineParticleSpec : &LineParticleSpec,
-  quadParticleSpec : &QuadParticleSpec,
-  bonusParticleSpec : &BonusParticleSpec,
-  _exists : bool, //inherited by Actor class
+pub struct Particle<'a> {
+  //tok : Token<ParticleState, ParticleSpec>,
+  _exists : bool, // _exists : bool, //inherited by Actor class
+  state : &'a ParticleState,
+  spec : &'a ParticleSpec<'a>,
+
+  triangleParticleSpec : &'a TriangleParticleSpec<'a>,
+  lineParticleSpec : &'a LineParticleSpec<'a>,
+  quadParticleSpec : &'a QuadParticleSpec<'a>,
+  bonusParticleSpec : &'a BonusParticleSpec<'a>,
 }
 
-impl Actor for Particle {
+impl<'a> Actor for Particle<'a> {
   fn getExists(&self) -> bool {
     self._exists
   }
@@ -480,9 +492,9 @@ impl Actor for Particle {
   }
 }
 
-impl Particle {
+impl<'a> Particle<'a> {
   //replacement for Particle::init()
-  fn new() -> Particle {
+  fn new() -> Particle<'a> {
     Particle {
       tok : Token::<ParticleState, ParticleSpec>::new(), //call new() instead of init()
 

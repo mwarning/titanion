@@ -30,9 +30,9 @@ use ttn::dummy::*;
 const JOYSTICK_AXIS : i32 = 16384;
 
 struct Pad {
-  keys : &u8,
+  keys : &'static u8,
   buttonsExchanged : bool,
-  stick : Option(&SDL_Joystick), //= null;
+  stick : Option<&'static SDL_Joystick>, //= null;
   state : PadState,
 }
 
@@ -245,7 +245,7 @@ impl RecordablePad {
   }
 
   //inlined from class Pad
-  fn openJoystick(&mut self, st : Option(&SDL_Joystick) /*= null*/) -> Option(&SDL_Joystick) {
+  fn openJoystick(&mut self, st : Option<&'static SDL_Joystick> /*= null*/) -> Option<&'static SDL_Joystick> {
     if st == None {
       if SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0 {
         return None;
@@ -258,7 +258,7 @@ impl RecordablePad {
   }
 
   //inlined from class Pad
-  fn handleEvent(&mut self, event : &SDL_Event) {
+  fn handleEvent(&mut self, event : &'static SDL_Event) {
     self.keys = SDL_GetKeyState(ptr::null());
   }
 

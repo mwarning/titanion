@@ -52,7 +52,7 @@ use ttn::dummy::*;
 pub struct EnemyPool<'a> {
   ap : ActorPool<Enemy<'a>>,
   trailEffect : bool, //was static global
-  _field : &Field,
+  _field : &'a Field<'a>,
 }
 
 impl<'a> EnemyPool<'a> {
@@ -560,28 +560,33 @@ const BULLET_HIT_WIDTH : f32 = 0.8;
 const NEXT_PHASE_DIST : f32 = 5.0;
 const TURRET_MAX_NUM1 : usize = 3;
 
-struct EnemySpecData {
-  ts : TokenSpec<EnemyState>,
+struct EnemySpecData<'a> {
+  //ts : TokenSpec<EnemyState>, //inlined
+  field : &'a mut Field<'a>,
+  shape : &'a mut Shape,
   //mixin StaticRandImpl; //moved to GameState
-  bullets : *mut BulletPool,
-  player : &'static Player<'static>,
-  particles : *mut ParticlePool,
-  bonusParticles : *mut ParticlePool,
-  enemies : &'static EnemyPool<'static>,
-  stage : *mut Stage,
-  trailShape : *mut EnemyShape,
-  bulletSpec : *mut BulletSpec,
-  counterBulletSpec : *mut BulletSpec,
-  turretSpecs : [TurretSpec; TURRET_MAX_NUM1],
+  bullets : &'a mut BulletPool<'a>,
+  player : &'a Player<'a>,
+  particles : &'a mut ParticlePool<'a>,
+  bonusParticles : &'a mut ParticlePool<'a>,
+  enemies : &'a EnemyPool<'a>,
+  stage : &'a mut Stage<'a>,
+  trailShape : &'a mut EnemyShape,
+  bulletSpec : &'a mut BulletSpec<'a>,
+  counterBulletSpec : &'a mut BulletSpec<'a>,
+  turretSpecs : [TurretSpec<'a>; TURRET_MAX_NUM1],
   turretNum : i32,
   turretWidth : f32, //= 0;
-  gameState : *mut GameState,
+  gameState : &'a GameState<'a>,
   shield : f32, // = 1;
   rank : f32, //= 0;
   capturable : bool,
   score : i32,
   explosionSeName : String,
   removeBullets : bool,
+}
+
+impl<'a> TokenSpec<EnemyState> for EnemySpecData<'a> {
 }
 
 /*
@@ -593,15 +598,17 @@ struct EnemySpecData {
 */
   //public this() {}
 
-impl EnemySpecData {
-  fn new(field : *mut Field, bullets : *mut BulletPool, player : *mut Player,
-              particles : *mut ParticlePool, bonusParticles : *mut ParticlePool,
-              enemies : *mut EnemyPool, stage : *mut Stage,
-              shape : *mut Shape, trailShape : *mut EnemyShape,
-              bulletSpec : *mut BulletSpec, counterBulletSpec : *mut BulletSpec,
+impl<'a> EnemySpecData<'a> {
+  fn new(field : &'a mut Field, bullets : &'a mut BulletPool<'a>, player : &'a mut Player,
+              particles : &'a mut ParticlePool, bonusParticles : &'a mut ParticlePool,
+              enemies : &'a mut EnemyPool, stage : &'a mut Stage,
+              shape : &'a mut Shape, trailShape : &'a mut EnemyShape,
+              bulletSpec : &'a mut BulletSpec, counterBulletSpec : &'a mut BulletSpec,
               gameState : GameState) -> EnemySpec {
     EnemySpecData {
-      ts : TokenSpec::<EnemyState>::new(field, shape),
+      //ts : TokenSpec::<EnemyState>::new(field, shape),
+      field : field,
+      shape : shape,
       bullets : bullets,
       player : player,
       particles : particles,
@@ -703,11 +710,11 @@ pub trait EnemySpec {
           }
         }
         cp.x = spec.ts.field.normalizeX(cp.x);
-        let dst : f32 = spec.ts.field.calcCircularDist2(cp, es.ts.pos);
+        let dst = spec.ts.field.calcCircularDist2(cp, es.ts.pos);
         es.ts.speed += ((es.baseSpeed * (1.0 + dst * 0.1)) - es.ts.speed) * 0.05;
-        let mut av : f32 = es.angVel * rk;
-        let mut td : f32 = spec.ts.field.normalizeX(-(cp.x - es.ts.pos.x)).atan2(cp.y - es.ts.pos.y);
-        let mut ad : f32 = normalize_deg(td - es.ts.deg);
+        let mut av = es.angVel * rk;
+        let mut td = spec.ts.field.normalizeX(-(cp.x - es.ts.pos.x)).atan2(cp.y - es.ts.pos.y);
+        let mut ad = normalize_deg(td - es.ts.deg);
         av *= 2.5 - er;
         if (ad > av) || (ad < (-PI * 0.8)) {
           es.ts.deg += av;
@@ -719,8 +726,8 @@ pub trait EnemySpec {
         //assert(deg <>= 0);
         for i in 0..spec.turretNum {
           let ts : TurretState = es.turretStates[i as usize];
-          let tx : f32 = es.ts.pos.x;
-          let ty : f32 = es.ts.pos.y;
+          let tx = es.ts.pos.x;
+          let ty = es.ts.pos.y;
           match i {
           _ /*0*/ =>  {},
           1 => { tx -= spec.turretWidth; },
@@ -1205,18 +1212,20 @@ impl Trail {
   }
 }
 
-pub struct GhostEnemySpec {
-  es : EnemySpecData,
+pub struct GhostEnemySpec<'a> {
+  es : EnemySpecData<'a>,
 }
 
-impl GhostEnemySpec {
-  fn new(&mut self, field : *mut Field, shape : *mut Shape) -> GhostEnemySpec {
-    GhostEnemySpec{ field: field, shape: shape}
+impl<'a> GhostEnemySpec<'a> {
+  fn new(&mut self, field : &'a mut Field, shape : &'a mut Shape) -> GhostEnemySpec<'a> {
+    GhostEnemySpec {
+      es : EnemySpecData::new(field, shape),
+    }
   }
 }
 
-impl EnemySpec for GhostEnemySpec {
-  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
+impl<'a> EnemySpec for GhostEnemySpec<'a> {
+  fn get_enemyspec_data(&mut self) -> &'a mut EnemySpecData {
     &mut self.es
   }
 
@@ -1245,17 +1254,17 @@ impl EnemySpec for GhostEnemySpec {
   fn isCaptured(&self, es : &EnemyState) -> bool { true }
 }
 
-pub struct MiddleEnemySpec {
- es : EnemySpecData,
+pub struct MiddleEnemySpec<'a> {
+ es : EnemySpecData<'a>,
 }
 
-impl MiddleEnemySpec {
-  fn new(field : *mut Field, bullets : *mut BulletPool, player : *mut Player,
-              particles :  *mut ParticlePool, bonusParticles : *mut ParticlePool,
-              enemies : *mut EnemyPool, stage : *mut Stage,
-              shape : *mut Shape, trailShape : *mut EnemyShape,
-              bulletSpec : *mut BulletSpec, counterBulletSpec : *mut BulletSpec,
-              gameState : *mut GameState) -> MiddleEnemySpec {
+impl<'a> MiddleEnemySpec<'a> {
+  fn new(field : &'a mut Field, bullets : &'a mut BulletPool, player : &'a mut Player,
+              particles :  &'a mut ParticlePool, bonusParticles : &'a mut ParticlePool,
+              enemies : &'a mut EnemyPool, stage : &'a mut Stage,
+              shape : &'a mut Shape, trailShape : &'a mut EnemyShape,
+              bulletSpec : &'a mut BulletSpec, counterBulletSpec : &'a mut BulletSpec,
+              gameState : &'a mut GameState) -> MiddleEnemySpec<'a> {
     let mut inst = MiddleEnemySpec{es : EnemySpecData {
       field : field, bullets: bullets, player : player, particles : particles, bonusParticles : bonusParticles, enemies : enemies, stage : stage,
           shape : shape, trailShape: trailShape, bulletSpec : bulletSpec, counterBulletSpec : counterBulletSpec, gameState : gameState}};
@@ -1285,8 +1294,8 @@ impl MiddleEnemySpec {
   }
 }
 
-impl EnemySpec for MiddleEnemySpec {
-  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
+impl<'a> EnemySpec for MiddleEnemySpec<'a> {
+  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData<'a> {
     &mut self.es
   }
 
@@ -1466,12 +1475,12 @@ impl EnemySpec for MiddleEnemySpec {
 /*
 //TODO: finish transform into trait, what about new?
 trait SmallEnemySpec { //: EnemySpec {
-  fn new(field : *mut Field, bullets : *mut BulletPool, player : *mut Player,
-              particles : *mut ParticlePool, bonusParticles : *mut ParticlePool,
-              enemies : *mut EnemyPool, stage : *mut Stage,
-              shape : *mut Shape, trailShape : *mut EnemyShape,
-              bulletSpec : *mut BulletSpec, counterBulletSpec : *mut BulletSpec,
-              gameState : *mut GameState) -> SmallEnemySpec {
+  fn new(field : &'a mut Field, bullets : &'a mut BulletPool, player : &'a mut Player,
+              particles : &'a mut ParticlePool, bonusParticles : &'a mut ParticlePool,
+              enemies : &'a mut EnemyPool, stage : &'a mut Stage,
+              shape : &'a mut Shape, trailShape : &'a mut EnemyShape,
+              bulletSpec : &'a mut BulletSpec, counterBulletSpec : &'a mut BulletSpec,
+              gameState : &'a mut GameState) -> SmallEnemySpec {
     let mut inst = SmallEnemySpec{ es : EnemySpecData{
       field : field, bullets: bullets, player : player, particles : particles, bonusParticles : bonusParticles, enemies : enemies, stage : stage,
           shape : shape, trailShape : trailShape, bulletSpec : bulletSpec, counterBulletSpec : counterBulletSpec, gameState : gameState}};
@@ -1541,17 +1550,17 @@ pub trait SmallEnemySpec : EnemySpec {
   }
 }
 
-pub struct SE1Spec {
-  es : EnemySpecData,
+pub struct SE1Spec<'a> {
+  es : EnemySpecData<'a>,
 }
 
-impl SE1Spec {
-  fn new(field : *mut Field, bullets : *mut BulletPool, player : *mut Player,
-              particles : *mut ParticlePool, bonusParticles : *mut ParticlePool,
-              enemies : *mut EnemyPool, stage : *mut Stage,
-              shape : *mut Shape, trailShape : *mut EnemyShape,
-              bulletSpec : *mut BulletSpec, counterBulletSpec : *mut BulletSpec,
-              gameState : *mut GameState) -> SE1Spec {
+impl<'a> SE1Spec<'a> {
+  fn new(field : &'a mut Field, bullets : &'a mut BulletPool, player : &'a mut Player,
+              particles : &'a mut ParticlePool, bonusParticles : &'a mut ParticlePool,
+              enemies : &'a mut EnemyPool, stage : &'a mut Stage,
+              shape : &'a mut Shape, trailShape : &'a mut EnemyShape,
+              bulletSpec : &'a mut BulletSpec, counterBulletSpec : &'a mut BulletSpec,
+              gameState : &'a mut GameState) -> SE1Spec<'a> {
     let mut inst = SE1Spec{ es : EnemySpecData{
       field : field, bullets: bullets, player : player, particles : particles, bonusParticles : bonusParticles, enemies : enemies, stage : stage,
       shape : shape, trailShape : trailShape, bulletSpec : bulletSpec, counterBulletSpec : counterBulletSpec, gameState : gameState}};
@@ -1571,11 +1580,11 @@ impl SE1Spec {
   }
 }
 
-impl SmallEnemySpec for SE1Spec {
+impl<'a> SmallEnemySpec for SE1Spec<'a> {
 }
 
-impl EnemySpec for SE1Spec {
-  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
+impl<'a> EnemySpec for SE1Spec<'a> {
+  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData<'a> {
     self.es.get_enemyspec_data()
   }
 
@@ -1643,17 +1652,17 @@ impl EnemySpec for SE1Spec {
   }
 }
 
-pub struct SE2Spec {
-  es : EnemySpecData,
+pub struct SE2Spec<'a> {
+  es : EnemySpecData<'a>,
 }
 
-impl SE2Spec {
-  fn new(field : *mut Field, bullets : *mut BulletPool, player : *mut Player,
-              particles : *mut ParticlePool, bonusParticles : *mut ParticlePool,
-              enemies : *mut EnemyPool, stage : *mut Stage,
-              shape : *mut Shape, trailShape : *mut EnemyShape,
-              bulletSpec : *mut BulletSpec, counterBulletSpec : *mut BulletSpec,
-              gameState : *mut GameState) -> SE2Spec {
+impl<'a> SE2Spec<'a> {
+  fn new(field : &'a mut Field, bullets : &'a mut BulletPool, player : &'a mut Player,
+              particles : &'a mut ParticlePool, bonusParticles : &'a mut ParticlePool,
+              enemies : &'a mut EnemyPool, stage : &'a mut Stage,
+              shape : &'a mut Shape, trailShape : &'a mut EnemyShape,
+              bulletSpec : &'a mut BulletSpec, counterBulletSpec : &'a mut BulletSpec,
+              gameState : &'a mut GameState) -> SE2Spec<'a> {
     let mut inst = SE2Spec{ es : EnemySpecData{
       field : field, bullets: bullets, player : player, particles : particles, bonusParticles : bonusParticles, enemies : enemies, stage : stage,
       shape : shape, trailShape : trailShape, bulletSpec : bulletSpec, counterBulletSpec : counterBulletSpec, gameState : gameState}};
@@ -1673,8 +1682,8 @@ impl SE2Spec {
   }
 }
 
-impl EnemySpec for SE2Spec {
-  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
+impl<'a> EnemySpec for SE2Spec<'a> {
+  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData<'a> {
     self.es.get_enemyspec_data()
   }
 
@@ -1812,14 +1821,16 @@ impl TurretState {
 const SPEED_RATIO : f32 = 5.0;
 const INTERVAL_MAX : f32 = 90.0;
 
-pub struct TurretSpec {
-  ts : TokenSpec<TurretState>,
+pub struct TurretSpec<'a> {
+  //ts : TokenSpec<TurretState>, //inlined
+  field : &'a mut Field<'a>,
+  shape : &'a mut Shape,
   //mixin StaticRandImpl; //moved to GameState
-  bulletSpec : BulletSpec,
-  bullets : BulletPool,
-  player : &'static Player<'static>,
-  stage : &'static Stage<'static>,
-  gameState : &'static GameState<'static>,
+  bulletSpec : BulletSpec<'a>,
+  bullets : BulletPool<'a>,
+  player : &'a Player<'a>,
+  stage : &'a Stage<'a>,
+  gameState : &'a GameState<'a>,
   interval : i32,
   speed : f32,
   speedAccel : f32,
@@ -1850,12 +1861,22 @@ pub struct TurretSpec {
   }
 */
 
-impl TurretSpec {
-  fn new(field : *mut Field, bullets : *mut BulletPool, player : *mut Player,
-              enemies : *mut EnemyPool, particles : *mut ParticlePool,
-              stage : *mut Stage, bulletSpec : *mut BulletSpec, gameState : *mut GameState) {
-    let mut inst = TurretSpec{bulletSpec : bulletSpec,
-      field : field, bullets : bullets, player : player, stage : stage, gameState : gameState,};
+impl<'a> TokenSpec<TurretState> for TurretSpec<'a> {
+}
+
+impl<'a> TurretSpec<'a> {
+  fn new(field : &'a mut Field, bullets : &'a mut BulletPool, player : &'a mut Player,
+              enemies : &'a mut EnemyPool, particles : &'a mut ParticlePool,
+              stage : &'a mut Stage, bulletSpec : &'a mut BulletSpec, gameState : &'a mut GameState) -> TurretSpec<'a> {
+    let mut inst = TurretSpec{
+      //shape : //not used? 
+      bulletSpec : bulletSpec,
+      field : field,
+      bullets : bullets,
+      player : player,
+      stage : stage,
+      gameState : gameState,
+    };
     inst.initParam();
     inst
   }
