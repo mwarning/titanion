@@ -2,6 +2,7 @@
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
 
+use util::sdl::pad::*;
 use util::vector::*;
 use util::actor::*;
 use util::rand::*;
@@ -36,7 +37,7 @@ pub struct Title<'a> {
 }
 
 impl<'a> Title<'a> {
-  fn new(preference : &'a Preference, pad : &'a RecordablePad, frame : &'a Frame<'a>) -> Title<'a> {
+  pub fn new(preference : &'a Preference, pad : &'a RecordablePad, frame : &'a Frame<'a>) -> Title<'a> {
     Title{
       preference : preference,
       pad : pad, //(pad as &RecordablePad),
@@ -56,15 +57,15 @@ impl<'a> Title<'a> {
     //self.titleTexture = Texture::new("title.bmp");
   }
 
-  fn close(&mut self) {
+  pub fn close(&mut self) {
     self.titleTexture.close();
   }
 
-  fn setMode(&mut self, mode : i32) {
+  pub fn setMode(&mut self, mode : i32) {
     self.cursorIdx = mode;
   }
 
-  fn start(&mut self) {
+  pub fn start(&mut self) {
     self.cnt = 0;
     self.aPressed = true;
     self.udPressed = true;
@@ -73,9 +74,9 @@ impl<'a> Title<'a> {
     self.titleSize = 1.0;
   }
 
-  fn move1(&mut self) {
+  pub fn move1(&mut self) {
     let input = self.pad.getState(false);
-    if self.input.button & PadState.Button.A {
+    if self.input.button & Button::A {
       if !self.aPressed {
         self.aPressed = true;
         self.frame.startInGame(self.cursorIdx);
@@ -83,12 +84,12 @@ impl<'a> Title<'a> {
     } else {
       self.aPressed = false;
     }
-    if self.input.dir & (PadStateDir::UP | PadStateDir::DOWN) {
+    if self.input.dir & (Dir::UP | Dir::DOWN) {
       if !self.udPressed {
         self.udPressed = true;
-        if self.input.dir & PadStateDir::UP {
+        if self.input.dir & Dir::UP {
           self.cursorIdx -= 1;
-        } else if input.dir & PadStateDir::DOWN {
+        } else if input.dir & Dir::DOWN {
           self.cursorIdx += 1;
         }
         if self.cursorIdx < 0 {
@@ -101,18 +102,18 @@ impl<'a> Title<'a> {
       self.udPressed = false;
     }
     if (self.cnt > 180) && (self.cnt < 235) {
-      self.titlePos.y -= 2;
+      self.titlePos.y -= 2.0;
     }
     if (self.cnt > 600) && (self.cnt < 675) {
-      self.titlePos.x -= 2;
-      self.titlePos.y += 1;
+      self.titlePos.x -= 2.0;
+      self.titlePos.y += 1.0;
       self.titleSize -= 0.007;
     }
     self.cnt += 1;
   }
 
   fn draw(&mut self) {
-    Screen::setColor(1, 1, 1);
+    Screen::setColor(1.0, 1.0, 1.0, 1.0);
     glEnable(GL_TEXTURE_2D);
     self.titleTexture.bind();
     self.drawBoard(self.titlePos.x, self.titlePos.y, 280 * self.titleSize, 64 * self.titleSize);
@@ -121,9 +122,9 @@ impl<'a> Title<'a> {
       let x = 175.0;
       let sz = 6.0;
       if self.cnt >= 600 {
-        let c : i32 = self.cnt - 600;
-        if c > 75 {
-          c = 75;
+        let c = (self.cnt as f32) - 600.0;
+        if c > 75.0 {
+          c = 75.0;
         }
         x += c * 4.33;
         sz -= c * 0.045;
@@ -159,13 +160,13 @@ impl<'a> Title<'a> {
     glRotatef(d, 0.0, 0.0, 1.0);
     glScalef(5.0, 5.0, 1.0);
     glBegin(GL_TRIANGLE_FAN);
-    Screen::setColor(1, 1, 1, 0.5);
+    Screen::setColor(1.0, 1.0, 1.0, 0.5);
     glVertex3f(0.0, 1.7, 0.0);
     glVertex3f(1.0, 0.0, 0.0);
     glVertex3f(-1.0, 0.0, 0.0);
     glEnd();
     glBegin(GL_LINE_LOOP);
-    Screen::setColor(1, 1, 1, 1);
+    Screen::setColor(1.0, 1.0, 1.0, 1.0);
     glVertex3f(0.0, 1.7, 0.0);
     glVertex3f(1.0, 0.0, 0.0);
     glVertex3f(-1.0, 0.0, 0.0);
@@ -198,9 +199,9 @@ impl<'a> Title<'a> {
       let mut sy = y;
       let mut sz = 6.0;
       if self.cnt >= 600 {
-        let c : i32 = self.cnt - 600;
-        if c > 75 {
-          c = 75;
+        let c = (self.cnt as f32) - 600.0;
+        if c > 75.0 {
+          c = 75.0;
         }
         sx += (c * 2.35) as i32;
         sz -= c * 0.03;

@@ -28,11 +28,11 @@ pub struct BulletPool<'a> {
 }
 
 impl<'a> BulletPool<'a> {
-  fn new(n : i32) -> BulletPool<'a> {
+  pub fn new(n : i32) -> BulletPool<'a> {
     BulletPool{ap : ActorPool::<Bullet<'a>>::new(n)}
   }
 
-  fn move1(&self) {
+  pub fn move1(&self) {
     self.ap.move1();
     /*
     super.move();
@@ -40,7 +40,7 @@ impl<'a> BulletPool<'a> {
   */
   }
 
-  fn removeAround(&mut self, cnt : &i32, pos : Vector, particles : &ParticlePool, bonusParticles : &ParticlePool, player : &Player) {
+  pub fn removeAround(&mut self, cnt : &i32, pos : Vector, particles : &ParticlePool, bonusParticles : &ParticlePool, player : &Player) {
     for b in self.actors {
       if b.exists {
         if b.pos.dist(pos) < BULLET_REMOVED_RANGE {
@@ -202,7 +202,7 @@ impl<'a> BulletSpec<'a> {
       Screen::setColor(0.1, 0.4, 0.4, 0.5);
       p = self.field.calcCircularPos(bs.tailPos);
       Screen::glVertex(p);
-      Screen::setColor(0.2 * colorAlpha, 0.8 * colorAlpha, 0.8 * colorAlpha);
+      Screen::setColor(0.2 * colorAlpha, 0.8 * colorAlpha, 0.8 * colorAlpha, 1.0);
       p = self.field.calcCircularPos(bs.ts.pos);
       Screen::glVertex(p);
       glEnd();
@@ -214,7 +214,7 @@ impl<'a> BulletSpec<'a> {
       };
       let cd = self.field.calcCircularDeg(bs.ts.pos.x);
       (self.ts.shape as &BulletShapeBase).draw(p, cd, d, bs.cnt * 3.0);
-      Screen::setColor(0.6 * colorAlpha, 0.9 * colorAlpha, 0.9 * colorAlpha);
+      Screen::setColor(0.6 * colorAlpha, 0.9 * colorAlpha, 0.9 * colorAlpha, 1.0);
       (self.lineShape as &BulletShapeBase).draw(p, cd, d, bs.cnt * 3.0);
     }
 }
@@ -232,7 +232,7 @@ pub struct Bullet<'a> {
 
 impl<'a> Bullet<'a> {
   fn setWaitCnt(&mut self, c : i32) {
-    self.tok.state.waitCnt = c;
+    self.state.waitCnt = c;
   }
 }
 

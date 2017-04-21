@@ -9,6 +9,7 @@ use util::actor::*;
 use util::math::*;
 use util::rand::*;
 use util::sdl::input::*;
+use util::sdl::pad::*;
 use ttn::preference::*;
 use ttn::particle::*;
 use ttn::token::*;
@@ -22,6 +23,7 @@ use ttn::pillar::*;
 use ttn::title::*;
 use ttn::letter::*;
 use ttn::screen::*;
+use ttn::sound::*;
 use ttn::dummy::*;
 
 
@@ -32,10 +34,10 @@ pub struct Frame<'a> {
   //from src.util.sdl.frame.Frame
   //mainLoop: MainLoop, // need to be passed down
   abstractScreen: RefCell<Screen>,
-  abstractInput: RefCell<RecordablePad>, //same as pad
+  //abstractInput: RefCell<RecordablePad>, //same as pad
   abstractPreference: RefCell<Preference>,
 
-  //pad : Pad, //same as abstractInput
+  pub pad : RefCell<RecordablePad>, //same as abstractInput
   pub screen : RefCell<Screen>,
   pub field : RefCell<Field<'a>>,
   pub player : RefCell<Player<'a>>,
@@ -50,6 +52,7 @@ pub struct Frame<'a> {
   pub preference : RefCell<Preference>,
   pub gameState : RefCell<GameState<'a>>,
   pub replayData : RefCell<Option<ReplayData>>,
+  pub sound : RefCell<Sound>, //was static
   rand : RefCell<Rand>,
 }
 
@@ -58,12 +61,13 @@ pub struct Frame<'a> {
  */
 impl<'a> Frame<'a> {
   //from src.util.sdl.frame.Frame
-  fn new(abstractScreen : Screen, abstractInput : RecordablePad /* was Input */, abstractPreference : Preference) -> Frame<'a> {
+  pub fn new(abstractScreen : Screen, abstractInput : RecordablePad /* was Input */, abstractPreference : Preference) -> Frame<'a> {
     Frame {
       abstractScreen : RefCell::new(abstractScreen),
-      abstractInput : RefCell::new(abstractInput),
+      //abstractInput : RefCell::new(abstractInput),
       abstractPreference : RefCell::new(abstractPreference),
 
+      pad : RefCell::new(abstractInput),
       stage : RefCell::new(Stage::new()), //field, enemies, bullets, player, particles, bonusParticles, pillars, gameState);
       playerSpec : RefCell::new(PlayerSpec::new()), //self.pad, self.gameState, field, enemies, bullets, particles);
       player : RefCell::new(Player::new()), //playerSpec);
@@ -76,15 +80,16 @@ impl<'a> Frame<'a> {
       bullets : RefCell::new(BulletPool::new(1024)),
       pillars : RefCell::new(PillarPool::new(48)),
       replayData : RefCell::new(Option::<ReplayData>::new()),
+      sound : RefCell::new(Sound::new()),
       rand : RefCell::new(Rand::new()),
     }
   }
 
   fn init(&self) {
-    Sound::load();
+    self.sound.borrow_mut().load();
     //let preference = abstractPreference as &Preference;
     //self.preference = preference;
-    self.preference.load();
+    self.preference.borrow_mut().load();
     Letter::init();
     //let pad = abstractInput as &Pad;
     //self.pad = pad;
@@ -116,8 +121,8 @@ impl<'a> Frame<'a> {
     //let gameState = GameState::new(self, self.preference);
     //self.gameState = gameState;
     //self.title = Title::new(self.preference, self.pad, self);
-    self.title.setMode(self.preference.lastMode);
-    self.title.init();
+    self.title.borrow_mut().setMode(self.preference.lastMode);
+    self.title.borrow_mut().init();
     //let playerSpec = PlayerSpec::new(self.pad, self.gameState, field, enemies, bullets, particles);
     //self.playerSpec = playerSpec;
     //let player = Player::new(playerSpec);
@@ -151,10 +156,10 @@ impl<'a> Frame<'a> {
 */
 
   fn quit(&self) {
-    self.title.close();
-    self.playerSpec.close();
-    self.gameState.close();
-    self.stage.close();
+    self.title.borrow_mut().close();
+    self.playerSpec.borrow_mut().close();
+    self.gameState.borrow_mut().close();
+    self.stage.borrow_mut().close();
     Letter::close();
   }
 
@@ -174,8 +179,8 @@ impl<'a> Frame<'a> {
     self.field.borrow_mut().set();
     self.player.borrow_mut().set();
     self.stage.borrow_mut().start(replayData.seed);
-    Sound::clearMarkedSes();
-    Sound::playBgm();
+    self.sound.clearMarkedSes();
+    self.sound.playBgm();
   }
 
   fn startTitle(&self) {
@@ -204,8 +209,8 @@ impl<'a> Frame<'a> {
     } else {
       field.setEyePos(Vector::new(0.0, 0.0));
     }
-    Sound::clearMarkedSes();
-    Sound::haltBgm();
+    self.sound.clearMarkedSes();
+    self.sound.haltBgm();
   }
 
   fn clearAll(&self) {
@@ -240,8 +245,8 @@ impl<'a> Frame<'a> {
     }
   }
 
-  fn handleSound() {
-    Sound::playMarkedSes();
+  fn handleSound(&self) {
+    self.sound.playMarkedSes();
   }
 
   fn addSlowdownRatio(&self, sr : f32) {
@@ -347,14 +352,16 @@ impl<'a> Frame<'a> {
   }
 }
 
+#[derive(PartialEq, Eq)]
 pub enum Mode {
   CLASSIC, BASIC, MODERN,
 }
 
 const MODE_NUM : i32 = 3;
 const MODE_NAME: &'static [ &'static str ] = &["CLASSIC", " BASIC ", "MODERN"];
-static stageRandomized : bool = false;
+pub static mut stageRandomized : bool = false;
 
+#[derive(PartialEq, Eq)]
 pub enum Scene {
   TITLE, IN_GAME,
 }
@@ -386,16 +393,15 @@ pub struct GameState<'a> {
   proximityMultiplier : i32,
   pmDispCnt : i32,
   //copied from Rand mixins
-  enemy_spec_rand : Rand,
-  turret_spec_rand : Rand,
-  player_spec_rand : Rand,
-  particle_spec_rand : Rand,
+  pub enemy_spec_rand : Rand,
+  pub turret_spec_rand : Rand,
+  pub player_spec_rand : Rand,
+  pub particle_spec_rand : Rand,
   sound_rand : Rand,
 }
 
 impl<'a> GameState<'a> {
-
-  fn new(frame : &'a Frame<'a>, preference : &'a Preference) -> GameState<'a> {
+  pub fn new(frame : &'a Frame<'a>, preference : &'a Preference) -> GameState<'a> {
     GameState {
       frame : frame,
       preference : preference,
@@ -421,16 +427,16 @@ impl<'a> GameState<'a> {
     }
   }
 
-  fn setStage(&mut self, stage : &Stage) {
+  pub fn setStage(&mut self, stage : &Stage) {
     self.stage = stage;
   }
 
-  fn close(&mut self) {
+  pub fn close(&mut self) {
     self.playerShape.close();
     self.playerLineShape.close();
   }
 
-  fn startInGame(&mut self, m : Mode) {
+  pub fn startInGame(&mut self, m : Mode) {
     self.scene = Scene::IN_GAME;
     self.clear();
     self._mode = m;
@@ -441,7 +447,7 @@ impl<'a> GameState<'a> {
     self.stage.randomized = self.tageRandomized;
   }
 
-  fn setExtendScore(&mut self) {
+  pub fn setExtendScore(&mut self) {
     self.extendScore = match self._mode {
       Mode::CLASSIC => 100000,
       Mode::BASIC => 1000000,
@@ -450,13 +456,13 @@ impl<'a> GameState<'a> {
     self.nextExtendScore = self.extendScore;
   }
 
-  fn startTitle(&mut self) {
+  pub fn startTitle(&mut self) {
     self.scene = Scene::TITLE;
     self.clear();
     self.left = 2;
   }
 
-  fn clear(&mut self) {
+  pub fn clear(&mut self) {
     self.score = 0;
     self._multiplier = 1.0;
     self.left = 0;
@@ -467,29 +473,29 @@ impl<'a> GameState<'a> {
     self.pmDispCnt = 0;
   }
 
-  fn startGameOver(&mut self) {
+  pub fn startGameOver(&mut self) {
     if !self.isInGameAndNotGameOver {
       return;
     }
     self._isGameOver = true;
     self.gameOverCnt = 0;
-    Sound::fadeBgm();
+    self.sound.fadeBgm();
     self._lastGameScore = self.score;
     self._lastGameMode = self.mode;
     self.preference.recordResult(self.score, self._mode);
     self.preference.save();
   }
 
-  fn startGameOverWithoutRecording(&mut self) {
+  pub fn startGameOverWithoutRecording(&mut self) {
     if self._isGameOver {
       return;
     }
     self._isGameOver = true;
     self.gameOverCnt = 0;
-    Sound::fadeBgm();
+    self.sound.fadeBgm();
   }
 
-  fn backToTitle(&mut self) {
+  pub fn backToTitle(&mut self) {
     if self.isTitle {
       self.frame.startReplay();
       return;
@@ -500,7 +506,7 @@ impl<'a> GameState<'a> {
     }
   }
 
-  fn move1(&mut self) {
+  pub fn move1(&mut self) {
     self.handleEscKey();
     if self.isInGameAndNotGameOver {
       self.handlePauseKey();
@@ -569,7 +575,7 @@ impl<'a> GameState<'a> {
     }
   }
 
-  fn addScore(&mut self, sc : i32, noMultiplier : bool /*= false*/) {
+  pub fn addScore(&mut self, sc : i32, noMultiplier : bool /*= false*/) {
     if !self._isGameOver {
       if noMultiplier {
         self.score += sc;
@@ -580,7 +586,7 @@ impl<'a> GameState<'a> {
       if self.score >= self.nextExtendScore {
         if self.left < MAX_LEFT {
           self.left += 1;
-          Sound::playSe("extend.wav");
+          self.sound.playSe("extend.wav");
         }
         self.nextExtendScore += self.extendScore;
         if self._mode == Mode::MODERN {
@@ -590,13 +596,13 @@ impl<'a> GameState<'a> {
     }
   }
 
-  fn addMultiplier(&mut self, mp : f32) {
+  pub fn addMultiplier(&mut self, mp : f32) {
     if !self._isGameOver {
       self._multiplier += mp;
     }
   }
 
-  fn mulMultiplier(&mut self, mp : f32) {
+  pub fn mulMultiplier(&mut self, mp : f32) {
     if !self._isGameOver {
       self._multiplier *= mp;
       if self._multiplier < 1.0 {
@@ -605,12 +611,12 @@ impl<'a> GameState<'a> {
     }
   }
 
-  fn setProximityMultiplier(&mut self, pm : i32) {
+  pub fn setProximityMultiplier(&mut self, pm : i32) {
     self.proximityMultiplier = pm;
     self.pmDispCnt = 60;
   }
 
-  fn destroyedPlayer(&mut self) {
+  pub fn destroyedPlayer(&mut self) {
     self.left -= 1;
     if self.left < 0 {
       if self.isInGame {
@@ -621,15 +627,15 @@ impl<'a> GameState<'a> {
     }
   }
 
-  fn countShotFired(&mut self) {
+  pub fn countShotFired(&mut self) {
     self.stage.countShotFired();
   }
 
-  fn countShotHit(&mut self) {
+  pub fn countShotHit(&mut self) {
     self.stage.countShotHit();
   }
 
-  fn draw(&mut self) {
+  pub fn draw(&mut self) {
     Letter::drawNum(self.score, 132, 5, 7);
     Letter::drawNum(self.nextExtendScore, 134, 25, 5);
     if self._lastGameScore >= 0 {
@@ -659,7 +665,7 @@ impl<'a> GameState<'a> {
     }
   }
 
-  fn drawLeft(&mut self) {
+  pub fn drawLeft(&mut self) {
     for i in 0..self.left {
       glPushMatrix();
       glTranslatef(-10.2 + (i as f32), -7.5, -10.0);
@@ -671,50 +677,50 @@ impl<'a> GameState<'a> {
     }
   }
 
-  fn isInGame(&self) -> bool {
+  pub fn isInGame(&self) -> bool {
     (self.scene == Scene::IN_GAME)
   }
 
-  fn isInGameAndNotGameOver(&self) -> bool {
+  pub fn isInGameAndNotGameOver(&self) -> bool {
     (self.scene == Scene::IN_GAME && !self._isGameOver)
   }
 
-  fn isTitle(&self) -> bool {
+  pub fn isTitle(&self) -> bool {
     (self.scene == Scene::TITLE)
   }
 
-  fn isGameOver(&self) -> bool {
+  pub fn isGameOver(&self) -> bool {
     self._isGameOver
   }
 
-  fn paused(&self) -> bool {
+  pub fn paused(&self) -> bool {
     self._paused
   }
 
-  fn multiplier(&self) -> f32 {
+  pub fn multiplier(&self) -> f32 {
     self._multiplier
   }
 
-  fn inReplay(&mut self, v : bool) -> bool {
+  pub fn inReplay(&mut self, v : bool) -> bool {
     self._inReplay = v;
     v
   }
 
-  fn lastGameScore(&mut self, v : i32) -> i32 {
+  pub fn lastGameScore(&mut self, v : i32) -> i32 {
     self._lastGameScore = v;
     v
   }
 
-  fn lastGameMode(&mut self, v : i32) -> i32 {
+  pub fn lastGameMode(&mut self, v : i32) -> i32 {
     self._lastGameMode = v;
     v
   }
 
-  fn mode(&self) -> Mode {
+  pub fn mode(&self) -> Mode {
     self._mode
   }
 
-  fn mode2(&mut self, v : Mode) -> Mode {
+  pub fn mode2(&mut self, v : Mode) -> Mode {
     self._mode = v;
     v
   }

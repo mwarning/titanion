@@ -14,6 +14,7 @@ mod util {
 		pub mod recordableinput;
 		pub mod mainloop;
 		pub mod screen;
+		pub mod sound;
 		pub mod input;
 		pub mod pad;
 	}
@@ -35,6 +36,7 @@ mod ttn {
 	pub mod preference;
 	pub mod boot;
 	pub mod screen;
+	pub mod sound;
 	pub mod dummy; //skeleton dummies
 }
 

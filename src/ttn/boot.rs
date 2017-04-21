@@ -6,13 +6,17 @@
 
 use std::env;
 use std::process::exit;
-use std::cell::RefCell;
 
 use util::sdl::pad::*;
 use util::sdl::mainloop::*;
+use util::sdl::sound::*;
+use util::sdl::sound;
 use util::sdl::pad::*;
+use ttn::frame;
 use ttn::screen::*;
 use ttn::frame::*;
+use ttn::enemy::*;
+use ttn::enemy;
 use ttn::preference::*;
 
 
@@ -20,48 +24,52 @@ fn usage(progName : &str ) {
   println!("Usage: {} [-fullscreen] [-res x y] [-brightness [0-100]] [-nosound] [-bgmvol [0-128]] [-sevol [0-128]] [-exchange] [-trail] [-noslowdown] [-randomized]", progName);
 }
 
-fn parse_args(args : &mut env::Args, main_loop : &mut MainLoop) -> bool {
-  let progName = args.next().unwrap();
+fn parse_args(args : &env::Args, main_loop : &MainLoop) -> bool {
+  let progName = args.next().unwrap().as_ref();
+  let frame = &main_loop.frame;
+  let screen = frame.screen.borrow_mut();
+  let sound = frame.sound.borrow_mut();
+  let pad = frame.pad.borrow_mut();
 
   while let Some(arg) = args.next() {
     match arg.as_ref() {
       "-fullscreen" => {
-        main_loop.screen.window_mode = false;
+        screen._windowMode = false;
       },
       "-window" => {
-        main_loop.screen.window_mode = true;
+        screen._windowMode = true;
       },
       "-res" => {
         let mut width = 0;
         let mut height = 0;
         if let (Some(w), Some(h)) = (args.next(), args.next()) {
-           width = w.parse::<i32>().unwrap_or(0);
-           height = h.parse::<i32>().unwrap_or(0);
+          width = w.parse::<i32>().unwrap_or(0);
+          height = h.parse::<i32>().unwrap_or(0);
         }
 
-        if width == 0 || height == 0 {
-          main_loop.screen.width = width;
-          main_loop.screen.height = height;
+        if (width == 0) || (height == 0) {
+          screen.width2(width);
+          screen.height2(height);
         } else {
-           usage(progName.as_ref());
-           panic!("Invalid options for {}", arg);
+          usage(progName);
+          panic!("Invalid options for {}", arg);
         }
       },
      "-brightness" => {
         let mut brightness : f32 = -1.0;
         if let Some(b) = args.next() {
-         brightness = b.parse::<f32>().unwrap_or(-1.0) / 100.0;
+          brightness = b.parse::<f32>().unwrap_or(-1.0) / 100.0;
         }
 
         if brightness < 0.0 || brightness > 1.0 {
-          usage(progName.as_ref());
+          usage(progName);
           panic!("Invalid option for {}", arg);
         }
 
-        main_loop.screen.brightness = brightness;
+        screen.brightness(brightness);
       },
       "-nosound" => {
-        main_loop.sound.noSound = true;
+        sound::noSound = true;
       },
       "-bgmvol" => {
         let v : i32 = -1;
@@ -69,11 +77,11 @@ fn parse_args(args : &mut env::Args, main_loop : &mut MainLoop) -> bool {
           v = b.parse::<i32>().unwrap_or(-1);
         }
 
-        if v < 0 || v > 128 {
+        if (v < 0) || (v > 128) {
           usage(progName);
           panic!("Invalid options for {}", arg);
         } else {
-          main_loop.sound.bgmVol = v;
+          sound::bgmVol = v;
         }
       },
       "-sevol" => {
@@ -82,31 +90,32 @@ fn parse_args(args : &mut env::Args, main_loop : &mut MainLoop) -> bool {
           v = b.parse::<i32>().unwrap_or(-1);
         }
 
-        if v < 0 || v > 128 {
+        if (v < 0) || (v > 128) {
           usage(progName);
           panic!("Invalid options for {}", arg);
         } else {
-          main_loop.sound.setVol = v;
+          sound::seVol = v;
         }
       },
       "-exchange" => {
-        main_loop.frame.pad.buttonsExchanged = true;
+        pad.pad.buttonsExchanged = true;
       },
       "-trail" => {
-        main_loop.enemies.trailEffect = true;
+        enemy::trailEffect = true;
       },
       "-noslowdown" => {
         main_loop.noSlowdown = true;
       },
       "-randomized" => {
-        main_loop.frame.gameState.stageRandomized = true;
+        frame::stageRandomized = true;
       },
       _ => {
         usage(progName);
         panic!("Invalid option {}", arg);
       }
-    }
+    };
   }
+  true
 }
 
 enum EXIT {
@@ -122,7 +131,7 @@ pub fn boot() -> i32 {
   let mut main_loop = MainLoop::new(frame);
 
   let mut args = env::args();
-  if !parse_args(&mut args, &mut main_loop) {
+  if !parse_args(&args, &main_loop) {
     main_loop.loop1();
     EXIT::SUCCESS as i32
   } else {

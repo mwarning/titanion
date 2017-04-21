@@ -13,13 +13,15 @@ use ttn::dummy::*;
 
 const LETTER_WIDTH : f32 = 2.1;
 const LETTER_HEIGHT : f32 = 3.0;
-enum Direction {
+
+pub enum Direction {
   TO_RIGHT, TO_DOWN, TO_LEFT, TO_UP,
 }
 
 const LETTER_NUM : i32  = 44;
 const DISPLAY_LIST_NUM : i32 = LETTER_NUM * 3;
-enum Shape {
+
+pub enum LetterShape {
   NORMAL, POLYGON, LINE,
 }
 
@@ -96,7 +98,7 @@ impl<'a> Letter<'a> {
     glPopMatrix();
   }
 
-  fn convertCharToInt(c : u8) -> i32 {
+  fn convertCharToInt(c : char) -> i32 {
     match c {
       '0'...'9' => (c as i32) - ('0' as i32),
       'A'...'Z' => (c as i32) - ('A' as i32) + 10,
@@ -111,11 +113,11 @@ impl<'a> Letter<'a> {
   }
 
 
-  fn drawString(&mut self, str : &String, lx : f32, y : f32, s : f32) {
+  pub fn drawString(&mut self, str : &String, lx : f32, y : f32, s : f32) {
     Letter::drawString11(str, lx, y, s, Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 1.0);
   }
 
-  fn drawString11(&mut self, str : &String, lx : f32, y : f32, s : f32,
+  pub fn drawString11(&mut self, string : &String, lx : f32, y : f32, s : f32,
                                 d : i32 /*= Direction::TO_RIGHT*/,
                                 rev : bool /*= false*/, od : f32 /*= 0*/,
                                 r : f32 /*= 1*/, g : f32 /*= 1*/,  b : f32 /*= 1*/) {
@@ -129,7 +131,7 @@ impl<'a> Letter<'a> {
       Direction::TO_UP => 270.0,
     };
     ld += od;
-    for c in str {
+    for c in string {
       if c != ' ' {
         let idx = Letter::convertCharToInt(c);
         if (r == 1) && (g == 1) && (b == 1) {
@@ -145,7 +147,7 @@ impl<'a> Letter<'a> {
           } else {
             Letter::drawLetter(idx + LETTER_NUM, x, y, s, ld);
           }
-          Screen::setColor(r, g, b);
+          Screen::setColor(r, g, b, 1.0);
           if rev {
             Letter::drawLetterRev(idx + LETTER_NUM * 2, x, y, s, ld);
           } else {
@@ -167,7 +169,7 @@ impl<'a> Letter<'a> {
     }
   }
 
-  fn drawNum(num : i32, lx : f32, y : f32, s : f32, dg : i32 /*= 0*/, headChar : f32 /*= -1*/, floatDigit : i32 /*= -1*/) {
+  pub fn drawNum(num : i32, lx : f32, y : f32, s : f32, dg : i32 /*= 0*/, headChar : f32 /*= -1*/, floatDigit : i32 /*= -1*/) {
     lx += LETTER_WIDTH * s / 2;
     y += LETTER_HEIGHT * s / 2;
     let n : i32 = num;
@@ -199,7 +201,7 @@ impl<'a> Letter<'a> {
     }
   }
 
-  fn drawNumSign(num : i32, lx : f32, ly : f32, s : f32, headChar : i32 /*= -1*/, floatDigit : i32 /*= -1*/, type_ : i32 /* = 0*/) {
+  pub fn drawNumSign(num : i32, lx : f32, ly : f32, s : f32, headChar : i32 /*= -1*/, floatDigit : i32 /*= -1*/, type_ : i32 /* = 0*/) {
     let x : f32 = lx;
     let y : f32 = ly;
     let n : i32 = num;
@@ -227,12 +229,12 @@ impl<'a> Letter<'a> {
     }
   }
 
-  fn drawTime(&mut self, time : i32, lx : f32, y : f32, s : f32) {
-    let n : i32 = time;
+  pub fn drawTime(&mut self, time : i32, lx : f32, y : f32, s : f32) {
+    let n = time;
     if n < 0 {
       n = 0;
     }
-    let x : f32 = lx;
+    let x = lx;
     for i in 0..7 {
       if i != 4 {
         Letter::drawLetter(n % 10, x, y, s, Direction::TO_RIGHT as f32);
@@ -257,7 +259,7 @@ impl<'a> Letter<'a> {
     }
   }
 
-  fn setLetter(&mut self, idx : i32, type_ : i32 /* = Shape::NORMAL*/) {
+  pub fn setLetter(&mut self, idx : i32, type_ : i32 /* = Shape::NORMAL*/) {
     let mut i = 0;
     loop {
       let deg = self.spData[idx][i][4] as i32;
@@ -275,9 +277,9 @@ impl<'a> Letter<'a> {
       y = y;
       deg %= 180;
       match type_ {
-        Shape::NORMAL => Letter::drawSegment(x, y, size, length, deg),
-        Shape::POLYGON => Letter::drawSegmentPolygon(x, y, size, length, deg),
-        Shape::LINE => Letter::drawSegmentLine(x, y, size, length, deg),
+        LetterShape::NORMAL => Letter::drawSegment(x, y, size, length, deg),
+        LetterShape::POLYGON => Letter::drawSegmentPolygon(x, y, size, length, deg),
+        LetterShape::LINE => Letter::drawSegmentLine(x, y, size, length, deg),
       }
       i += 1;
     }
@@ -291,7 +293,7 @@ impl<'a> Letter<'a> {
     glBegin(GL_TRIANGLE_FAN);
     Letter::drawSegmentPart(width, height);
     glEnd();
-    Screen::setColor(1.0, 1.0, 1.0);
+    Screen::setColor(1.0, 1.0, 1.0, 1.0);
     glBegin(GL_LINE_LOOP);
     Letter::drawSegmentPart(width, height);
     glEnd();
@@ -319,12 +321,12 @@ impl<'a> Letter<'a> {
   }
 
   fn drawSegmentPart(width : f32, height : f32) {
-    glVertex3f(-width / 2.0, 0, 0);
-    glVertex3f(-width / 3.0, -height / 2, 0);
-    glVertex3f( width / 3.0, -height / 2, 0);
-    glVertex3f( width / 2.0, 0, 0);
-    glVertex3f( width / 3.0,  height / 2, 0);
-    glVertex3f(-width / 3.0,  height / 2, 0);
+    glVertex3f(-width / 2.0, 0.0, 0.0);
+    glVertex3f(-width / 3.0, -height / 2.0, 0.0);
+    glVertex3f( width / 3.0, -height / 2.0, 0.0);
+    glVertex3f( width / 2.0, 0.0, 0.0);
+    glVertex3f( width / 3.0,  height / 2.0, 0.0);
+    glVertex3f(-width / 3.0,  height / 2.0, 0.0);
   }
 }
 

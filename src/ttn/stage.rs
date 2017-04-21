@@ -17,6 +17,7 @@ use ttn::pillar::*;
 use ttn::frame::*;
 use ttn::letter::*;
 use ttn::particle::*;
+use ttn::sound::*;
 use ttn::dummy::*;
 
 
@@ -86,7 +87,7 @@ pub struct Stage<'a> {
 }
 
 impl<'a> Stage<'a> {
-  fn new(field : &'a Field, enemies : &'a EnemyPool, bullets : &'a BulletPool,
+  pub fn new(field : &'a Field, enemies : &'a EnemyPool, bullets : &'a BulletPool,
             player : &'a Player, particles : &'a ParticlePool,
             bonusParticles : &'a ParticlePool, pillars : &'a PillarPool, gameState : &'a GameState) -> Stage<'a> {
     let bulletShape = BulletShape::new();
@@ -167,7 +168,7 @@ impl<'a> Stage<'a> {
     }
   }
 
-  fn close(&mut self) {
+  pub fn close(&mut self) {
     self.enemy1Shape.close();
     self.enemy2Shape.close();
     self.enemy3Shape.close();
@@ -186,7 +187,7 @@ impl<'a> Stage<'a> {
     self.outsidePillarShape.close();
   }
 
-  fn start(&mut self, randSeed : i64) {
+  pub fn start(&mut self, randSeed : i64) {
     self.clear();
     self.rand.setSeed(randSeed);
     self.gameState.enemy_spec_rand.setRandSeed(randSeed);
@@ -208,7 +209,7 @@ impl<'a> Stage<'a> {
     self.startPhase();
   }
 
-  fn clear(&mut self) {
+  pub fn clear(&mut self) {
     self.smallEnemyNum = 0;
     self.smallEnemyFormationNum = 0;
     self.rank = 0;
@@ -234,14 +235,14 @@ impl<'a> Stage<'a> {
     self._existsCounterBullet = false;
   }
 
-  fn startPhase(&mut self) {
+  pub fn startPhase(&mut self) {
     self.phaseTime = 0;
     self.phaseNum += 0;
     if self.phaseNum > 1 {
       self.calcHitRatioBonus();
     }
     if (self.phaseNum % 10) == 0 {
-      Sound.fadeBgm();
+      Sound::fadeBgm();
     }
     self.setEnemySpecs();
     self.initPillars();
@@ -262,10 +263,10 @@ impl<'a> Stage<'a> {
       r = 1.0;
     }
     self.hitRatioBonus = (10000.0 * r * r * r * r) as i32;
-    if self.gameState.mode == Frame::Mode::MODERN {
+    if self.gameState.mode() == Frame::Mode::MODERN {
       return;
     }
-    if self.gameState.mode == Frame::Mode::BASIC {
+    if self.gameState.mode() == Frame::Mode::BASIC {
       self.hitRatioBonus *= 10;
     }
     self.gameState.addScore(self.hitRatioBonus, true);
@@ -281,7 +282,7 @@ impl<'a> Stage<'a> {
     }
     if !self.randomized {
       let rs : i64 = self.phaseNum;
-      match self.gameState.mode {
+      match self.gameState.mode() {
         Frame::Mode::CLASSIC => { rs *= 2; },
         Frame::Mode::BASIC => {},
         Frame::Mode::MODERN => { rs *= 3; },
@@ -292,7 +293,7 @@ impl<'a> Stage<'a> {
     }
     self._existsCounterBullet = false;
     let en : i32;
-    match self.gameState.mode {
+    match self.gameState.mode() {
       Frame::Mode::CLASSIC => {
         en = 24 + ((50 + rand.nextInt(10)) * self.rank.sqrt() * 0.2) as i32;
         self.smallEnemyNum = 4 + rand.nextInt(2);
@@ -344,7 +345,7 @@ impl<'a> Stage<'a> {
     }
     self.appCntInterval = (48.0 + rand.nextSignedInt(10)) as f32;
     self.appCntInterval *= 0.5 + 0.5 / self.rank.sqrt();
-    if self.gameState.mode == Frame::Mode::MODERN {
+    if self.gameState.mode() == Frame::Mode::MODERN {
       self.appCntInterval *= 0.75;
       self._attackSmallEnemyNum *= 2;
     }
@@ -354,7 +355,7 @@ impl<'a> Stage<'a> {
     self.waitNextFormationPhase = false;
   }
 
-  fn initPillars(&mut self) {
+  pub fn initPillars(&mut self) {
     self.pillars.setEnd();
     let mut pp : Option(&Pillar) = None;
     let mut pln : i32 = 0;
@@ -390,7 +391,7 @@ impl<'a> Stage<'a> {
     }
   }
 
-  fn move1(&mut self) {
+  pub fn move1(&mut self) {
     let rand = &self.gameState.player_spec_rand;
 
     if self.appCnt <= 0 {
@@ -399,12 +400,12 @@ impl<'a> Stage<'a> {
         if !me {
           return;
         }
-        let mut x : f32 = rand.nextFloat(self.field.circularDistance);
+        let mut x = rand.nextFloat(self.field.circularDistance);
         x = self.field.normalizeX(x);
-        let sp : f32 = 0.1 + rand.nextSignedFloat(0.01);
-        let av : f32 = sp * 0.4 + rand.nextSignedFloat(0.005);
-        let er : f32 = rand.nextFloat(0.5);
-        let ed : f32 = rand.nextFloat(PI * 2.0);
+        let sp = 0.1 + rand.nextSignedFloat(0.01);
+        let av = sp * 0.4 + rand.nextSignedFloat(0.005);
+        let er = rand.nextFloat(0.5);
+        let ed = rand.nextFloat(PI * 2.0);
         me.set(self.middleEnemySpec, x, self.field.size.y * /*Field.*/ PIT_SIZE_Y_RATIO, PI, sp);
         me.setMiddleEnemyState(sp, av, er, ed);
       }
@@ -451,7 +452,7 @@ impl<'a> Stage<'a> {
     self.phaseTime += 1;
     if (self.phaseNum >= 10) && ((self.phaseNum % 10) == 0) && (self.phaseTime == 120) &&
       self.gameState.isInGameAndNotGameOver {
-      Sound.nextBgm();
+      Sound::nextBgm();
     }
     self.cnt += 1;
     self.moveOutsidePillars();
@@ -463,7 +464,7 @@ impl<'a> Stage<'a> {
     }
   }
 
-  fn moveOutsidePillars(&mut self) {
+  pub fn moveOutsidePillars(&mut self) {
     if (self.cnt % 120) == 0 {
       if let Some(p) = self.pillars.getInstance() {
         p.set(self.pillarSpec, 180, 0, None, self.outsidePillarShape, (((self.cnt / 120) % 2 * 2 - 1) as f32)  * 0.003, true);
@@ -471,28 +472,28 @@ impl<'a> Stage<'a> {
     }
   }
 
-  fn countShotFired(&mut self) {
+  pub fn countShotFired(&mut self) {
     if self.phaseTime >= PHASE_RESULT_SHOW_CNT {
       self.shotFiredNum += 1;
       self.shotFiredNumTotal += 1;
     }
   }
 
-  fn countShotHit(&mut self) {
+  pub fn countShotHit(&mut self) {
     if self.phaseTime >= PHASE_RESULT_SHOW_CNT {
       self.shotHitNum += 1;
       self.shotHitNumTotal += 1;
     }
   }
 
-  fn draw(&mut self) {
-    if (self.gameState.mode != Frame::Mode::MODERN) && (self.phaseTime < PHASE_RESULT_SHOW_CNT) && (self.phaseNum > 1) {
+  pub fn draw(&mut self) {
+    if (self.gameState.mode() != Frame::Mode::MODERN) && (self.phaseTime < PHASE_RESULT_SHOW_CNT) && (self.phaseNum > 1) {
       Letter::drawString("SHOTS FIRED", 152, 250, 6, Letter::Direction::TO_RIGHT, false, 0, 1, 1, 0.33);
       Letter::drawNum(self.shotFiredNumRsl, 480, 250, 6);
       Letter::drawString("NUMBER OF HITS", 152, 280, 6, Letter::Direction::TO_RIGHT, false, 0, 1, 1, 0.33);
       Letter::drawNum(self.shotHitNumRsl, 480, 280, 6);
       Letter::drawString("HIT-MISS RATIO", 152, 310, 6);
-      Letter::drawNum((self.hitRatio * 10000) as i32, 480, 310, 6, 3, -1, 2);
+      Letter::drawNum((self.hitRatio * 10000) as i32, 480, 310, 6.0, 3, -1.0, 2);
       Letter::drawString("BONUS", 200, 350, 6, Letter::Direction::TO_RIGHT, false, 0, 1, 0.33, 0.33);
       Letter::drawNum(self.hitRatioBonus, 440, 350, 6);
     } else if self.phaseTime < (PHASE_RESULT_SHOW_CNT + PHASE_START_SHOW_CNT) {
@@ -501,7 +502,7 @@ impl<'a> Stage<'a> {
     }
   }
 
-  fn drawPhaseNum(&self) {
+  pub fn drawPhaseNum(&self) {
     Letter::drawNum(self.phaseNum, 622, 448, 10);
   }
 
@@ -516,7 +517,7 @@ impl<'a> Stage<'a> {
     Letter::drawString("NUMBER OF HITS", 152, 280, 6, Letter::Direction::TO_RIGHT, false, 0, 1, 1, 0.33);
     Letter::drawNum(self.shotHitNumTotal, 480, 280, 6);
     Letter::drawString("HIT-MISS RATIO", 152, 310, 6);
-    Letter::drawNum((hr * 10000.0) as i32, 480, 310, 6, 3, -1, 2);
+    Letter::drawNum((hr * 10000.0) as i32, 480.0, 310.0, 6.0, 3, -1.0, 2);
   }
 
   fn attackSmallEnemyNum(&self) -> i32 {

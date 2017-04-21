@@ -91,7 +91,7 @@ impl SdlScreen for Screen {
 }
 
 impl Screen {
-  fn new(/*field : mut* Field*/) -> Screen {
+  pub fn new(/*field : mut* Field*/) -> Screen {
     Screen{
       brightness : 1.0,
      _farPlane : 1000.0,
@@ -107,12 +107,12 @@ impl Screen {
     v
   }
 
-  fn width2(&mut self, v : i32) -> i32 {
+  pub fn width2(&mut self, v : i32) -> i32 {
     self._width = v;
     v
   }
 
-  fn height2(&mut self, v : i32) -> i32 {
+  pub fn height2(&mut self, v : i32) -> i32 {
     self._height = v;
     v
   }
@@ -158,15 +158,15 @@ impl Screen {
     SDL_WM_SetCaption(name, "");
   }
 
-  fn glVertex(v : Vector) {
+  pub fn glVertex(v : Vector) {
     glVertex3f(v.x, v.y, 0.0);
   }
 
-  fn glVertex3(v : Vector3) {
+  pub fn glVertex3(v : Vector3) {
     glVertex3f(v.x, v.y, v.z);
   }
 
-  fn glTranslate(v : Vector) {
+  pub fn glTranslate(v : Vector) {
     glTranslatef(v.x, v.y, 0.0);
   }
 
@@ -186,7 +186,7 @@ impl Screen {
     glClearColor(r * _brightness, g * _brightness, b * _brightness, a);
   }
 
-  fn brightness(v : f32) -> f32 {
+  pub fn brightness(&mut self, v : f32) -> f32 {
     _brightness = v;
     v
   }

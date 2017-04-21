@@ -38,9 +38,9 @@ pub trait Shape /*: Default*/ {
     fn draw4(&mut self, pos : Vector3, cd : f32, deg : f32) {
         let dl = self.get_display_list();
         glPushMatrix();
-        Screen::glTranslate(pos);
+        Screen::glTranslate3(pos);
         glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
-        Screen::glRotate(deg);
+        Screen::glRotate(deg, 0.0, 0.0, 1.0);
         dl.call(0);
         glPopMatrix();
     }
@@ -242,7 +242,7 @@ impl DisplayListShape for PlayerLineShape {
   }
 }
 
-struct ShotShape {
+pub struct ShotShape {
     displayList : DisplayList,
 }
 
@@ -445,9 +445,9 @@ impl DisplayListShape for TractorBeamShapeDarkPurple {
 pub trait BulletShapeBase : DisplayListShape {
   fn draw5(&mut self, pos : Vector3, cd : f32, deg : f32, rd : f32) {
     glPushMatrix();
-    Screen::glTranslate(pos);
+    Screen::glTranslate3(pos);
     glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
-    Screen::glRotate(deg);
+    Screen::glRotate(deg, 0.0, 0.0, 1.0);
     glRotatef(rd, 0.0, 1.0, 0.0);
     self.get_display_list().call(0);
     glPopMatrix();
@@ -645,7 +645,7 @@ impl DisplayListShape for MiddleBulletLineShape {
 pub trait RollBulletShapeBase : BulletShapeBase {
   fn draw5(&mut self, pos : Vector3, cd : f32, deg : f32, rd : f32) {
     glPushMatrix();
-    Screen::glTranslate(pos);
+    Screen::glTranslate3(pos);
     glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
     glRotatef(rd, 0.0, 0.0, 1.0);
     self.get_display_list().call(0);
@@ -737,9 +737,9 @@ pub trait EnemyShape : DisplayListShape {
 
   fn draw7(&mut self, pos : Vector3, cd : f32, deg : f32, cnt : f32, sx : f32, sy : f32) {
     glPushMatrix();
-    Screen::glTranslate(pos);
+    Screen::glTranslate3(pos);
     glRotatef(cd * 180.0 / PI, 0.0, 1.0, 0.0);
-    Screen::glRotate(deg);
+    Screen::glRotate(deg, 0.0, 0.0, 1.0);
     glScalef(sx, sy, 1.0);
     glRotatef(cnt * 3.0, 0.0, 1.0, 0.0);
     self.get_display_list().call(0);
@@ -1086,20 +1086,20 @@ pub trait PillarShape : DisplayListShape {
     Screen::setColor(r, g, b, 1.0);
     for i in 0..8 {
       let mut d : f32 = PI * 2.0 * (i as f32) / 8.0;
-      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * CIRCLE_RADIUS * RADIUS_RATIO,
                  TICKNESS,
-                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * CIRCLE_RADIUS * RADIUS_RATIO);
       d += PI * 2.0 / 8.0;
-      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * CIRCLE_RADIUS * RADIUS_RATIO,
                  TICKNESS,
-                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
-      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
+                 d.cos() * CIRCLE_RADIUS * RADIUS_RATIO);
+      glVertex3f(d.sin() * CIRCLE_RADIUS * RADIUS_RATIO,
                  -TICKNESS,
-                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * CIRCLE_RADIUS * RADIUS_RATIO);
       d -= PI * 2.0 / 8.0;
-      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * CIRCLE_RADIUS * RADIUS_RATIO,
                  -TICKNESS,
-                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * CIRCLE_RADIUS * RADIUS_RATIO);
     }
     glEnd();
     if !outside {
@@ -1108,22 +1108,22 @@ pub trait PillarShape : DisplayListShape {
       for i in 0..8 {
         let mut d : f32 = PI * 2.0 * (i as f32) / 8.0;
         glVertex3f(0.0, TICKNESS, 0.0);
-        glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
+        glVertex3f(d.sin() * CIRCLE_RADIUS * RADIUS_RATIO,
                    TICKNESS,
-                   d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
+                   d.cos() * CIRCLE_RADIUS * RADIUS_RATIO);
         d += PI * 2.0 / 8.0;
-        glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
+        glVertex3f(d.sin() * CIRCLE_RADIUS * RADIUS_RATIO,
                    TICKNESS,
-                   d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
+                   d.cos() * CIRCLE_RADIUS * RADIUS_RATIO);
         d -= PI * 2.0 / 8.0;
         glVertex3f(0.0, -TICKNESS, 0.0);
-        glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
+        glVertex3f(d.sin() * CIRCLE_RADIUS * RADIUS_RATIO,
                    -TICKNESS,
-                   d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
+                   d.cos() * CIRCLE_RADIUS * RADIUS_RATIO);
         d += PI * 2.0 / 8.0;
-        glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
+        glVertex3f(d.sin() * CIRCLE_RADIUS * RADIUS_RATIO,
                    -TICKNESS,
-                   d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
+                   d.cos() * CIRCLE_RADIUS * RADIUS_RATIO);
       }
       glEnd();
     }
@@ -1131,20 +1131,20 @@ pub trait PillarShape : DisplayListShape {
     for i in 0..8 {
       let mut d : f32 = PI * 2.0 * (i as f32) / 8.0; 
       glBegin(GL_LINE_STRIP);
-      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * CIRCLE_RADIUS * RADIUS_RATIO,
                  TICKNESS,
-                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * CIRCLE_RADIUS * RADIUS_RATIO);
       d += PI * 2.0 / 8.0;
-      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * CIRCLE_RADIUS * RADIUS_RATIO,
                  TICKNESS,
-                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
-      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
+                 d.cos() * CIRCLE_RADIUS * RADIUS_RATIO);
+      glVertex3f(d.sin() * CIRCLE_RADIUS * RADIUS_RATIO,
                  -TICKNESS,
-                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * CIRCLE_RADIUS * RADIUS_RATIO);
       d -= PI * 2.0 / 8.0;
-      glVertex3f(d.sin() * Field::CIRCLE_RADIUS * RADIUS_RATIO,
+      glVertex3f(d.sin() * CIRCLE_RADIUS * RADIUS_RATIO,
                  -TICKNESS,
-                 d.cos() * Field::CIRCLE_RADIUS * RADIUS_RATIO);
+                 d.cos() * CIRCLE_RADIUS * RADIUS_RATIO);
       glEnd();
     }
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);

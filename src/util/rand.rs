@@ -46,22 +46,22 @@ pub struct Rand {
 }
 
 impl Rand {
-  fn new() -> Rand {
+  pub fn new() -> Rand {
     //let timer = TickDuration.currSystemTick().nsecs();
     //init_genrand(timer as u32);
 
     Rand { state : [0u32; N], left : 1, initf : 0, next : 0 }
   }
 
-  fn setSeed(&mut self, n : i64) {
+  pub fn setSeed(&mut self, n : i64) {
     self.init_genrand(n as u32);
   }
 
-  fn nextInt32(&mut self) -> u32 {
+  pub fn nextInt32(&mut self) -> u32 {
     self.genrand_int32()
   }
 
-  fn nextInt(&mut self, n : i32) -> i32 {
+  pub fn nextInt(&mut self, n : i32) -> i32 {
     if n == 0 {
       0
     } else {
@@ -69,7 +69,7 @@ impl Rand {
     }
   }
 
-  fn nextSignedInt(&mut self, n : i32) -> i32 {
+  pub fn nextSignedInt(&mut self, n : i32) -> i32 {
     if n == 0 {
       0
     } else {
@@ -77,11 +77,11 @@ impl Rand {
     }
   }
 
-  fn nextFloat(&mut self, n : f32 /*n = 1*/) -> f32 {
+  pub fn nextFloat(&mut self, n : f32 /*n = 1*/) -> f32 {
     (self.genrand_real1() as f32) * n
   }
 
-  fn nextSignedFloat(&mut self, n : f32 /*= 1*/) -> f32 {
+  pub fn nextSignedFloat(&mut self, n : f32 /*= 1*/) -> f32 {
     (self.genrand_real1() as f32) * (n * 2.0) - n
   }
 

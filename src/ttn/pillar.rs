@@ -98,16 +98,16 @@ impl<'a> Token<PillarState<'a>, PillarSpec<'a>> for Pillar<'a> {
 impl<'a> Pillar<'a> {
 
   fn set(&mut self, ps : PillarSpec, y : f32, maxY : f32, pp : &Pillar, s : &PillarShape, vdeg : f32, outside : bool /*= false*/) {
-    self.tok.set(ps, 0.0, y, 0.0, 0.0);
-    self.tok.state.maxY = maxY;
-    self.tok.state.previousPillar = pp;
-    self.tok.state.pshape = s;
+    self.set(ps, 0.0, y, 0.0, 0.0);
+    self.state.maxY = maxY;
+    self.state.previousPillar = pp;
+    self.state.pshape = s;
     self.state.vdeg = vdeg;
     self.state.isOutside = outside;
   }
 
   fn setEnd(&mut self) {
-    self.tok.state.isEnded = true;
+    self.state.isEnded = true;
   }
 
 
@@ -136,9 +136,9 @@ impl<'a> PillarState<'a> {
     //taken from clear()
     PillarState {
       previousPillar : None,
-      vy : 0,
-      vdeg : 0,
-      maxY : 0,
+      vy : 0.0,
+      vdeg : 0.0,
+      maxY : 0.0,
       pshape : None,
       isEnded : false,
       isOutside : false,
@@ -148,9 +148,9 @@ impl<'a> PillarState<'a> {
 
   fn clear(&mut self) {
     self.previousPillar = None;
-    self.vy = 0;
-    self.vdeg = 0;
-    self.maxY = 0;
+    self.vy = 0.0;
+    self.vdeg = 0.0;
+    self.maxY = 0.0;
     self.isEnded = false;
     self.isOutside = false;
     self.ts.clear();
@@ -180,7 +180,7 @@ impl<'a> PillarSpec<'a> {
         ps.vy += VELOCITY_Y;
         ps.vy *= 0.98;
         ps.ts.pos.y += ps.vy;
-        if ps.vy > 0 {
+        if ps.vy > 0.0 {
           let mut ty : f32 = if self.previousPillar && self.previousPillar.exists {
             self.previousPillar.pos.y - PillarShape::TICKNESS
           } else {

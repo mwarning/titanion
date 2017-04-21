@@ -264,13 +264,13 @@ impl Vector {
       }
 
       if (a2x >= b1x) && (b2x >= a1x) {
-        let a : f32 = self.y - p.y;
-        let b : f32 = p.x - self.x;
-        let c : f32 = p.x * self.y - p.y * self.x;
-        let d : f32 = p2.y - p1.y;
-        let e : f32 = p1.x - p2.x;
-        let f : f32 = p1.x * p2.y - p1.y * p2.x;
-        let dnm : f32= b * d - a * e;
+        let a = self.y - p.y;
+        let b = p.x - self.x;
+        let c = p.x * self.y - p.y * self.x;
+        let d = p2.y - p1.y;
+        let e = p1.x - p2.x;
+        let f = p1.x * p2.y - p1.y * p2.x;
+        let dnm = b * d - a * e;
         if dnm != 0.0 {
           let x : f32 = (b * f - c * e) / dnm;
           let y : f32 = (c * d - a * f) / dnm;
@@ -284,13 +284,13 @@ impl Vector {
     false
   }
 
-  fn checkHitDist(&self, p : Vector, pp : Vector, dist : f32) -> bool {
-    let bmvx : f32 = pp.x - p.x;
-    let bmvy : f32 = pp.y - p.y;
-    let inaa : f32 = bmvx * bmvx + bmvy * bmvy;
+  pub fn checkHitDist(&self, p : Vector, pp : Vector, dist : f32) -> bool {
+    let bmvx = pp.x - p.x;
+    let bmvy = pp.y - p.y;
+    let inaa = bmvx * bmvx + bmvy * bmvy;
     if inaa > 0.00001 {
-      let sofsx : f32 = self.x - p.x;
-      let sofsy : f32 = self.y - p.y;
+      let sofsx = self.x - p.x;
+      let sofsy = self.y - p.y;
       let inab = bmvx * sofsx + bmvy * sofsy;
       if inab >= 0.0 && inab <= inaa {
         let hd = sofsx * sofsx + sofsy * sofsy - inab * inab / inaa;
@@ -313,12 +313,12 @@ impl Vector {
 
   ///
   pub fn dist3(&self, px : f32, py : f32) -> f32 {
-    let ax : f32 = (self.x - px).abs();
-    let ay : f32 = (self.y - py).abs();
+    let ax = (self.x - px).abs();
+    let ay = (self.y - py).abs();
     if ax > ay {
-      return ax + ay / 2.0;
+      ax + ay / 2.0;
     } else {
-      return ay + ax / 2.0;
+      ay + ax / 2.0;
     }
   }
 
@@ -347,7 +347,7 @@ impl Vector {
   }
 
   pub fn roll(&mut self, d : f32) {
-    let tx : f32 = self.x * d.cos() - self.y * d.sin();
+    let tx = self.x * d.cos() - self.y * d.sin();
     self.y = self.x * d.sin() + self.y * d.cos();
     self.x = tx;
   }
@@ -364,9 +364,9 @@ static mut RSL3 : Vector3 = Vector3{x : 0.0, y : 0.0, z : 0.0};
  */
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Vector3 {
-  x : f32,
-  y : f32,
-  z : f32,
+  pub x : f32,
+  pub y : f32,
+  pub z : f32,
 }
 
 impl Mul for Vector3 {
@@ -405,52 +405,52 @@ impl Vector3 {
     Vector3 {x: x, y: y, z: z}
   }
 
-  fn clear(&mut self) {
+  pub fn clear(&mut self) {
     self.x = 0.0;
     self.y = 0.0;
     self.z = 0.0;
   }
 
-  fn rollX(&mut self, d : f32) {
-    let ty : f32 = self.y * d.cos() - self.z * d.sin();
+  pub fn rollX(&mut self, d : f32) {
+    let ty = self.y * d.cos() - self.z * d.sin();
     self.z = self.y * d.sin() + self.z * d.cos();
     self.y = ty;
   }
 
-  fn rollY(&mut self, d : f32) {
-    let tx : f32 = self.x * d.cos() - self.z * d.sin();
+  pub fn rollY(&mut self, d : f32) {
+    let tx = self.x * d.cos() - self.z * d.sin();
     self.z = self.x * d.sin() + self.z * d.cos();
     self.x = tx;
   }
 
-  fn rollZ(&mut self, d : f32) {
-    let tx : f32 = self.x * d.cos() - self.y * d.sin();
+  pub fn rollZ(&mut self, d : f32) {
+    let tx = self.x * d.cos() - self.y * d.sin();
     self.y = self.x * d.sin() + self.y * d.cos();
     self.x = tx;
   }
 
-  fn blend(&mut self, v1 : Vector3, v2 : Vector3, ratio : f32) {
+  pub fn blend(&mut self, v1 : Vector3, v2 : Vector3, ratio : f32) {
     self.x = v1.x * ratio + v2.x * (1.0 - ratio);
     self.y = v1.y * ratio + v2.y * (1.0 - ratio);
     self.z = v1.z * ratio + v2.z * (1.0 - ratio);
   }
 
-  fn vctSize(&self) -> f32 {
+  pub fn vctSize(&self) -> f32 {
     (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
   }
 
   // was dist()
-  fn distVector3(&self, v : Vector3) -> f32 {
+  pub fn distVector3(&self, v : Vector3) -> f32 {
     self.distXYZ(v.x, v.y, v.z)
   }
 
   // was dist()
-  fn distXYZ(&self, px : f32, py : f32, pz : f32) -> f32 {
-    let ax : f32 = (self.x - px).abs();
-    let ay : f32 = (self.y - py).abs();
-    let az : f32 = (self.z - pz).abs();
+  pub fn distXYZ(&self, px : f32, py : f32, pz : f32) -> f32 {
+    let ax = (self.x - px).abs();
+    let ay = (self.y - py).abs();
+    let az = (self.z - pz).abs();
 
-    let axy : f32 = if ax > ay {
+    let axy = if ax > ay {
       ax + ay / 2.0
     } else {
       ay + ax / 2.0
@@ -464,8 +464,8 @@ impl Vector3 {
   }
 
   // was getElement
-  unsafe fn getElementVector3(&self, v : &Vector3) -> Vector3 {
-    let ll : f32 = v * v;
+  pub unsafe fn getElementVector3(&self, v : &Vector3) -> Vector3 {
+    let ll = v * v;
     if ll != 0.0 {
       let mag : f32 = self * v;
       RSL3.x = mag * v.x / ll;
@@ -480,36 +480,36 @@ impl Vector3 {
     RSL3
   }
 
-  fn op_mul(&self, v : Vector3) -> f32 {
+  pub fn op_mul(&self, v : Vector3) -> f32 {
     self.x * v.x + self.y * v.y + self.z * v.z
   }
 
-  fn op_add_assign(&mut self, v : Vector3) {
+  pub fn op_add_assign(&mut self, v : Vector3) {
     self.x += v.x;
     self.y += v.y;
     self.z += v.z;
   }
 
-  fn op_sub_assign(&mut self, v : Vector3) {
+  pub fn op_sub_assign(&mut self, v : Vector3) {
     self.x -= v.x;
     self.y -= v.y;
     self.z -= v.z;
   }
 
-  fn op_mul_assign(&mut self, a : f32) {
+  pub fn op_mul_assign(&mut self, a : f32) {
     self.x *= a;
     self.y *= a;
     self.z *= a;
   }
 
-  fn op_div_assign(&mut self, a : f32) {
+  pub fn op_div_assign(&mut self, a : f32) {
     self.x /= a;
     self.y /= a;
     self.z /= a;
   }
 
 
-  fn to_string(&self) -> String {
+  pub fn to_string(&self) -> String {
     format!("({}, {}, {})", self.x, self.y, self.z)
   }
 }

@@ -16,11 +16,11 @@ const MAX_SKIP_FRAME : i32 = 5;
  * SDL main loop.
  */
 pub struct MainLoop<'a> {
-  noSlowdown : bool,
+  pub noSlowdown : bool,
   event : SDL_Event,
   //screen : &Screen, //we use frame.screen instead
   //input : &Input,
-  frame : Frame<'a>,
+  pub frame : Frame<'a>,
   //preference : &Preference,
   slowdownRatio : f32, 
   interval : f32,
@@ -30,7 +30,7 @@ pub struct MainLoop<'a> {
 }
 
 impl<'a> MainLoop<'a> {
-	fn new(/*input : &Input,*/ frame : Frame /*, preference : &Preference*/) -> MainLoop<'a> {
+	pub fn new(/*input : &Input,*/ frame : Frame /*, preference : &Preference*/) -> MainLoop<'a> {
 		MainLoop{
 			noSlowdown : false,
 			event : SDL_Event::new(),
@@ -49,7 +49,7 @@ impl<'a> MainLoop<'a> {
   	fn initFirst(&mut self) {
 	    self.preference.load();
 	    //try {
-	      self.Sound.init();
+	      self.frame.sound.init();
 	    //} catch (SDLInitFailedException e) {
 	    //  Logger.error(e);
 	    //}
@@ -60,7 +60,7 @@ impl<'a> MainLoop<'a> {
  	// Quit and save a preference.
   	fn quitLast(&mut self) {
 		self.frame.quit();
-		Sound.close();
+		self.frame.sound.close();
 		self.preference.save();
 		self.frame.screen.closeSDL();
 		SDL_Quit();
@@ -70,7 +70,7 @@ impl<'a> MainLoop<'a> {
 		self.done = true;
 	}
 
-	fn loop1(&mut self) {
+	pub fn loop1(&mut self) {
 		self.done = false;
 		let mut prvTickCount : i64 = 0;
 		self.frame.screen.initSDL();

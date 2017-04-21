@@ -21,7 +21,7 @@ fn read<T>(fd : &File, dst : &mut T) {
   //TODO
 }
 
-fn write<T>(fd : &File, dst : &mut T) {
+fn write<T>(fd : &File, dst : &T) {
   //TODO
 }
 
@@ -41,6 +41,17 @@ pub struct Preference {
 }
 
 impl Preference {
+  pub fn new() -> Self {
+    Preference {
+      _lastMode : 2,
+      _highScore : [
+        [100000, 90000, 80000, 70000, 60000, 50000, 40000, 30000, 20000, 10000],
+        [100000, 90000, 80000, 70000, 60000, 50000, 40000, 30000, 20000, 10000],
+        [100000, 90000, 80000, 70000, 60000, 50000, 40000, 30000, 20000, 10000]
+      ],
+    }
+  }
+
   fn load(&mut self) {
     //let fd : File;
     //try {
@@ -64,7 +75,7 @@ impl Preference {
       }
     //}
   }
-
+/*
   fn init(&mut self) {
     self._lastMode = 2;
     for j in 0..MODE_NUM {
@@ -73,7 +84,7 @@ impl Preference {
       }
     }
   }
-
+*/
   fn save(&mut self) {
     let fd = File::new(PREF_FILE_NAME, File::WriteCreate);
     write::<i32>(fd, &VERSION_NUM);

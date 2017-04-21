@@ -31,7 +31,7 @@ use ttn::dummy::*;
 
 
 pub const PIT_SIZE_Y_RATIO :f32 = 12.0;
-const CIRCLE_RADIUS : f32 = 64.0;
+pub const CIRCLE_RADIUS : f32 = 64.0;
 const EYE_POS_DIST_RATIO : f32 = 1.25;
 const X_EXPANSION_RATIO : f32 = 1.0;
 const SIDEWALL_WIDTH : f32 = 145.0;
@@ -306,7 +306,7 @@ impl<'a> Field<'a> {
           Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.9, d2 + PI * 2.0 / 32.0 * 0.1);
           Screen::glVertex(ringOfs);
           Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.9, d2 + PI * 2.0 / 16.0 * 0.9);
-          Screen::glVertex(ringOfs);
+          Screen::glVertex3(ringOfs);
           d2 += PI * 2.0 / 16.0
         }
       d1 += PI * 2.0 / 32.0

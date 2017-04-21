@@ -3,14 +3,9 @@
 use util::vector::*;
 use std::ptr;
 
-pub enum PadStateDir {
-  UP,
-  DOWN,
-}
-
 pub struct SDL_Event {
-  _type : usize,
-  resize : SDL_ResizeEvent,
+  pub _type : usize,
+  pub resize : SDL_ResizeEvent,
 }
 
 
@@ -29,9 +24,31 @@ pub const SDL_INIT_VIDEO : u32 = 0;
 
 pub const SDL_VIDEORESIZE : usize = 0;
 pub struct SDL_ResizeEvent {
-  w : u32,
-  h : u32,
+  pub w : u32,
+  pub h : u32,
 }
+
+pub struct Mix_Music;
+pub struct Mix_Chunk;
+
+pub const AUDIO_S16 : u16 = 0;
+pub fn Mix_PlayChannel(chunkChannel : i32, chunk : *const Mix_Chunk, n : i32) {}
+pub fn Mix_HaltChannel(chunkChannel : i32) {}
+pub fn Mix_FreeChunk(chunk : *const Mix_Chunk) {}
+pub fn Mix_LoadWAV(fileName : &'static str) {}
+pub fn Mix_FadeOutMusic(speed : i32) {}
+pub fn Mix_GetError() -> &'static str { "" }
+pub fn Mix_OpenAudio(audio_rate : i32, audio_format : u16, audio_channels : i32, audio_buffers : i32) -> i32 { 0 }
+pub fn Mix_QuerySpec(audio_rate : &mut i32, audio_format : &mut u16, audio_channels : &mut i32) {}
+pub fn Mix_VolumeMusic(v : i32) {}
+pub fn Mix_Volume(v : i32, seVol : i32) {}
+pub fn Mix_PlayingMusic() -> i32 { 0 }
+pub fn Mix_HaltMusic() {}
+pub fn Mix_CloseAudio() {}
+pub fn Mix_LoadMUS(filename : &'static str) {}
+pub fn Mix_FreeMusic(m : &Mix_Music) {}
+pub fn Mix_PlayMusic(m : &Mix_Music, n : i32) {}
+
 pub const SDL_PRESSED : usize = 0;
 pub const SDLK_ESCAPE : usize = 0;
 pub const SDLK_p : usize = 0;
@@ -74,16 +91,17 @@ pub const SDLK_RSHIFT : usize = 0;
 pub const SDLK_RETURN : usize = 0;
 
 pub const SDL_INIT_JOYSTICK : u32 = 0;
+pub const SDL_INIT_AUDIO : u32 = 0;
 
 pub fn SDL_JoystickGetButton(stick : *const SDL_Joystick, n : u32) {}
 pub fn SDL_JoystickGetAxis(stick : *const SDL_Joystick, n : u32) {}
 pub fn SDL_InitSubSystem(n : u32) -> u32 { 0 }
 pub fn SDL_JoystickOpen(n : u32) -> *const SDL_Joystick { ptr::null() }
-pub fn SDL_GetKeyState(x :  *const SDL_Event) -> *const u8 {} //accepts a pointer...
+pub fn SDL_GetKeyState(x :  *const SDL_Event) -> *const u8 { ptr::null() } //accepts a pointer...
 pub fn SDL_Delay(d : u32) {}
-pub fn SDL_GetTicks() -> i64 {}
+pub fn SDL_GetTicks() -> i64 { 0 }
 pub fn SDL_Quit() {}
-pub fn SDL_PollEvent(e : *const SDL_Event) -> u32 {}
+pub fn SDL_PollEvent(e : *const SDL_Event) -> u32 { 0 }
 
 pub fn glMatrixMode(mode : usize) {}
 pub fn gluLookAt(x : f32, y : f32, z : f32, a : f32, b : f32, c : f32, d : f32, e : f32, g : f32) {}
@@ -94,31 +112,25 @@ pub fn glLoadIdentity() {}
 pub fn glTexCoord2f(x : f32, y : f32) {}
 
 pub struct Object;
-pub struct RecordablePad;
-pub struct Pad;
-pub struct PadState;
-pub struct ShotShape;
-pub struct Sound;
 
-impl Sound {
-	pub fn fadeBgm() {}
-	pub fn playSe(s : &str) {}
-	pub fn playMarkedSes() {}
+pub struct DerelictSDLMixer;
+impl DerelictSDLMixer {
+  pub fn load() {}
 }
 
 pub struct DerelictGL;
 impl DerelictGL {
-  fn load() {}
+  pub fn load() {}
 }
 
 pub struct DerelictGLU;
 impl DerelictGLU {
-  fn load() {}
+  pub fn load() {}
 }
 
 pub struct DerelictSDL;
 impl DerelictSDL {
-  fn load() {}
+  pub fn load() {}
 }
 
 pub fn SDL_GetError() -> &'static str { "" }
@@ -150,7 +162,7 @@ pub const GL_CULL_FACE : usize = 0;
 pub fn glLineWidth(lw : f32) {}
 pub fn glViewport(w : i32, h : i32, x : f32, y : f32) {}
 
-pub const TurretSpec_SPEED_RATIO : f32 = 0.0;
+//pub const TurretSpec_SPEED_RATIO : f32 = 0.0;
 
 pub const GL_TRIANGLES : usize = 0;
 pub const GL_TRIANGLE_FAN : usize = 0;
@@ -168,7 +180,7 @@ pub fn glVertex3f(x : f32, y : f32, z : f32) {}
 pub fn glBegin(mode : usize) {}
 pub fn glEnd() {}
 pub fn glEnable() {}
-pub fn glDisable() {}
+pub fn glDisable(n : usize) {}
 pub fn glBlendFunc(a : usize, b : usize) {}
 pub fn glScalef(a : f32, b : f32, c : f32) {}
 
@@ -180,7 +192,7 @@ impl File {
   }
 }
 
-
+//TODO: remove
 pub struct Texture;
 
 impl Texture {

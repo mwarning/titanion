@@ -16,14 +16,14 @@ use ttn::dummy::*;
 
 const JOYSTICK_AXIS : i32 = 16384;
 
-struct Pad {
+pub struct Pad {
   keys : &'static u8,
-  buttonsExchanged : bool,
+  pub buttonsExchanged : bool,
   stick : Option<&'static SDL_Joystick>, //= null;
   state : PadState,
 }
 
-enum Dir {
+pub enum Dir {
   NONE,
   UP = 1,
   DOWN = 2,
@@ -39,7 +39,7 @@ impl BitOr for Dir {
     }
 }
 
-enum Button {
+pub enum Button {
   NONE,
   A = 16,
   B = 32,
@@ -54,7 +54,7 @@ impl BitOr for Button {
     }
 }
 
-struct PadState {
+pub struct PadState {
   dir : Dir,
   button : Button,
 }
@@ -100,7 +100,7 @@ pub struct RecordablePad {
   inputRecord : InputRecord<PadState>,
 
   //inlined from class Pad
-  pad : Pad,
+  pub pad : Pad,
 }
 
 impl Input for RecordablePad {
@@ -121,7 +121,7 @@ impl RecordablePad {
     s
   }
 
-  fn new() -> RecordablePad {
+  pub fn new() -> RecordablePad {
     RecordablePad {
       //inline from RecordableInput!(T)
       inputRecord : InputRecord::<PadState>::new(),
