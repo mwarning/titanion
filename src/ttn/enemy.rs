@@ -568,7 +568,7 @@ const TURRET_MAX_NUM1 : usize = 3;
 struct EnemySpecData<'a> {
   //ts : TokenSpec<EnemyState>, //inlined
   field : &'a mut Field<'a>,
-  shape : &'a mut Shape,
+  shape : &'a mut EnemyShape, //was Shape, but changed to avoid downcasts
   //mixin StaticRandImpl; //moved to GameState
   bullets : &'a mut BulletPool<'a>,
   player : &'a Player<'a>,
@@ -608,7 +608,7 @@ impl<'a> EnemySpecData<'a> {
   fn new(field : &'a mut Field, bullets : &'a mut BulletPool<'a>, player : &'a mut Player,
               particles : &'a mut ParticlePool, bonusParticles : &'a mut ParticlePool,
               enemies : &'a mut EnemyPool, stage : &'a mut Stage,
-              shape : &'a mut Shape, trailShape : &'a mut EnemyShape,
+              shape : &'a mut EnemyShape, trailShape : &'a mut EnemyShape,
               bulletSpec : &'a mut BulletSpec, counterBulletSpec : &'a mut BulletSpec,
               gameState : GameState) -> EnemySpec {
     EnemySpecData {
@@ -1221,7 +1221,7 @@ pub struct GhostEnemySpec<'a> {
 }
 
 impl<'a> GhostEnemySpec<'a> {
-  fn new(&mut self, field : &'a mut Field, shape : &'a mut Shape) -> GhostEnemySpec<'a> {
+  fn new(&mut self, field : &'a mut Field, shape : &'a mut EnemyShape) -> GhostEnemySpec<'a> {
     GhostEnemySpec {
       es : EnemySpecData::new(field, shape),
     }
@@ -1266,7 +1266,7 @@ impl<'a> MiddleEnemySpec<'a> {
   fn new(field : &'a mut Field, bullets : &'a mut BulletPool, player : &'a mut Player,
               particles :  &'a mut ParticlePool, bonusParticles : &'a mut ParticlePool,
               enemies : &'a mut EnemyPool, stage : &'a mut Stage,
-              shape : &'a mut Shape, trailShape : &'a mut EnemyShape,
+              shape : &'a mut EnemyShape, trailShape : &'a mut EnemyShape,
               bulletSpec : &'a mut BulletSpec, counterBulletSpec : &'a mut BulletSpec,
               gameState : &'a mut GameState) -> MiddleEnemySpec<'a> {
     let mut inst = MiddleEnemySpec{es : EnemySpecData {
@@ -1563,7 +1563,7 @@ impl<'a> SE1Spec<'a> {
   fn new(field : &'a mut Field, bullets : &'a mut BulletPool, player : &'a mut Player,
               particles : &'a mut ParticlePool, bonusParticles : &'a mut ParticlePool,
               enemies : &'a mut EnemyPool, stage : &'a mut Stage,
-              shape : &'a mut Shape, trailShape : &'a mut EnemyShape,
+              shape : &'a mut EnemyShape, trailShape : &'a mut EnemyShape,
               bulletSpec : &'a mut BulletSpec, counterBulletSpec : &'a mut BulletSpec,
               gameState : &'a mut GameState) -> SE1Spec<'a> {
     let mut inst = SE1Spec{ es : EnemySpecData{
@@ -1667,7 +1667,7 @@ impl<'a> SE2Spec<'a> {
   fn new(field : &'a mut Field, bullets : &'a mut BulletPool, player : &'a mut Player,
               particles : &'a mut ParticlePool, bonusParticles : &'a mut ParticlePool,
               enemies : &'a mut EnemyPool, stage : &'a mut Stage,
-              shape : &'a mut Shape, trailShape : &'a mut EnemyShape,
+              shape : &'a mut EnemyShape, trailShape : &'a mut EnemyShape,
               bulletSpec : &'a mut BulletSpec, counterBulletSpec : &'a mut BulletSpec,
               gameState : &'a mut GameState) -> SE2Spec<'a> {
     let mut inst = SE2Spec{ es : EnemySpecData{
@@ -1831,7 +1831,7 @@ const INTERVAL_MAX : f32 = 90.0;
 pub struct TurretSpec<'a> {
   //ts : TokenSpec<TurretState>, //inlined
   field : &'a mut Field<'a>,
-  shape : &'a mut Shape,
+  //shape : &'a mut Shape, //not used?
   //mixin StaticRandImpl; //moved to GameState
   bulletSpec : BulletSpec<'a>,
   bullets : BulletPool<'a>,
