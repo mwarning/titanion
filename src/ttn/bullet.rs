@@ -24,7 +24,13 @@ use ttn::screen::*;
 const BULLET_REMOVED_RANGE : f32 = 2.0;
 
 pub struct BulletPool<'a> {
-  ap : ActorPool<Bullet<'a>>,
+  ap : ActorPoolData<Bullet<'a>>,
+}
+
+impl<'a> ActorPool<Bullet<'a>> for BulletPool<'a> {
+  fn getActorPoolData(&mut self) -> &mut ActorPoolData<Bullet<'a>> {
+    &self.ap
+  }
 }
 
 impl<'a> BulletPool<'a> {
@@ -40,7 +46,7 @@ impl<'a> BulletPool<'a> {
   */
   }
 
-  pub fn removeAround(&mut self, cnt : &i32, pos : Vector, particles : &ParticlePool, bonusParticles : &ParticlePool, player : &Player) {
+  pub fn removeAround(&mut self, cnt : &mut i32, pos : Vector, particles : &ParticlePool, bonusParticles : &ParticlePool, player : &Player) {
     for b in self.actors {
       if b.exists {
         if b.pos.dist(pos) < BULLET_REMOVED_RANGE {
@@ -221,7 +227,7 @@ impl<'a> BulletSpec<'a> {
 
 pub struct Bullet<'a> {
   //tok : Token<BulletState, BulletSpec>, //inlined
-  state : &'a mut BulletState,
+  state : BulletState,
   spec : &'a mut BulletSpec<'a>,
   _exists : bool, //inherited by Actor class
 }
@@ -237,6 +243,13 @@ impl<'a> Bullet<'a> {
 }
 
 impl<'a> Actor for Bullet<'a> {
+  fn new() -> Bullet<'a> {
+    Bullet {
+      state : BulletState::new(),
+      spec : BulletSpec::new(), //use generic spec or Option type?
+    }
+  }
+
   fn getExists(&self) -> bool {
     self._exists
   }
@@ -259,4 +272,7 @@ impl<'a> Actor for Bullet<'a> {
   fn draw1(&self) {
     self.spec.draw(self.state);
   }
+}
+
+impl<'a> Token<BulletState, BulletSpec<'a>> for Bullet<'a> {
 }

@@ -26,13 +26,20 @@ use ttn::dummy::*;
 pub struct Player<'a> {
   //tok : Token!(PlayerState, PlayerSpec),
   pub _exists : bool, //from Actor
-  pub state : &'a mut PlayerState<'a>,
+  pub state : PlayerState<'a>,
   pub spec : &'a mut PlayerSpec<'a>,
 
   hitOffset : Vector,
 }
 
 impl<'a> Actor for Player<'a> {
+  fn new() -> Player<'a> {
+    Player {
+      state : PlayerState::new(),
+      spec : PlayerSpec::new(),  //use generic spec or Option type?
+    }
+  }
+
   fn getExists(&self) -> bool {
     self._exists
   }
@@ -148,11 +155,11 @@ impl<'a> Player<'a> {
     self.spec.addScore(sc);
   }
 
-  fn addMultiplier(&mut self, mp : f32) {
+  pub fn addMultiplier(&mut self, mp : f32) {
     self.spec.addMultiplier(mp);
   }
 
-  fn multiplier(&self) -> f32 {
+  pub fn multiplier(&self) -> f32 {
     self.spec.multiplier
   }
 
@@ -217,7 +224,7 @@ struct PlayerState<'a> {
 */
 
 impl<'a> PlayerState<'a> {
-  fn new() -> PlayerState<'a> {
+  pub fn new() -> PlayerState<'a> {
       PlayerState{
         ts : TokenState::new(),
         replayMode : false,
@@ -244,11 +251,11 @@ impl<'a> PlayerState<'a> {
     }
   }
 
-  fn setSpec(&mut self, spec : PlayerSpec) {
+  pub fn setSpec(&mut self, spec : PlayerSpec) {
     self.spec = spec;
   }
 
-  fn set(&mut self) {
+  pub fn set(&mut self) {
     self.reset();
     self.pos.x = 0.0;
     self.respawnCnt = 0;
@@ -258,7 +265,7 @@ impl<'a> PlayerState<'a> {
     self.shotCnt = 60;
   }
 
-  fn clear(&mut self) {
+  pub fn clear(&mut self) {
     self.capturedEnemyNum = 0;
     self.respawnCnt = 0;
     self.invincibleCnt = 0;
@@ -279,7 +286,7 @@ impl<'a> PlayerState<'a> {
     self.ts.clear();
   }
 
-  fn reset(&mut self) {
+  pub fn reset(&mut self) {
     let x : f32 = self.pos.x;
     self.clear();
     self.ts.pos.x = x;
@@ -292,7 +299,7 @@ impl<'a> PlayerState<'a> {
     self.spec.respawn(self);
   }
 
-  fn move1(&mut self) {
+  pub fn move1(&mut self) {
     self.colorCnt += 1;
     self.ghostCnt += 1;
     if self.isInRespawn {
@@ -310,15 +317,15 @@ impl<'a> PlayerState<'a> {
     self.midEnemyProvacated = false;
   }
 
-  fn isActive(&self) -> bool {
+  pub fn isActive(&self) -> bool {
     !self.isInRespawn
   }
 
-  fn hasCollision(&self) -> bool {
+  pub fn hasCollision(&self) -> bool {
     !self.isInRespawn && !self.isInvincible
   }
 
-  fn hasShape(&self) -> bool {
+  pub fn hasShape(&self) -> bool {
     if self.isInRespawn {
       return false;
     }
@@ -329,13 +336,13 @@ impl<'a> PlayerState<'a> {
     (self.invincibleCnt % 60) >= 30
   }
 
-  fn destroyed(&mut self) {
+  pub fn destroyed(&mut self) {
     self.respawnCnt = RESPAWN_INTERVAL;
     self.destroyCapturedEnemies(0);
     self.isInRespawn = true;
   }
 
-  fn addCapturedEnemy(&mut self, e : &Enemy) -> f32 {
+  pub fn addCapturedEnemy(&mut self, e : &Enemy) -> f32 {
     if self.isInRespawn || (self.capturedEnemyNum >= MAX_CAPTURED_ENEMIES_NUM) {
       return -1;
     }
@@ -344,7 +351,7 @@ impl<'a> PlayerState<'a> {
     (self.capturedEnemyNum - 1)
   }
 
-  fn destroyCapturedEnemies(&mut self, idx : i32) {
+  pub fn destroyCapturedEnemies(&mut self, idx : i32) {
     for i in idx..self.capturedEnemyNum {
       if self.capturedEnemies[i as usize].exists() {
         self.capturedEnemies[i as usize].destroyed();
@@ -353,7 +360,7 @@ impl<'a> PlayerState<'a> {
     self.capturedEnemyNum = idx;
   }
 
-  fn countShotHit(&mut self) {
+  pub fn countShotHit(&mut self) {
     self.captureBeamEnergy += 0.02 / ((self.capturedEnemyNum as f32) + 1.0);
     if self.captureBeamEnergy > 1 {
       self.captureBeamEnergy = 1;
@@ -902,12 +909,19 @@ impl<'a> ShotPool<'a> {
 
 struct Shot<'a> {
   //tok : Token<ShotState, ShotSpec>,
-  pub state : &'a mut ShotState<'a>,
+  pub state : ShotState<'a>,
   pub spec : &'a mut ShotSpec<'a>,
   _exists : bool, //from Actor
 }
 
 impl<'a> Actor for Shot<'a> {
+  fn new() -> Shot<'a> {
+    Shot {
+      state : ShotState::new(),
+      spec : ShotPool::new(),  //use generic spec or Option type?
+    }
+  }
+
   fn getExists(&self) -> bool {
     self._exists
   }

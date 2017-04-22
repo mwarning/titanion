@@ -23,12 +23,18 @@ use ttn::dummy::*;
 //}
 
 pub struct ParticlePool<'a> {
-  ap : ActorPool<Particle<'a>>,
+  ap : ActorPoolData<Particle<'a>>,
 }
 
 impl<'a> ParticlePool<'a> {
   pub fn new() -> ParticlePool<'a> {
-    ParticlePool { ap : ActorPool<Particle<'a>>::new() }
+    ParticlePool { ap : ActorPool::<Particle<'a>>::new() }
+  }
+}
+
+impl<'a> ActorPool<Particle<'a>> for ParticlePool<'a> {
+  fn getActorPoolData(&mut self) -> &mut ActorPoolData<Particle<'a>> {
+    &self.ap
   }
 }
 
@@ -343,25 +349,25 @@ impl<'a> QuadParticleSpec<'a> {
       Screen::setColor(ps.r, ps.g, ps.b, ps.aa);
       glBegin(GL_QUADS);
       p = self.field.calcCircularPos(ps.pos().x - sz, ps.pos().y - sz);
-      Screen::glVertex(p);
+      Screen::glVertex3(p);
       p = self.field.calcCircularPos(ps.pos().x + sz, ps.pos().y - sz);
-      Screen::glVertex(p);
+      Screen::glVertex3(p);
       p = self.field.calcCircularPos(ps.pos().x + sz, ps.pos().y + sz);
-      Screen::glVertex(p);
+      Screen::glVertex3(p);
       p = self.field.calcCircularPos(ps.pos().x - sz, ps.pos().y + sz);
-      Screen::glVertex(p);
+      Screen::glVertex3(p);
       glEnd();
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      Screen::setColor(0, 0, 0, aa * 0.66);
+      Screen::setColor(0.0, 0.0, 0.0, aa * 0.66);
       glBegin(GL_LINE_LOOP);
       p = self.field.calcCircularPos(ps.pos().x - sz, ps.pos().y - sz);
-      Screen::glVertex(p);
+      Screen::glVertex3(p);
       p = self.field.calcCircularPos(ps.pos().x + sz, ps.pos().y - sz);
-      Screen::glVertex(p);
+      Screen::glVertex3(p);
       p = self.field.calcCircularPos(ps.pos().x + sz, ps.pos().y + sz);
-      Screen::glVertex(p);
+      Screen::glVertex3(p);
       p = self.field.calcCircularPos(ps.pos().x - sz, ps.pos().y + sz);
-      Screen::glVertex(p);
+      Screen::glVertex3(p);
       glEnd();
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
    // }
@@ -432,6 +438,7 @@ impl<'a> BonusParticleSpec<'a> {
 }
 
 // was enum Shape
+#[derive(PartialEq, Eq)]
 pub enum ParticleShape {
   TRIANGLE, LINE, QUAD, BONUS,
 }
@@ -439,7 +446,7 @@ pub enum ParticleShape {
 pub struct Particle<'a> {
   //tok : Token<ParticleState, ParticleSpec>,
   _exists : bool, // _exists : bool, //inherited by Actor class
-  state : &'a ParticleState,
+  state : ParticleState,
   spec : &'a ParticleSpec<'a>,
 
   triangleParticleSpec : &'a TriangleParticleSpec<'a>,
@@ -448,7 +455,17 @@ pub struct Particle<'a> {
   bonusParticleSpec : &'a BonusParticleSpec<'a>,
 }
 
+impl<'a> Token<ParticleState, ParticleSpec<'a>> for Particle<'a> {
+}
+
 impl<'a> Actor for Particle<'a> {
+  fn new() -> Particle<'a> {
+    Particle {
+      state : ParticleState::new(),
+      spec : ParticleSpec::new(),  //use generic spec or Option type?
+    }
+  }
+
   fn getExists(&self) -> bool {
     self._exists
   }
@@ -459,7 +476,7 @@ impl<'a> Actor for Particle<'a> {
 
   fn init(&mut self) { //, args : &Vec<Object>) {
     /*
-    self.tok.init(args);
+    self.init(args);
     self.triangleParticleSpec = args[0] as &TriangleParticleSpec;
     self.lineParticleSpec = args[1] as &LineParticleSpec;
     self.quadParticleSpec = args[2] as &QuadParticleSpec;
@@ -468,19 +485,22 @@ impl<'a> Actor for Particle<'a> {
   }
 
   fn move1(&self) {
-    self.tok.move1();
+    self.move1();
   }
 
   fn draw1(&self) {
-    self.tok.draw1();
+    self.draw1();
   }
 }
 
 impl<'a> Particle<'a> {
   //replacement for Particle::init()
-  pub fn new() -> Particle<'a> {
+  pub fn new(state : &'a ParticleState, spec : &'a ParticleSpec<'a>) -> Particle<'a> {
     Particle {
-      tok : Token::<ParticleState, ParticleSpec>::new(), //call new() instead of init()
+      // inlined
+      //tok : Token::<ParticleState, ParticleSpec>::new(), //call new() instead of init()
+      spec : spec,
+      state : state,
 
       //field / player must be given on method call
       triangleParticleSpec  : TriangleParticleSpec::new(),
@@ -491,16 +511,16 @@ impl<'a> Particle<'a> {
     }
   }
 
-  pub fn set(&mut self, type_ : i32,
+  pub fn set(&mut self, type_ : ParticleShape /*i32*/,
           x : f32, y : f32, deg : f32, speed : f32, sz : f32, r : f32, g : f32, b : f32,
           c : i32 /*= 60*/, ebg : bool /*= true*/, num : f32 /*= 0*/, waitCnt : i32 /*= 0*/) {
-    self.tok.spec = match type_ {
+    self.spec = match type_ {
       ParticleShape::TRIANGLE => self.triangleParticleSpec,
       ParticleShape::LINE => self.lineParticleSpec,
       ParticleShape::QUAD => self.quadParticleSpec,
       ParticleShape::BONUS => self.bonusParticleSpec,
     };
-    self.tok.set(x, y, deg, speed);
+    self.set(x, y, deg, speed);
     self.state.size = sz;
     self.state.vel.x = -deg.sin() * speed;
     self.state.vel.y = deg.cos() * speed;
@@ -513,15 +533,15 @@ impl<'a> Particle<'a> {
     self.state.trgNum = num;
     self.state.waitCnt = waitCnt;
     if type_ == ParticleShape::BONUS {
-      (self.tok.spec as &BonusParticleSpec).setSize(&self.state, sz);
+      (self.spec as &BonusParticleSpec).setSize(&self.state, sz);
     }
   }
 
   pub fn setByVelocity(&mut self, x : f32, y : f32, vx : f32, vy : f32,
                             sz : f32, r : f32, g : f32, b : f32, a : f32,
                             c : i32 /*= 60*/, ebg : bool /* = true*/) {
-    self.tok.spec = &self.triangleParticleSpec;
-    self.tol.set(x, y, 0.0, 0.0);
+    self.spec = &self.triangleParticleSpec;
+    self.set(x, y, 0.0, 0.0);
     self.state.vel.x = vx;
     self.state.vel.y = vy;
     self.state.size = sz;

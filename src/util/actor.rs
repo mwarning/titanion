@@ -13,6 +13,7 @@ pub struct Actor {
 }*/
 
 pub trait Actor {
+  fn new() -> Self;
   fn getExists(&self) -> bool;
   fn setExists(&mut self, v : bool)-> bool;
   fn init(&mut self); //, args : [Object]);
@@ -24,15 +25,15 @@ pub trait Actor {
  * Object pool for actors.
  */
 
-pub struct ActorPool<T : Actor> {
+pub struct ActorPoolData<T : Actor> {
   pub actors : Vec<T>,
   actorIdx : usize, //was i32
   hasNoActor : bool,
 }
 
-impl<T : Actor> ActorPool<T> {
+impl<T> ActorPoolData<T> where T : Actor {
   // init() replacement
-  pub fn new(n : i32) -> ActorPool<T> {
+  pub fn new(n : i32) -> ActorPoolData<T> {
    let mut actors = Vec::with_capacity(10);
    for i in 0..n {
     let mut actor = T::new();
@@ -40,8 +41,13 @@ impl<T : Actor> ActorPool<T> {
     //actor.init();
     actors.push(actor);
    }
-   ActorPool{actorIdx : 0, hasNoActor : false, actors : actors}
+   ActorPoolData{actorIdx : 0, hasNoActor : false, actors : actors}
   }
+}
+
+pub trait ActorPool<T : Actor> {
+  fn getActorPoolData(&mut self) -> &mut ActorPoolData<T>;
+
   //public this() {}
 
   /*public void init(int n, Object[] args = null) {
@@ -68,33 +74,36 @@ impl<T : Actor> ActorPool<T> {
   }*/
 
   fn getInstance(&mut self) -> Option<&mut T> {
-    if self.hasNoActor {
+    let pool = self.getActorPoolData();
+    if pool.hasNoActor {
       return None;
     }
 
-    for i in 0..self.actors.len() {
-      self.actorIdx -= 1;
-      if self.actorIdx < 0 {
-        self.actorIdx = self.actors.len() - 1;
+    for i in 0..pool.actors.len() {
+      pool.actorIdx -= 1;
+      if pool.actorIdx < 0 {
+        pool.actorIdx = pool.actors.len() - 1;
       }
-      if !self.actors[self.actorIdx].getExists() {
-        return Some(&mut self.actors[self.actorIdx]);
+      if !pool.actors[pool.actorIdx].getExists() {
+        return Some(&mut pool.actors[pool.actorIdx]);
       }
     }
-    self.hasNoActor = true;
+    pool.hasNoActor = true;
     None
   }
 
   fn getInstanceForced(&mut self) -> &mut T {
-    self.actorIdx -= 1;
-    if self.actorIdx < 0 {
-      self.actorIdx = self.actors.len() - 1;
+    let pool = self.getActorPoolData();
+    pool.actorIdx -= 1;
+    if pool.actorIdx < 0 {
+      pool.actorIdx = pool.actors.len() - 1;
     }
-    &mut self.actors[self.actorIdx]
+    &mut pool.actors[pool.actorIdx]
   }
 
   fn getMultipleInstances(&self, n : i32) -> Vec<&mut T> {
-    if self.hasNoActor {
+    let pool = self.getActorPoolData();
+    if pool.hasNoActor {
       return Vec::new();
     }
 
@@ -118,8 +127,9 @@ impl<T : Actor> ActorPool<T> {
 
   //was move()
   fn move1(&mut self) {
-    self.hasNoActor = false;
-    for a in &self.actors {
+    let pool = self.getActorPoolData();
+    pool.hasNoActor = false;
+    for a in &pool.actors {
       if a.getExists() {
         a.move1();
       }
@@ -128,7 +138,8 @@ impl<T : Actor> ActorPool<T> {
 
   //was draw()
   fn draw1(&mut self) {
-    for a in self.actors {
+    let pool = self.getActorPoolData();
+    for a in pool.actors {
       if a.getExists() {
         a.draw1();
       }
@@ -137,9 +148,10 @@ impl<T : Actor> ActorPool<T> {
 
   // was clear()
   fn clear1(&mut self) {
-    for a in self.actors {
+    let pool = self.getActorPoolData();
+    for a in pool.actors {
       a.setExists(false);
     }
-    self.actorIdx = 0;
+    pool.actorIdx = 0;
   }
 }

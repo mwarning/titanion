@@ -93,7 +93,6 @@ impl SdlScreen for Screen {
 impl Screen {
   pub fn new(/*field : mut* Field*/) -> Screen {
     Screen{
-      brightness : 1.0,
      _farPlane : 1000.0,
      _nearPlane : 0.1,
      _width : 640,
@@ -123,7 +122,7 @@ impl Screen {
 
   // Reset a viewport when the screen is resized.
   fn screenResized1(&mut self) {
-    glViewport(0, 0, self._width, self._height);
+    glViewport(0, 0, self._width as f32, self._height as f32);
     glMatrixMode(GL_PROJECTION);
     self.setPerspective();
     glMatrixMode(GL_MODELVIEW);
@@ -132,11 +131,11 @@ impl Screen {
   fn setPerspective(mut self) {
     glLoadIdentity();
     //gluPerspective(45.0f, cast(GLfloat) width / cast(GLfloat) height, nearPlane, farPlane);
-    glFrustum(-self._nearPlane,
-              self._nearPlane,
-              -self._nearPlane * (self._height as f32) / (self._width as f32),
-              self._nearPlane * (self._height as f32) / (self._width as f32),
-              0.1, self._farPlane);
+    glFrustum(-self._nearPlane as f64,
+              self._nearPlane as f64,
+              -self._nearPlane * (self._height as f32) / (self._width as f32) as f64,
+              self._nearPlane * (self._height as f32) / (self._width as f32) as f64,
+              0.1, self._farPlane as f64);
   }
 
   fn resized(&mut self, w : i32, h : i32) {
@@ -222,14 +221,14 @@ impl Screen {
   // inlined from util/sdl/screen3d.d
   fn screenResized(&mut self) {
     self.screenResized1();
-    let lw : f32 = ((self.width as f32) / 640.0 + (self.height as f32) / 480.0) / 2.0;
+    let lw : f32 = ((self.width as f32) / 640.0 + (self._height as f32) / 480.0) / 2.0;
     if lw < 1.0 {
       lw = 1.0;
     }  else if lw > 4.0 {
       lw = 4.0;
     }
     glLineWidth(lw);
-    glViewport(0, 0, self.width, self.height);
+    glViewport(0, 0, self._width, self._height);
     if self.field {
       self.field.setLookAt();
     }

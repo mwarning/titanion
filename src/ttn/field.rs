@@ -148,11 +148,11 @@ impl<'a> Field<'a> {
     self.circlePos
   }
 
-  pub fn calcCircularDeg(x : f32) -> f32 {
+  pub fn calcCircularDeg(&self, x : f32) -> f32 {
     x * X_EXPANSION_RATIO / CIRCLE_RADIUS
   }
 
-  pub fn calcCircularDist1(d : f32) -> f32 {
+  pub fn calcCircularDist1(&self, d : f32) -> f32 {
     d * CIRCLE_RADIUS / X_EXPANSION_RATIO
   }
 

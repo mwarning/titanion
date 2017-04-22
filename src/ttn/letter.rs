@@ -56,7 +56,7 @@ impl<'a> Letter<'a> {
   }
 
   fn getWidth(n : i32, s : f32) -> f32 {
-    n * s * LETTER_WIDTH
+    (n as f32) * s * LETTER_WIDTH
   }
 
   fn getWidthNum(num : i32, s : f32) -> f32 {
@@ -113,12 +113,12 @@ impl<'a> Letter<'a> {
   }
 
 
-  pub fn drawString(&mut self, str : &String, lx : f32, y : f32, s : f32) {
-    Letter::drawString11(str, lx, y, s, Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 1.0);
+  pub fn drawString(string : &String, lx : f32, y : f32, s : f32) {
+    Letter::drawString11(string, lx, y, s, Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 1.0);
   }
 
-  pub fn drawString11(&mut self, string : &String, lx : f32, y : f32, s : f32,
-                                d : i32 /*= Direction::TO_RIGHT*/,
+  pub fn drawString11(string : &String, lx : f32, y : f32, s : f32,
+                                d : Direction /*= Direction::TO_RIGHT*/,
                                 rev : bool /*= false*/, od : f32 /*= 0*/,
                                 r : f32 /*= 1*/, g : f32 /*= 1*/,  b : f32 /*= 1*/) {
     lx += LETTER_WIDTH * s / 2.0;

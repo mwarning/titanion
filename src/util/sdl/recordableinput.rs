@@ -67,8 +67,7 @@ pub struct InputRecord<T> {
 */
 
 impl<T> InputRecord<T> {
-
-  fn new() -> InputRecord<T> {
+  pub fn new() -> InputRecord<T> {
     InputRecord::<T> {
       record : Vec::<Record<T>>::new(),
       idx : 0,
@@ -77,11 +76,11 @@ impl<T> InputRecord<T> {
     }
   }
 
-  fn clear(&mut self) {
+  pub fn clear(&mut self) {
     self.record.clear();
   }
 
-  fn add(&mut self, d : T) {
+  pub fn add(&mut self, d : T) {
     //if Some(e) = self.record.last() {
     if (self.record.len() > 0) && (self.record[self.record.len() - 1].data == d) {
       self.record[self.record.len() - 1].series += 1;
@@ -92,16 +91,16 @@ impl<T> InputRecord<T> {
     }
   }
 
-  fn reset(&mut self) {
+  pub fn reset(&mut self) {
     self.idx = 0;
     self.series = 0;
   }
 
-  fn hasNext(&self) -> bool {
+  pub fn hasNext(&self) -> bool {
     (self.idx < self.record)
   }
 
-  fn next(&mut self) -> T {
+  pub fn next(&mut self) -> T {
     if self.idx >= self.record.len() {
       panic!("No more items");
     }
@@ -116,7 +115,7 @@ impl<T> InputRecord<T> {
     self.replayData;
   }
 
-  fn save(&mut self, fd : &File) {
+  pub fn save(&mut self, fd : &File) {
     fd.write(self.record.len());
     for r in self.record {
       fd.write(r.series);
@@ -124,7 +123,7 @@ impl<T> InputRecord<T> {
     }
   }
 
-  fn load(&mut self, fd : &File) {
+  pub fn load(&mut self, fd : &File) {
     self.clear();
     let l : i32;
     let s : i32;

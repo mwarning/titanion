@@ -27,7 +27,13 @@ use util::actor::*;
  */
 
 pub struct PillarPool<'a> {
-  ap : ActorPool<Pillar<'a>>,
+  ap : ActorPoolData<Pillar<'a>>,
+}
+
+impl<'a> ActorPool<Pillar<'a>> for PillarPool<'a> {
+  fn getActorPoolData(&mut self) -> &mut ActorPoolData<Pillar<'a>> {
+    &self.ap
+  }
 }
 
 impl<'a> PillarPool<'a> {
@@ -64,11 +70,18 @@ impl<'a> PillarPool<'a> {
 pub struct Pillar<'a> {
   //tok : Token!(PillarState, PillarSpec),
   _exists : bool, //from Actor
-  pub state : &'a mut PillarState<'a>,
+  pub state : PillarState<'a>,
   pub spec : &'a mut PillarSpec<'a>,
 }
 
 impl<'a> Actor for Pillar<'a> {
+  fn new() -> Pillar<'a> {
+    Pillar {
+      state : PillarState::new(),
+      spec : PillarSpec::new(),  //use generic spec or Option type?
+    }
+  }
+
   fn getExists(&self) -> bool {
     self._exists
   }

@@ -8,6 +8,12 @@ pub struct SDL_Event {
   pub resize : SDL_ResizeEvent,
 }
 
+impl SDL_Event {
+  fn new() -> SDL_Event {
+    SDL_Event {_type : 0, resize : SDL_ResizeEvent::new()}
+  }
+}
+
 
 pub struct GLenum;
 pub fn glGetError() -> GLenum { GLenum{} }
@@ -26,6 +32,14 @@ pub const SDL_VIDEORESIZE : usize = 0;
 pub struct SDL_ResizeEvent {
   pub w : u32,
   pub h : u32,
+}
+
+impl SDL_ResizeEvent {
+ fn new() -> SDL_ResizeEvent {
+  SDL_ResizeEvent {
+    w : 0, h : 0,
+  }
+ } 
 }
 
 pub struct Mix_Music;
@@ -161,8 +175,6 @@ pub const GL_CULL_FACE : usize = 0;
 
 pub fn glLineWidth(lw : f32) {}
 pub fn glViewport(w : i32, h : i32, x : f32, y : f32) {}
-
-//pub const TurretSpec_SPEED_RATIO : f32 = 0.0;
 
 pub const GL_TRIANGLES : usize = 0;
 pub const GL_TRIANGLE_FAN : usize = 0;

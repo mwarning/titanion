@@ -9,7 +9,7 @@ use ttn::preference::*;
 use util::sdl::input::*;
 
 
-const INTERVAL_BASE : i32 = 16;
+const INTERVAL_BASE : f32 = 16.0;
 const MAX_SKIP_FRAME : i32 = 5;
 
 /**
@@ -37,7 +37,7 @@ impl<'a> MainLoop<'a> {
 			//input : input, //moved into frame
 			frame : frame,
 			//preference : preference, //moved into frame
-			slowdownRatio : false,
+			slowdownRatio : 0.0,
 			interval : INTERVAL_BASE,
 			_slowdownStartRatio : 1.0,
 			_slowdownMaxRatio : 1.5,

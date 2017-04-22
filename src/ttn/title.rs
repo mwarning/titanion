@@ -129,16 +129,16 @@ impl<'a> Title<'a> {
         x += c * 4.33;
         sz -= c * 0.045;
       }
-      Letter::drawString("PUSH SHOT BUTTON TO START", x, 440, sz);
+      Letter::drawString("PUSH SHOT BUTTON TO START", x, 440.0, sz);
     }
     if self.cnt >= 240 {
       self.drawRanking();
     }
     if (self.cnt % 60) < 30 {
-      self.drawTriangle(575, 398, 180);
-      self.drawTriangle(575, 417, 0);
+      Title::drawTriangle(575.0, 398.0, 180.0);
+      Title::drawTriangle(575.0, 417.0, 0.0);
     }
-    Letter::drawString(GameState::MODE_NAME[self.cursorIdx], 540, 400, 5);
+    Letter::drawString(GameState::MODE_NAME[self.cursorIdx], 540.0, 400.0, 5.0);
   }
 
   fn drawBoard(x : f32, y : f32, w : f32, h : f32) {
@@ -176,8 +176,8 @@ impl<'a> Title<'a> {
 
   fn drawRanking(&self) {
     let rn : i32 = (self.cnt - 240) / 30;
-    if rn > Preference::RANKING_NUM {
-      rn = Preference::RANKING_NUM;
+    if rn > RANKING_NUM {
+      rn = RANKING_NUM;
     }
     let y = 140.0;
     for i in 0..rn {
@@ -190,9 +190,9 @@ impl<'a> Title<'a> {
         };
 
         if i < 9 {
-          Letter::drawString(rstr, 180, y, 7);
+          Letter::drawString(rstr, 180.0, y, 7.0);
         } else {
-          Letter::drawString(rstr, 166, y, 7);
+          Letter::drawString(rstr, 166.0, y, 7.0);
         }
       }
       let mut sx = 450.0;
@@ -203,11 +203,11 @@ impl<'a> Title<'a> {
         if c > 75.0 {
           c = 75.0;
         }
-        sx += (c * 2.35) as i32;
+        sx += ((c * 2.35) as i32) as f32;
         sz -= c * 0.03;
       }
-      Letter::drawNum(self.preference.highScore[self.cursorIdx][i], sx, sy, sz);
-      y += 24;
+      Letter::drawNum(self.preference.highScore[self.cursorIdx][i], sx, sy, sz, 0, -1.0, -1);
+      y += 24.0;
     }
   }
 }

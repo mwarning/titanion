@@ -312,7 +312,7 @@ impl Vector {
   }
 
   ///
-  pub fn dist3(&self, px : f32, py : f32) -> f32 {
+  pub fn dist3(&self, px : f32 /*= 0*/, py : f32 /*= 0*/) -> f32 {
     let ax = (self.x - px).abs();
     let ay = (self.y - py).abs();
     if ax > ay {
