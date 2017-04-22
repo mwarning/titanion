@@ -38,39 +38,40 @@ pub struct Token<ST, SP> {
 */
 
 pub trait Token<ST : ?Sized, SP : ?Sized> : Actor {
-  fn getExists(&self) -> bool {
+  fn getExists(&self) -> bool; /* {
     self._exists
-  }
+  }*/
 
-  fn setExists(&mut self, v : bool)-> bool {
+  fn setExists(&mut self, v : bool) -> bool; /* {
     self._exists = v;
     v
-  }
+  }*/
 
-  fn init(&mut self /*Object[] args*/) {
+  fn init(&mut self /*Object[] args*/); /*{
     self.state = ST::new();
-  }
+  }*/
 
-  fn move1(&self) {
+  fn move1(&self); /* {
     if !self.spec.move2(self.state) {
       self.remove();
     }
-  }
+  }*/
 
-  fn draw1(&self) {
+  fn draw1(&self); /* {
     self.spec.draw(self.state);
-  }
+  }*/
 
-  fn set5Vec(&self, spec : &SP, pos : Vector, deg : f32, speed : f32) {
-    self.set6(spec, pos.x, pos.y, deg, speed);
-  }
+  fn set5Vec(&self, spec : &SP, pos : Vector, deg : f32, speed : f32); /* {
+    self.spec = spec;
+    self.set5(pos.x, pos.y, deg, speed);
+  }*/
 
-  fn set6(&self, spec : &SP, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set6(&self, spec : &SP, x : f32, y : f32, deg : f32, speed : f32); /* {
     self.spec = spec;
     self.set5(x, y, deg, speed);
-  }
+  }*/
 
-  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32); /* {
     self.state.clear();
     self.state.pos.x = x;
     self.state.pos.y = y;
@@ -78,16 +79,16 @@ pub trait Token<ST : ?Sized, SP : ?Sized> : Actor {
     self.state.speed = speed;
     self.spec.set(self.state);
     self.actor._exists = true;
-  }
+  }*/
 
-  fn remove(&self) {
+  fn remove(&self); /* {
     self._exists = false;
     self.spec.removed(self.state);
-  }
+  }*/
 
-  fn pos(&self) -> Vector {
+  fn pos(&self) -> Vector; /* {
     self.state.pos
-  }
+  }*/
 }
 
 /**
@@ -150,24 +151,24 @@ pub struct TokenSpec<'a, T> {
 }
 */
 
-pub trait TokenSpec<T : ?Sized> {
+pub trait TokenSpec<T : Sized> {
 //impl<'a, T> TokenSpec<'a, T> {
 //  fn new(field : &mut Field<'a>, shape : &mut Shape<'a>) -> Self<'a, T> {
 //    TokenSpec{field : field, shape : shape}
 //  }
 
-  fn set(&self, state : T) {}
-  fn removed(&self, state : T) {}
+  fn set(&self, state : &T); // {}
+  fn removed(&self, state : &T); // {}
 
-  fn move2(&self, state : T) -> bool {
+  fn move2(&self, state : &T) -> bool; /* {
     true
-  }
+  }*/
 
-  fn draw(&self, state : T) {
+  fn draw(&self, state : &T); /* {
     //with (state) {
-      let p : Vector3 = self.field.calcCircularPos(state.pos);
-      let cd : f32 = self.field.calcCircularDeg(state.pos.x);
+      let p = self.field.calcCircularPos(state.pos);
+      let cd = self.field.calcCircularDeg(state.pos.x);
       self.shape.draw(state.p, state.cd, state.deg);
     //}
-  }
+  }*/
 }

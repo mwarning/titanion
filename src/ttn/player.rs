@@ -55,6 +55,57 @@ impl<'a> Actor for Player<'a> {
 }
 
 impl<'a> Token<PlayerState<'a>, PlayerSpec<'a>> for Player<'a> {
+  fn getExists(&self) -> bool {
+    self._exists
+  }
+
+  fn setExists(&mut self, v : bool) -> bool {
+    self._exists = v;
+    v
+  }
+
+  fn init(&mut self /*Object[] args*/) {
+    self.state = PlayerState::new();
+  }
+
+  fn move1(&self) {
+    if !self.spec.move2(self.state) {
+      self.remove();
+    }
+  }
+
+  fn draw1(&self) {
+    self.spec.draw(self.state);
+  }
+
+  fn set5Vec(&self, spec : &PlayerSpec, pos : Vector, deg : f32, speed : f32) {
+    self.spec = spec;
+    self.set5(pos.x, pos.y, deg, speed);
+  }
+
+  fn set6(&self, spec : &PlayerSpec, x : f32, y : f32, deg : f32, speed : f32) {
+    self.spec = spec;
+    self.set5(x, y, deg, speed);
+  }
+
+  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
+    self.state.clear();
+    self.state.pos.x = x;
+    self.state.pos.y = y;
+    self.state.deg = deg;
+    self.state.speed = speed;
+    self.spec.set(self.state);
+    self.actor._exists = true;
+  }
+
+  fn remove(&self) {
+    self._exists = false;
+    self.spec.removed(self.state);
+  }
+
+  fn pos(&self) -> Vector {
+    self.state.pos
+  }
 }
 
 impl<'a> Player<'a> {
@@ -400,6 +451,20 @@ pub struct PlayerSpec<'a> {
 }
 
 impl<'a> TokenSpec<PlayerState<'a>> for PlayerSpec<'a> {
+  fn set(&self, state : &PlayerState) {}
+  fn removed(&self, state : &PlayerState) {}
+
+  fn move2(&self, state : &PlayerState) -> bool {
+    true
+  }
+
+  fn draw(&self, state : &PlayerState) {
+    //with (state) {
+      let p = self.field.calcCircularPos(state.pos);
+      let cd = self.field.calcCircularDeg(state.pos.x);
+      self.shape.draw(state.p, state.cd, state.deg);
+    //}
+  }
 }
 
 
@@ -946,6 +1011,57 @@ impl<'a> Actor for Shot<'a> {
 }
 
 impl<'a> Token<ShotState<'a>, ShotSpec<'a>> for Shot<'a> {
+  fn getExists(&self) -> bool {
+    self._exists
+  }
+
+  fn setExists(&mut self, v : bool) -> bool {
+    self._exists = v;
+    v
+  }
+
+  fn init(&mut self /*Object[] args*/) {
+    self.state = ShotState::new();
+  }
+
+  fn move1(&self) {
+    if !self.spec.move2(self.state) {
+      self.remove();
+    }
+  }
+
+  fn draw1(&self) {
+    self.spec.draw(self.state);
+  }
+
+  fn set5Vec(&self, spec : &ShotSpec, pos : Vector, deg : f32, speed : f32) {
+    self.spec = spec;
+    self.set5(pos.x, pos.y, deg, speed);
+  }
+
+  fn set6(&self, spec : &ShotSpec, x : f32, y : f32, deg : f32, speed : f32) {
+    self.spec = spec;
+    self.set5(x, y, deg, speed);
+  }
+
+  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
+    self.state.clear();
+    self.state.pos.x = x;
+    self.state.pos.y = y;
+    self.state.deg = deg;
+    self.state.speed = speed;
+    self.spec.set(self.state);
+    self.actor._exists = true;
+  }
+
+  fn remove(&self) {
+    self._exists = false;
+    self.spec.removed(self.state);
+  }
+
+  fn pos(&self) -> Vector {
+    self.state.pos
+  }
 }
 
 impl<'a> Shot<'a> {
@@ -987,6 +1103,20 @@ struct ShotSpec<'a> {
 }
 
 impl<'a> TokenSpec<ShotState<'a>> for ShotSpec<'a> {
+  fn set(&self, state : &ShotState) {}
+  fn removed(&self, state : &ShotState) {}
+
+  fn move2(&self, state : &ShotState) -> bool {
+    true
+  }
+
+  fn draw(&self, state : &ShotState) {
+    //with (state) {
+      let p = self.field.calcCircularPos(state.pos);
+      let cd = self.field.calcCircularDeg(state.pos.x);
+      self.shape.draw(state.p, state.cd, state.deg);
+    //}
+  }
 }
 
 

@@ -145,7 +145,21 @@ pub struct ParticleSpec<'a> {
   rand : Rand,
 }
 
-impl<'a> TokenSpec<ParticleSpec<'a>> for ParticleSpec<'a> {
+impl<'a> TokenSpec<ParticleState> for ParticleSpec<'a> {
+  fn set(&self, state : &ParticleState) {}
+  fn removed(&self, state : &ParticleState) {}
+
+  fn move2(&self, state : &ParticleState) -> bool {
+    true
+  }
+
+  fn draw(&self, state : &ParticleState) {
+    //with (state) {
+      let p = self.field.calcCircularPos(state.pos);
+      let cd = self.field.calcCircularDeg(state.pos.x);
+      self.shape.draw(state.p, state.cd, state.deg);
+    //}
+  }
 }
 
 impl<'a> ParticleSpec<'a> {
@@ -455,7 +469,59 @@ pub struct Particle<'a> {
   bonusParticleSpec : &'a BonusParticleSpec<'a>,
 }
 
+// methods inlined from Token.
 impl<'a> Token<ParticleState, ParticleSpec<'a>> for Particle<'a> {
+  fn getExists(&self) -> bool {
+    self._exists
+  }
+
+  fn setExists(&mut self, v : bool) -> bool {
+    self._exists = v;
+    v
+  }
+
+  fn init(&mut self /*Object[] args*/) {
+    self.state = ParticleState::new();
+  }
+
+  fn move1(&self) {
+    if !self.spec.move2(self.state) {
+      self.remove();
+    }
+  }
+
+  fn draw1(&self) {
+    self.spec.draw(self.state);
+  }
+
+  fn set5Vec(&self, spec : &ParticleSpec, pos : Vector, deg : f32, speed : f32) {
+    self.spec = spec;
+    self.set5(pos.x, pos.y, deg, speed);
+  }
+
+  fn set6(&self, spec : &ParticleSpec, x : f32, y : f32, deg : f32, speed : f32) {
+    self.spec = spec;
+    self.set5(x, y, deg, speed);
+  }
+
+  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
+    self.state.clear();
+    self.state.pos.x = x;
+    self.state.pos.y = y;
+    self.state.deg = deg;
+    self.state.speed = speed;
+    self.spec.set(self.state);
+    self.actor._exists = true;
+  }
+
+  fn remove(&self) {
+    self._exists = false;
+    self.spec.removed(self.state);
+  }
+
+  fn pos(&self) -> Vector {
+    self.state.pos
+  }
 }
 
 impl<'a> Actor for Particle<'a> {

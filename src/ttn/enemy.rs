@@ -263,6 +263,57 @@ impl<'a> Actor for Enemy<'a> {
 }
 
 impl<'a> Token<EnemyState, EnemySpec> for Enemy<'a> {
+  fn getExists(&self) -> bool {
+    self._exists
+  }
+
+  fn setExists(&mut self, v : bool) -> bool {
+    self._exists = v;
+    v
+  }
+
+  fn init(&mut self /*Object[] args*/) {
+    self.state = EnemyState::new();
+  }
+
+  fn move1(&self) {
+    if !self.spec.move2(self.state) {
+      self.remove();
+    }
+  }
+
+  fn draw1(&self) {
+    self.spec.draw(self.state);
+  }
+
+  fn set5Vec(&self, spec : &EnemySpec, pos : Vector, deg : f32, speed : f32) {
+    self.spec = spec;
+    self.set5(pos.x, pos.y, deg, speed);
+  }
+
+  fn set6(&self, spec : &EnemySpec, x : f32, y : f32, deg : f32, speed : f32) {
+    self.spec = spec;
+    self.set5(x, y, deg, speed);
+  }
+
+  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
+    self.state.clear();
+    self.state.pos.x = x;
+    self.state.pos.y = y;
+    self.state.deg = deg;
+    self.state.speed = speed;
+    self.spec.set(self.state);
+    self.actor._exists = true;
+  }
+
+  fn remove(&self) {
+    self._exists = false;
+    self.spec.removed(self.state);
+  }
+
+  fn pos(&self) -> Vector {
+    self.state.pos
+  }
 }
 
 impl<'a> Enemy<'a> {
@@ -593,6 +644,20 @@ struct EnemySpecData<'a> {
 }
 
 impl<'a> TokenSpec<EnemyState> for EnemySpecData<'a> {
+  fn set(&self, state : &EnemyState) {}
+  fn removed(&self, state : &EnemyState) {}
+
+  fn move2(&self, state : &EnemyState) -> bool {
+    true
+  }
+
+  fn draw(&self, state : &EnemyState) {
+    //with (state) {
+      let p = self.field.calcCircularPos(state.pos);
+      let cd = self.field.calcCircularDeg(state.pos.x);
+      self.shape.draw(state.p, state.cd, state.deg);
+    //}
+  }
 }
 
 /*
@@ -1869,6 +1934,20 @@ pub struct TurretSpec<'a> {
 */
 
 impl<'a> TokenSpec<TurretState> for TurretSpec<'a> {
+  fn set(&self, state : &TurretState) {}
+  fn removed(&self, state : &TurretState) {}
+
+  fn move2(&self, state : &TurretState) -> bool {
+    true
+  }
+
+  fn draw(&self, state : &TurretState) {
+    //with (state) {
+      let p = self.field.calcCircularPos(state.pos);
+      let cd = self.field.calcCircularDeg(state.pos.x);
+      self.shape.draw(state.p, state.cd, state.deg);
+    //}
+  }
 }
 
 impl<'a> TurretSpec<'a> {

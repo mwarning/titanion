@@ -1,26 +1,15 @@
 /*
- * $Id: pillar.d,v 1.1.1.1 2006/11/19 07:54:55 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
- /*
-module src.ttn.pillar;
 
-
-private import src.util.actor;
-private import src.ttn.field;
-private import src.ttn.token;
-private import src.ttn.shape;
-private import src.ttn.enemy;
-*/
-
+use util::vector::*;
+use util::actor::*;
 use ttn::token::*;
 use ttn::field::*;
 use ttn::shape::*;
 use ttn::dummy::*;
 use ttn::bullet::*;
 use ttn::enemy::*;
-use util::actor::*;
 
 /**
  * Pillars at the center and on the background.
@@ -106,6 +95,57 @@ impl<'a> Actor for Pillar<'a> {
 }
 
 impl<'a> Token<PillarState<'a>, PillarSpec<'a>> for Pillar<'a> {
+    fn getExists(&self) -> bool {
+    self._exists
+  }
+
+  fn setExists(&mut self, v : bool) -> bool {
+    self._exists = v;
+    v
+  }
+
+  fn init(&mut self /*Object[] args*/) {
+    self.state = PillarState::new();
+  }
+
+  fn move1(&self) {
+    if !self.spec.move2(self.state) {
+      self.remove();
+    }
+  }
+
+  fn draw1(&self) {
+    self.spec.draw(self.state);
+  }
+
+  fn set5Vec(&self, spec : &PillarSpec, pos : Vector, deg : f32, speed : f32) {
+    self.spec = spec;
+    self.set5(pos.x, pos.y, deg, speed);
+  }
+
+  fn set6(&self, spec : &PillarSpec, x : f32, y : f32, deg : f32, speed : f32) {
+    self.spec = spec;
+    self.set5(x, y, deg, speed);
+  }
+
+  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
+    self.state.clear();
+    self.state.pos.x = x;
+    self.state.pos.y = y;
+    self.state.deg = deg;
+    self.state.speed = speed;
+    self.spec.set(self.state);
+    self.actor._exists = true;
+  }
+
+  fn remove(&self) {
+    self._exists = false;
+    self.spec.removed(self.state);
+  }
+
+  fn pos(&self) -> Vector {
+    self.state.pos
+  }
 }
 
 impl<'a> Pillar<'a> {
@@ -179,6 +219,20 @@ pub struct PillarSpec<'a> {
 }
 
 impl<'a> TokenSpec<PillarState<'a>> for PillarSpec<'a> {
+   fn set(&self, state : &PillarState) {}
+  fn removed(&self, state : &PillarState) {}
+
+  fn move2(&self, state : &PillarState) -> bool {
+    true
+  }
+
+  fn draw(&self, state : &PillarState) {
+    //with (state) {
+      let p = self.field.calcCircularPos(state.pos);
+      let cd = self.field.calcCircularDeg(state.pos.x);
+      self.shape.draw(state.p, state.cd, state.deg);
+    //}
+  }
 }
 
 impl<'a> PillarSpec<'a> {
