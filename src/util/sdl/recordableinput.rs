@@ -7,8 +7,8 @@
  * T represents a data structure of a specific device input.
  */
 
+use util::sdl::pad::*;
 use ttn::dummy::*;
-
 
 /*
 //inlined into pad.rs
@@ -53,11 +53,11 @@ struct Record<T> {
   data : T,
 }
 
-pub struct InputRecord<T> {
-  record : Vec<Record<T>>,
-  idx : i32,
+pub struct InputRecord {
+  record : Vec<Record<PadState>>,
+  idx : usize, //i32,
   series : i32,
-  replayData : T,
+  replayData : PadState,
 }
 
 /*
@@ -66,13 +66,14 @@ pub struct InputRecord<T> {
   }
 */
 
-impl<T> InputRecord<T> {
-  pub fn new() -> InputRecord<T> {
-    InputRecord::<T> {
-      record : Vec::<Record<T>>::new(),
+// was generic, but that makes not much sense
+impl InputRecord { //<T> where T : PartialEq<T> + Default {
+  pub fn new() -> InputRecord {
+    InputRecord {
+      record : Vec::<Record<PadState>>::new(),
       idx : 0,
       series : 0,
-      replayData : T::newInstance(),
+      replayData : PadState::new(),
     }
   }
 
@@ -80,13 +81,13 @@ impl<T> InputRecord<T> {
     self.record.clear();
   }
 
-  pub fn add(&mut self, d : T) {
+  pub fn add(&mut self, d : PadState) {
     //if Some(e) = self.record.last() {
     if (self.record.len() > 0) && (self.record[self.record.len() - 1].data == d) {
       self.record[self.record.len() - 1].series += 1;
     } else {
       self.record.push(
-         Record{series : 1, data : T::new(d)}
+        Record{series : 1, data : d} //T::default(d)}
       );
     }
   }
@@ -97,10 +98,10 @@ impl<T> InputRecord<T> {
   }
 
   pub fn hasNext(&self) -> bool {
-    (self.idx < self.record)
+    (self.idx < self.record.len())
   }
 
-  pub fn next(&mut self) -> T {
+  pub fn next(&mut self) -> PadState {
     if self.idx >= self.record.len() {
       panic!("No more items");
     }
@@ -112,13 +113,13 @@ impl<T> InputRecord<T> {
     if self.series <= 0 {
       self.idx += 1;
     }
-    self.replayData;
+    self.replayData
   }
 
   pub fn save(&mut self, fd : &File) {
-    fd.write(self.record.len());
+    fd.write2(self.record.len());
     for r in self.record {
-      fd.write(r.series);
+      fd.write1(r.series);
       r.data.write(fd);
     }
   }
@@ -127,13 +128,12 @@ impl<T> InputRecord<T> {
     self.clear();
     let l : i32;
     let s : i32;
-    let d : T;
-    fd.read(l);
-    for i in 0..l {
-      fd.read(s);
-      d = T::newInstance();
-      d.read(fd);
-      self.record.push_back(Record{series : s, data : d});
+    let d : PadState = PadState::new();
+    fd.read2(&l);
+    for _ in 0..l {
+      fd.read2(&s);
+      fd.read1(&d);
+      self.record.push(Record{series : s, data : d});
     }
   }
 }

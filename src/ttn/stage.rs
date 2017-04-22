@@ -512,7 +512,7 @@ impl<'a> Stage<'a> {
     } else {
       0.0
     };
-    Letter::drawString("SHOTS FIRED", 152, 250, 6, Letter::Direction::TO_RIGHT, false, 0, 1, 1, 0.33);
+    Letter::drawString11("SHOTS FIRED", 152, 250, 6, Letter::Direction::TO_RIGHT, false, 0, 1, 1, 0.33);
     Letter::drawNum(self.shotFiredNumTotal, 480, 250, 6);
     Letter::drawString("NUMBER OF HITS", 152, 280, 6, Letter::Direction::TO_RIGHT, false, 0, 1, 1, 0.33);
     Letter::drawNum(self.shotHitNumTotal, 480, 280, 6);

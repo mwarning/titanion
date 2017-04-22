@@ -289,14 +289,15 @@ impl<'a> Actor for Bullet<'a> {
 }
 
 impl<'a> Token<BulletState, BulletSpec<'a>> for Bullet<'a> {
-    fn getExists(&self) -> bool {
+  /*
+  fn getExists(&self) -> bool {
     self._exists
   }
 
   fn setExists(&mut self, v : bool) -> bool {
     self._exists = v;
     v
-  }
+  }*/
 
   fn init(&mut self /*Object[] args*/) {
     self.state = BulletState::new();

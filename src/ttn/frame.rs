@@ -85,7 +85,7 @@ impl<'a> Frame<'a> {
     }
   }
 
-  fn init(&self) {
+  pub fn init(&self) {
     self.sound.borrow_mut().load();
     //let preference = abstractPreference as &Preference;
     //self.preference = preference;
@@ -155,7 +155,7 @@ impl<'a> Frame<'a> {
   }
 */
 
-  fn quit(&self) {
+  pub fn quit(&self) {
     self.title.borrow_mut().close();
     self.playerSpec.borrow_mut().close();
     self.gameState.borrow_mut().close();
@@ -163,11 +163,11 @@ impl<'a> Frame<'a> {
     Letter::close();
   }
 
-  fn start(&self) {
+  pub fn start(&self) {
     self.startTitle();
   }
 
-  fn startInGame(&self, mode : i32) {
+  pub fn startInGame(&self, mode : i32) {
     self.gameState.borrow_mut().startInGame(mode as GameState::Mode);
     self.player.borrow_mut().replayMode = false;
     let rp : RecordablePad = self.pad as &RecordablePad;
@@ -225,7 +225,7 @@ impl<'a> Frame<'a> {
     self.mainLoop.breakLoop();
   }
 
-  fn move1(&self) {
+  pub fn move1(&self) {
     let gameState = self.gameState.borrow_mut();
     gameState.move1();
     self.field.borrow_mut().move1();
@@ -253,7 +253,7 @@ impl<'a> Frame<'a> {
     self.mainLoop.borrow_mut().addSlowdownRatio(sr);
   }
 
-  fn draw(&self) {
+  pub fn draw(&self) {
     let e : SDL_Event = self.mainLoop.event;
     if e._type == SDL_VIDEORESIZE {
       let re : SDL_ResizeEvent = e.resize;

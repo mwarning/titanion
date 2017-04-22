@@ -16,6 +16,6 @@ public interface Preference {
 }*/
 
 trait Preference {
-	fn save();
-	fn load();
+	pub fn save();
+	pub fn load();
 }

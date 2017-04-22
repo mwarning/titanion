@@ -1,6 +1,7 @@
 
 
 use util::vector::*;
+use util::sdl::pad::*;
 use std::ptr;
 
 pub struct SDL_Event {
@@ -9,7 +10,7 @@ pub struct SDL_Event {
 }
 
 impl SDL_Event {
-  fn new() -> SDL_Event {
+  pub fn new() -> SDL_Event {
     SDL_Event {_type : 0, resize : SDL_ResizeEvent::new()}
   }
 }
@@ -39,7 +40,7 @@ impl SDL_ResizeEvent {
   SDL_ResizeEvent {
     w : 0, h : 0,
   }
- } 
+ }
 }
 
 pub struct Mix_Music;
@@ -49,19 +50,19 @@ pub const AUDIO_S16 : u16 = 0;
 pub fn Mix_PlayChannel(chunkChannel : i32, chunk : *const Mix_Chunk, n : i32) {}
 pub fn Mix_HaltChannel(chunkChannel : i32) {}
 pub fn Mix_FreeChunk(chunk : *const Mix_Chunk) {}
-pub fn Mix_LoadWAV(fileName : &'static str) {}
+pub fn Mix_LoadWAV(fileName : &str) -> *const Mix_Chunk { ptr::null() }
 pub fn Mix_FadeOutMusic(speed : i32) {}
 pub fn Mix_GetError() -> &'static str { "" }
 pub fn Mix_OpenAudio(audio_rate : i32, audio_format : u16, audio_channels : i32, audio_buffers : i32) -> i32 { 0 }
-pub fn Mix_QuerySpec(audio_rate : &mut i32, audio_format : &mut u16, audio_channels : &mut i32) {}
+pub fn Mix_QuerySpec(audio_rate : &i32, audio_format : &mut u16, audio_channels : &mut i32) {}
 pub fn Mix_VolumeMusic(v : i32) {}
 pub fn Mix_Volume(v : i32, seVol : i32) {}
 pub fn Mix_PlayingMusic() -> i32 { 0 }
 pub fn Mix_HaltMusic() {}
 pub fn Mix_CloseAudio() {}
-pub fn Mix_LoadMUS(filename : &'static str) {}
-pub fn Mix_FreeMusic(m : &Mix_Music) {}
-pub fn Mix_PlayMusic(m : &Mix_Music, n : i32) {}
+pub fn Mix_LoadMUS(filename : &str) -> *const Mix_Music { ptr::null() }
+pub fn Mix_FreeMusic(m : *const Mix_Music) {}
+pub fn Mix_PlayMusic(m : *const Mix_Music, n : i32) {}
 
 pub const SDL_PRESSED : usize = 0;
 pub const SDLK_ESCAPE : usize = 0;
@@ -199,9 +200,14 @@ pub fn glScalef(a : f32, b : f32, c : f32) {}
 pub struct File;
 
 impl File {
-  fn new(name : &'static str, mode : usize) -> File {
+  pub fn new(name : &'static str, mode : usize) -> File {
     File{}
   }
+
+  pub fn write1(&self, n : i32) {}
+  pub fn write2(&self, n : usize) {}
+  pub fn read1(&self, n : &PadState) {}
+  pub fn read2(&self, n : &i32) {}
 }
 
 //TODO: remove

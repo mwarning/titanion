@@ -52,7 +52,7 @@ impl Preference {
     }
   }
 
-  fn load(&mut self) {
+  pub fn load(&mut self) {
     //let fd : File;
     //try {
     let fd = File::new(PREF_FILE_NAME, File::ReadExisting);
@@ -85,7 +85,7 @@ impl Preference {
     }
   }
 */
-  fn save(&mut self) {
+  pub fn save(&mut self) {
     let fd = File::new(PREF_FILE_NAME, File::WriteCreate);
     write::<i32>(fd, &VERSION_NUM);
     write::<i32>(fd, &self._lastMode);
@@ -97,11 +97,11 @@ impl Preference {
     fd.close();
   }
 
-  fn setMode(&mut self, mode : i32) {
+  pub fn setMode(&mut self, mode : i32) {
     self._lastMode = mode;
   }
 
-  fn recordResult(&mut self, score : i32, mode : i32) {
+  pub fn recordResult(&mut self, score : i32, mode : i32) {
     self.setMode(mode);
     for i in 0..RANKING_NUM {
       if score > self._highScore[mode][i] {
@@ -114,11 +114,11 @@ impl Preference {
     }
   }
 
-  fn highScore(&self) -> &[[i32; RANKING_NUM]; MODE_NUM] {
+  pub fn highScore(&self) -> &[[i32; RANKING_NUM]; MODE_NUM] {
     self._highScore
   }
 
-  fn lastMode(&self) -> i32 {
+  pub fn lastMode(&self) -> i32 {
     self._lastMode
   }
 }

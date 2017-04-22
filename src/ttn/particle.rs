@@ -471,6 +471,7 @@ pub struct Particle<'a> {
 
 // methods inlined from Token.
 impl<'a> Token<ParticleState, ParticleSpec<'a>> for Particle<'a> {
+/*
   fn getExists(&self) -> bool {
     self._exists
   }
@@ -479,7 +480,7 @@ impl<'a> Token<ParticleState, ParticleSpec<'a>> for Particle<'a> {
     self._exists = v;
     v
   }
-
+*/
   fn init(&mut self /*Object[] args*/) {
     self.state = ParticleState::new();
   }
@@ -535,13 +536,15 @@ impl<'a> Actor for Particle<'a> {
   fn getExists(&self) -> bool {
     self._exists
   }
-  fn setExists(&mut self, v : bool)-> bool {
+
+  fn setExists(&mut self, v : bool) -> bool {
     self._exists = v;
     v
   }
 
   fn init(&mut self) { //, args : &Vec<Object>) {
     /*
+    //moved to new()
     self.init(args);
     self.triangleParticleSpec = args[0] as &TriangleParticleSpec;
     self.lineParticleSpec = args[1] as &LineParticleSpec;
@@ -550,6 +553,7 @@ impl<'a> Actor for Particle<'a> {
     */
   }
 
+/*
   fn move1(&self) {
     self.move1();
   }
@@ -557,6 +561,7 @@ impl<'a> Actor for Particle<'a> {
   fn draw1(&self) {
     self.draw1();
   }
+*/
 }
 
 impl<'a> Particle<'a> {

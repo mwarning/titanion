@@ -7,6 +7,7 @@ use ttn::field::*;
 use ttn::frame::*;
 use ttn::preference::*;
 use util::sdl::input::*;
+use util::sdl::screen::*;
 
 
 const INTERVAL_BASE : f32 = 16.0;
@@ -30,8 +31,8 @@ pub struct MainLoop<'a> {
 }
 
 impl<'a> MainLoop<'a> {
-	pub fn new(/*input : &Input,*/ frame : Frame /*, preference : &Preference*/) -> MainLoop<'a> {
-		MainLoop{
+	pub fn new(/*input : &Input,*/ frame : Frame<'a> /*, preference : &Preference*/) -> MainLoop<'a> {
+		MainLoop {
 			noSlowdown : false,
 			event : SDL_Event::new(),
 			//input : input, //moved into frame
@@ -47,9 +48,9 @@ impl<'a> MainLoop<'a> {
 
  // Initialize and load a preference.
   	fn initFirst(&mut self) {
-	    self.preference.load();
+	    self.frame.preference.borrow_mut().load();
 	    //try {
-	      self.frame.sound.init();
+	      self.frame.sound.borrow_mut().init();
 	    //} catch (SDLInitFailedException e) {
 	    //  Logger.error(e);
 	    //}
@@ -60,9 +61,9 @@ impl<'a> MainLoop<'a> {
  	// Quit and save a preference.
   	fn quitLast(&mut self) {
 		self.frame.quit();
-		self.frame.sound.close();
-		self.preference.save();
-		self.frame.screen.closeSDL();
+		self.frame.sound.borrow_mut().close();
+		self.frame.preference.borrow_mut().save();
+		self.frame.screen.borrow_mut().closeSDL();
 		SDL_Quit();
 	}
 
@@ -73,24 +74,24 @@ impl<'a> MainLoop<'a> {
 	pub fn loop1(&mut self) {
 		self.done = false;
 		let mut prvTickCount : i64 = 0;
-		self.frame.screen.initSDL();
+		self.frame.screen.borrow_mut().initSDL();
 		self.initFirst();
 		self.frame.start();
 		while !self.done {
 			if SDL_PollEvent(&self.event) == 0 {
 				self.event._type = SDL_USEREVENT;
 			}
-			self.input.handleEvent(&self.event);
+			self.frame.pad.borrow_mut().handleEvent(self.event);
 			if self.event._type == SDL_QUIT {
 				self.breakLoop();
 			}
 			let nowTick = SDL_GetTicks();
-			let itv = self.interval as i32;
+			let itv = self.interval as i64;
 			let mut frameNum = ((nowTick - prvTickCount) / itv) as i32;
 			if frameNum <= 0 {
 				frameNum = 1;
 				SDL_Delay((prvTickCount + itv - nowTick) as u32);
-				prvTickCount += self.interval;
+				prvTickCount += self.interval as i64;
 			} else if frameNum > MAX_SKIP_FRAME {
 				frameNum = MAX_SKIP_FRAME;
 				prvTickCount = nowTick;
@@ -103,9 +104,9 @@ impl<'a> MainLoop<'a> {
 				self.frame.move1();
 			}
 			self.slowdownRatio /= frameNum as f32;
-			self.frame.screen.clear();
+			self.frame.screen.borrow_mut().clear();
 			self.frame.draw();
-			self.frame.screen.flip();
+			self.frame.screen.borrow_mut().flip();
 			if !self.noSlowdown {
 				self.calcInterval();
 			}

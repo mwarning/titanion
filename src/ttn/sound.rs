@@ -37,7 +37,7 @@ pub struct Sound {
 }
 
 impl Sound {
-  fn new() -> Sound {
+  pub fn new() -> Sound {
     Sound {
       bgm : HashMap::new(),
       se : HashMap::new(),
@@ -58,7 +58,7 @@ impl Sound {
   }
 
   // inline from util/sdl/sound.rs
-  fn init(&mut self) {
+  pub fn init(&mut self) {
     if Sound::noSound {
       return;
     }
@@ -84,7 +84,7 @@ impl Sound {
   }
 
   // inline from util/sdl/sound.rs
-  fn close(&self) {
+  pub fn close(&self) {
     if self.noSound {
       return;
     }
@@ -94,7 +94,7 @@ impl Sound {
     Mix_CloseAudio();
   }
 
-  fn load(&mut self) {
+  pub fn load(&mut self) {
     self._bgmEnabled = true;
     self._seEnabled = true;
     self.loadMusics();
@@ -149,14 +149,14 @@ impl Sound {
     }
   }
 
-  fn playBgm(&self) {
+  pub fn playBgm(&self) {
     let bgmIdx = self.rand.nextInt(self.bgm.length);
     let nextIdxMv = self.rand.nextInt(2) * 2 - 1;
     self.prevBgmIdx = self.bgmIdx;
     self.playBgm2(self.bgmFileName[bgmIdx as usize]);
   }
 
-  fn nextBgm(&mut self) {
+  pub fn nextBgm(&mut self) {
     let mut bgmIdx = self.prevBgmIdx + self.nextIdxMv;
     if bgmIdx < 0 {
       bgmIdx = self.bgm.length - 1;
@@ -167,15 +167,15 @@ impl Sound {
     self.playBgm2(self.bgmFileName[bgmIdx as usize]);
   }
 
-  fn playCurrentBgm(&mut self) {
+  pub fn playCurrentBgm(&mut self) {
     self.playBgm2(self.currentBgm);
   }
 
-  fn fadeBgm() {
+  pub fn fadeBgm() {
     Music::fade();
   }
 
-  fn haltBgm() {
+  pub fn haltBgm() {
     Music::halt();
   }
 
@@ -186,7 +186,7 @@ impl Sound {
     self.seMark[name] = true;
   }
 
-  fn playMarkedSes(&self) {
+  pub fn playMarkedSes(&self) {
     for (key, _) in self.seMark {
       if self.seMark.contains(key) {
         self.se[key].play();
@@ -195,7 +195,7 @@ impl Sound {
     }
   }
 
-  fn clearMarkedSes(&self) {
+  pub fn clearMarkedSes(&self) {
     for (key, _) in self.seMark {
       self.seMark[key] = false;
     }

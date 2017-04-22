@@ -95,7 +95,8 @@ impl<'a> Actor for Pillar<'a> {
 }
 
 impl<'a> Token<PillarState<'a>, PillarSpec<'a>> for Pillar<'a> {
-    fn getExists(&self) -> bool {
+/*
+  fn getExists(&self) -> bool {
     self._exists
   }
 
@@ -103,6 +104,7 @@ impl<'a> Token<PillarState<'a>, PillarSpec<'a>> for Pillar<'a> {
     self._exists = v;
     v
   }
+*/
 
   fn init(&mut self /*Object[] args*/) {
     self.state = PillarState::new();
@@ -219,7 +221,7 @@ pub struct PillarSpec<'a> {
 }
 
 impl<'a> TokenSpec<PillarState<'a>> for PillarSpec<'a> {
-   fn set(&self, state : &PillarState) {}
+  fn set(&self, state : &PillarState) {}
   fn removed(&self, state : &PillarState) {}
 
   fn move2(&self, state : &PillarState) -> bool {

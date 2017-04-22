@@ -38,11 +38,11 @@ pub struct Token<ST, SP> {
 */
 
 pub trait Token<ST : ?Sized, SP : ?Sized> : Actor {
-  fn getExists(&self) -> bool; /* {
+  /*fn getExists(&self) -> bool {
     self._exists
   }*/
 
-  fn setExists(&mut self, v : bool) -> bool; /* {
+  /*fn setExists(&mut self, v : bool) -> bool  {
     self._exists = v;
     v
   }*/

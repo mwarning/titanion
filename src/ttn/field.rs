@@ -298,13 +298,13 @@ impl<'a> Field<'a> {
           cp.x = (d1 + PI * 2.0 / 32.0 * 0.1).sin() * torusRad;
           cp.z = (d1 + PI * 2.0 / 32.0 * 0.1).cos() * torusRad;
           Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.1, d2 + PI * 2.0 / 16.0 * 0.1);
-          Screen::glVertex(ringOfs);
+          Screen::glVertex3(ringOfs);
           Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.1, d2 + PI * 2.0 / 16.0 * 0.9);
-          Screen::glVertex(ringOfs);
+          Screen::glVertex3(ringOfs);
           cp.x = (d1 + PI * 2.0 / 32.0 * 0.9).sin() * torusRad;
           cp.z = (d1 + PI * 2.0 / 32.0 * 0.9).cos() * torusRad;
           Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.9, d2 + PI * 2.0 / 32.0 * 0.1);
-          Screen::glVertex(ringOfs);
+          Screen::glVertex3(ringOfs);
           Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.9, d2 + PI * 2.0 / 16.0 * 0.9);
           Screen::glVertex3(ringOfs);
           d2 += PI * 2.0 / 16.0

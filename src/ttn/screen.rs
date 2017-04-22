@@ -133,8 +133,8 @@ impl Screen {
     //gluPerspective(45.0f, cast(GLfloat) width / cast(GLfloat) height, nearPlane, farPlane);
     glFrustum(-self._nearPlane as f64,
               self._nearPlane as f64,
-              -self._nearPlane * (self._height as f32) / (self._width as f32) as f64,
-              self._nearPlane * (self._height as f32) / (self._width as f32) as f64,
+              (-self._nearPlane * (self._height as f32) / (self._width as f32)) as f64,
+              (self._nearPlane * (self._height as f32) / (self._width as f32)) as f64,
               0.1, self._farPlane as f64);
   }
 

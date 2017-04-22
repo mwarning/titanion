@@ -251,7 +251,7 @@ impl<'a> Actor for Enemy<'a> {
     self._exists
   }
 
-  fn setExists(&mut self, v : bool)-> bool {
+  fn setExists(&mut self, v : bool) -> bool {
     self._exists = v;
     v
   }
@@ -263,14 +263,14 @@ impl<'a> Actor for Enemy<'a> {
 }
 
 impl<'a> Token<EnemyState, EnemySpec> for Enemy<'a> {
-  fn getExists(&self) -> bool {
+  /*fn getExists(&self) -> bool {
     self._exists
   }
 
   fn setExists(&mut self, v : bool) -> bool {
     self._exists = v;
     v
-  }
+  }*/
 
   fn init(&mut self /*Object[] args*/) {
     self.state = EnemyState::new();
@@ -502,7 +502,7 @@ impl EnemyState {
     //inst.super();
     EnemyState {
       ts : TokenState::new(),
-      turretStates : [TokenState::new(), TURRET_MAX_NUM2],
+      turretStates : [TokenState::new(); TURRET_MAX_NUM2],
       vel : Vector::new(0.0, 0.0),
       centerPos : Vector::new(0.0, 0.0),
       centerVel : Vector::new(0.0, 0.0),
@@ -722,7 +722,7 @@ pub trait EnemySpec {
     let spec = self.get_enemyspec_data();
     es.shield = spec.shield;
     for i in 0..spec.turretNum {
-      spec.turretSpecs[i as usize].set(es.turretStates[i as usize]);
+      spec.turretSpecs[i as usize].set(&es.turretStates[i as usize]);
     }
   }
 

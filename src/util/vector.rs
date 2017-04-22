@@ -308,7 +308,7 @@ impl Vector {
 
   // was dist()
   pub fn dist2(&self, v : Vector) -> f32 {
-    self.dist(v.x, v.y)
+    self.dist3(v.x, v.y)
   }
 
   ///
@@ -316,9 +316,9 @@ impl Vector {
     let ax = (self.x - px).abs();
     let ay = (self.y - py).abs();
     if ax > ay {
-      ax + ay / 2.0;
+      ax + ay / 2.0
     } else {
-      ay + ax / 2.0;
+      ay + ax / 2.0
     }
   }
 

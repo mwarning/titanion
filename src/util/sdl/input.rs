@@ -9,7 +9,7 @@ use ttn::dummy::*;
  * Input device interface.
  */
 pub trait Input {
-  fn handleEvent(&mut self, event : &'static SDL_Event);
+  fn handleEvent(&mut self, event : SDL_Event);
 }
 
 struct MultipleInputDevice<'a> {
@@ -17,7 +17,7 @@ struct MultipleInputDevice<'a> {
 }
 
 impl<'a> Input for MultipleInputDevice<'a> {
-	fn handleEvent(&mut self, event : &'static SDL_Event) {
+	fn handleEvent(&mut self, event : SDL_Event) {
 	    for i in &self.inputs {
 	      i.handleEvent(event);
 	    }

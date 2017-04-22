@@ -88,10 +88,10 @@ impl Music {
     }
 
     let fileName = format!("sounds/music/{}", name);
-    self.music = Mix_LoadMUS(fileName);
-    if self.music == None {
+    self.music = Mix_LoadMUS(fileName.as_ref());
+    if self.music == ptr::null() {
       noSound = true;
-      panic!("Couldn't load: {} ({})", fileName, Mix_GetError);
+      panic!("Couldn't load: {} ({})", fileName, Mix_GetError());
     }
   }
 
@@ -118,8 +118,8 @@ impl Music {
     }
   }
 
-  pub fn halt() {
-    if !noSound && Mix_PlayingMusic() {
+  pub fn halt(&self) {
+    if !noSound && (Mix_PlayingMusic() != 0) {
       Mix_HaltMusic();
     }
   }
@@ -146,7 +146,7 @@ impl Chunk {
       return;
     }
     let fileName = format!("sounds/chunks/{}", name);
-    self.chunk = Mix_LoadWAV(fileName);
+    self.chunk = Mix_LoadWAV(fileName.as_ref());
     if self.chunk.is_null() {
       noSound = true;
       panic!("Couldn't load: {} ({}", fileName, Mix_GetError());

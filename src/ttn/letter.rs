@@ -134,7 +134,7 @@ impl<'a> Letter<'a> {
     for c in string {
       if c != ' ' {
         let idx = Letter::convertCharToInt(c);
-        if (r == 1) && (g == 1) && (b == 1) {
+        if (r == 1.0) && (g == 1.0) && (b == 1.0) {
           if rev {
             Letter::drawLetterRev(idx, x, y, s, ld);
           } else {
