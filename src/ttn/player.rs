@@ -532,7 +532,7 @@ impl<'a> PlayerSpec<'a> {
     if self.gameState.mode() == Mode::MODERN {
       for _ in 0..4 {
         if let Some(e) = self.enemies.getInstance() {
-          e.set(self.ghostEnemySpec, ps.pos().x, ps.pos().y, 0, 0);
+          e.set(self.ghostEnemySpec, ps.ts.pos.x, ps.ts.pos.y, 0, 0);
           self.playerState.addCapturedEnemy(e);
         } else {
           break;
@@ -580,8 +580,8 @@ impl<'a> PlayerSpec<'a> {
       if !self.isActive() {
         return true;
       }
-      let mut vx : f32 = 0.0;
-      let mut vy : f32 = 0.0;
+      let mut vx = 0.0;
+      let mut vy = 0.0;
 
       if self.input.dir & DIR_RIGHT {
         vx = 1.0;
@@ -600,23 +600,23 @@ impl<'a> PlayerSpec<'a> {
         vy *= 0.7;
       }
 
-      let mut px : f32 = ps.pos().x;
-      ps.pos().x += vx * ps.speed;
+      let mut px = ps.ts.pos.x;
+      ps.ts.pos.x += vx * ps.speed;
       if self.gameState.mode == Mode::CLASSIC {
         vy *= 0.5;
       }
-      ps.pos().y += vy * ps.speed;
+      ps.ts.pos.y += vy * ps.speed;
       if !(input.button & BUTTON_B) {
         ps.deg += (-TILT_DEG * (vx * ps.speed) - ps.deg) * 0.1;
       }
       //assert(deg <>= 0);
-      ps.pos += ps.vel;
+      ps.ts.pos += ps.vel;
       ps.vel *= 0.9;
       if self.gameState.mode() == Mode::MODERN {
         let mut d : f32 = ps.ghostCnt * 0.05;
         for i in 0..self.capturedEnemyNum() {
           let e : Enemy = self.capturedEnemies[i];
-          e.setGhostEnemyState(ps.pos.x + d.sin() * ps.capturedEnemyWidth * 2.0, ps.pos.y, ps.deg, (d * 180.0 / PI / 3.0) as i32);
+          e.setGhostEnemyState(ps.ts.pos.x + d.sin() * ps.capturedEnemyWidth * 2.0, ps.ts.pos.y, ps.deg, (d * 180.0 / PI / 3.0) as i32);
           d += PI / 2.0;
         }
       }
@@ -760,7 +760,7 @@ impl<'a> PlayerSpec<'a> {
         return;
       }
       if let Some(s) = self.shots.getInstance() {
-        s.set(self.shotSpec, ps.pos, ps.deg, 0.66);
+        s.set(self.shotSpec, ps.ts.pos, ps.deg, 0.66);
         if self.isFirstShot {
           self.isFirstShot = false;
           self.shotCnt += FIRST_SHOT_INTERVAL;
@@ -768,7 +768,7 @@ impl<'a> PlayerSpec<'a> {
           self.shotCnt += SHOT_INTERVAL;
         }
         self.gameState.countShotFired();
-        self.addShotParticle(ps.pos, ps.deg);
+        self.addShotParticle(ps.ts.pos, ps.deg);
         self.frame.sound.borrow().playSe("shot.wav");
         for i in 0..self.capturedEnemyNum {
           if (self.gameState.mode() == Mode::MODERN) && ((i + self.ghostShotCnt) % 4 == 0) {
@@ -829,7 +829,7 @@ impl<'a> PlayerSpec<'a> {
       let mut r : f32 = 0.5 + rand.nextFloat(0.5);
       let mut g : f32 = 0.3 + rand.nextFloat(0.3);
       let mut b : f32 = 0.8 + rand.nextFloat(0.2);
-      pt.set(ParticleShape::LINE, ps.pos().x, ps.pos().y,
+      pt.set(ParticleShape::LINE, ps.ts.pos.x, ps.ts.pos.y,
              d + rand.nextSignedFloat(0.3), sp * (1.0 + rand.nextFloat(2.0)),
              1, r, g, b, 30 + rand.nextInt(30));
     }
@@ -851,7 +851,7 @@ impl<'a> PlayerSpec<'a> {
       let mut b : f32 = 0.8 + rand.nextFloat(0.2);
       for i in 0..100 {
         let mut p = self.particles.getInstanceForced();
-        p.set(ParticleShape::QUAD, ps.pos.x, ps.pos.y, rand.nextFloat(PI * 2.0), 0.01 + rand.nextFloat(1.0),
+        p.set(ParticleShape::QUAD, ps.ts.pos.x, ps.ts.pos.y, rand.nextFloat(PI * 2.0), 0.01 + rand.nextFloat(1.0),
               1 + rand.nextFloat(4.0), r, g, b, 10 + rand.nextInt(200));
       }
       r = 0.5 + rand.nextFloat(0.5);
@@ -859,7 +859,7 @@ impl<'a> PlayerSpec<'a> {
       b = 0.8 + rand.nextFloat(0.2);
       for i in 0..30 {
         let mut p = self.particles.getInstanceForced();
-        p.set(ParticleShape::TRIANGLE, ps.pos.x, ps.pos.y, rand.nextFloat(PI * 2.0), 0.03 + rand.nextFloat(0.3),
+        p.set(ParticleShape::TRIANGLE, ps.ts.pos.x, ps.ts.pos.y, rand.nextFloat(PI * 2.0), 0.03 + rand.nextFloat(0.3),
               3, r, g, b, 50 + rand.nextInt(150));
       }
       r = 0.5 + rand.nextFloat(0.5);
@@ -867,7 +867,7 @@ impl<'a> PlayerSpec<'a> {
       b = 0.8 + rand.nextFloat(0.2);
       for i in 0..300 {
         let mut p = self.particles.getInstanceForced();
-        p.set(ParticleShape::LINE, ps.pos.x, ps.pos.y, rand.nextFloat(PI * 2.0), 0.07 + rand.nextFloat(0.7),
+        p.set(ParticleShape::LINE, ps.ts.pos.x, ps.ts.pos.y, rand.nextFloat(PI * 2.0), 0.07 + rand.nextFloat(0.7),
               1, r, g, b, 100 + rand.nextInt(100));
       }
       self.frame.sound.borrow().playSe("player_explosion.wav");
@@ -894,8 +894,8 @@ impl<'a> PlayerSpec<'a> {
       if !self.isActive {
         return;
       }
-      let p : Vector3 = self.field.calcCircularPos(ps.pos);
-      let cd = self.field.calcCircularDeg(ps.pos.x);
+      let p : Vector3 = self.field.calcCircularPos(ps.ts.pos);
+      let cd = self.field.calcCircularDeg(ps.ts.pos.x);
       if self.hasShape {
         self.shape.draw(p, cd, ps.deg);
       }

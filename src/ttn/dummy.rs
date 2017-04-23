@@ -152,11 +152,11 @@ impl DerelictSDL {
 
 pub fn SDL_GetError() -> &'static str { "" }
 
-pub const SDL_OPENGL : usize = 0;
-pub const SDL_RESIZABLE : usize = 0;
-pub const SDL_FULLSCREEN : usize = 0;
+pub const SDL_OPENGL : i32 = 0;
+pub const SDL_RESIZABLE : i32 = 0;
+pub const SDL_FULLSCREEN : i32 = 0;
 
-pub fn SDL_SetVideoMode(_width : u32, _height : u32, n : u32, x : u32) {}
+pub fn SDL_SetVideoMode(_width : i32, _height : i32, n : u32, x : u32) {}
 pub fn SDL_GL_SwapBuffers() {}
 pub fn SDL_ShowCursor(n : usize) {}
 pub fn glClear(d : u32) {}
@@ -194,7 +194,7 @@ pub fn glTranslatef(angle : f32, x : f32, y : f32) {}
 pub fn glVertex3f(x : f32, y : f32, z : f32) {}
 pub fn glBegin(mode : usize) {}
 pub fn glEnd() {}
-pub fn glEnable() {}
+pub fn glEnable(n : usize) {}
 pub fn glDisable(n : usize) {}
 pub fn glBlendFunc(a : usize, b : usize) {}
 pub fn glScalef(a : f32, b : f32, c : f32) {}

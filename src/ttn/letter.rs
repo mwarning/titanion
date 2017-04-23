@@ -82,18 +82,18 @@ impl<'a> Letter<'a> {
 
   fn drawLetter6(&mut self, n : i32, x : f32, y : f32, s : f32, d : f32) {
     glPushMatrix();
-    glTranslatef(x, y, 0);
+    glTranslatef(x, y, 0.0);
     glScalef(s, s, s);
-    glRotatef(d, 0, 0, 1);
+    glRotatef(d, 0.0, 0.0, 1.0);
     self.displayList.call(n);
     glPopMatrix();
   }
 
   fn drawLetterRev(&mut self, n : i32, x : f32, y : f32, s : f32, d : f32) {
     glPushMatrix();
-    glTranslatef(x, y, 0);
+    glTranslatef(x, y, 0.0);
     glScalef(s, -s, s);
-    glRotatef(d, 0, 0, 1);
+    glRotatef(d, 0.0, 0.0, 1.0);
     self.displayList.call(n);
     glPopMatrix();
   }
@@ -212,10 +212,10 @@ impl<'a> Letter<'a> {
     let fd : i32 = floatDigit;
     loop {
       if fd <= 0 {
-        Letter::drawLetterRev(n % 10 + type_ * LETTER_NUM, x, y, s, 0);
+        Letter::drawLetterRev(n % 10 + type_ * LETTER_NUM, x, y, s, 0.0);
         x -= s * LETTER_WIDTH;
       } else {
-        Letter::drawLetterRev(n % 10 + type_ * LETTER_NUM, x, y - s * LETTER_WIDTH * 0.25, s * 0.5, 0);
+        Letter::drawLetterRev(n % 10 + type_ * LETTER_NUM, x, y - s * LETTER_WIDTH * 0.25, s * 0.5, 0.0);
         x -= s * LETTER_WIDTH * 0.5;
       }
       n /= 10;
@@ -224,12 +224,12 @@ impl<'a> Letter<'a> {
       }
       fd -= 1;
       if fd == 0 {
-        Letter::drawLetterRev(36 + type_ * LETTER_NUM, x, y - s * LETTER_WIDTH * 0.25, s * 0.5, 0);
+        Letter::drawLetterRev(36 + type_ * LETTER_NUM, x, y - s * LETTER_WIDTH * 0.25, s * 0.5, 0.0);
         x -= s * LETTER_WIDTH * 0.5;
       }
     }
     if headChar >= 0 {
-      Letter::drawLetterRev(headChar + type_ * LETTER_NUM, x + s * LETTER_WIDTH * 0.2, y - s * LETTER_WIDTH * 0.2, s * 0.6, 0);
+      Letter::drawLetterRev(headChar + type_ * LETTER_NUM, x + s * LETTER_WIDTH * 0.2, y - s * LETTER_WIDTH * 0.2, s * 0.6, 0.0);
     }
   }
 

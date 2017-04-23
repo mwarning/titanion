@@ -291,7 +291,7 @@ impl<'a> LineParticleSpec<'a> {
       ps.stepForward();
       ps.tailPos.x += (ps.ts.pos.x - ps.tailPos.x) * 0.05;
       ps.tailPos.y += (ps.ts.pos.y - ps.tailPos.y) * 0.05;
-      ps.speed *= 1 - LPS_SLOW_DOWN_RATIO;
+      ps.speed *= 1.0 - LPS_SLOW_DOWN_RATIO;
       ps.ts.pos.x = self.field.normalizeX(ps.ts.pos.x);
       let cfr = 1.0 - (1.0 / (ps.startCnt as f32));
       if cfr < 0.0 {
@@ -359,28 +359,29 @@ impl<'a> QuadParticleSpec<'a> {
    // with (ps) {
       let mut p : Vector3;
       let sz = ps.size * 0.5;
-      let aa = ps.a * self.ps.calcNearPlayerAlpha(ps.ts.pos);
+      let pos = ps.ts.pos;
+      let aa = ps.a * self.ps.calcNearPlayerAlpha(pos);
       Screen::setColor(ps.r, ps.g, ps.b, ps.aa);
       glBegin(GL_QUADS);
-      p = self.field.calcCircularPos(ps.ts.pos.x - sz, ps.ts.pos.y - sz);
+      p = self.field.calcCircularPos(pos.x - sz, pos.y - sz);
       Screen::glVertex3(p);
-      p = self.field.calcCircularPos(ps.ts.pos.x + sz, ps.ts.pos.y - sz);
+      p = self.field.calcCircularPos(pos.x + sz, pos.y - sz);
       Screen::glVertex3(p);
-      p = self.field.calcCircularPos(ps.ts.pos.x + sz, ps.ts.pos.y + sz);
+      p = self.field.calcCircularPos(pos.x + sz, pos.y + sz);
       Screen::glVertex3(p);
-      p = self.field.calcCircularPos(ps.ts.pos.x - sz, ps.ts.pos.y + sz);
+      p = self.field.calcCircularPos(pos.x - sz, pos.y + sz);
       Screen::glVertex3(p);
       glEnd();
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       Screen::setColor(0.0, 0.0, 0.0, aa * 0.66);
       glBegin(GL_LINE_LOOP);
-      p = self.field.calcCircularPos(ps.ts.pos.x - sz, ps.ts.pos.y - sz);
+      p = self.field.calcCircularPos(pos.x - sz, pos.y - sz);
       Screen::glVertex3(p);
-      p = self.field.calcCircularPos(ps.ts.pos.x + sz, ps.ts.pos.y - sz);
+      p = self.field.calcCircularPos(pos.x + sz, pos.y - sz);
       Screen::glVertex3(p);
-      p = self.field.calcCircularPos(ps.ts.pos.x + sz, ps.ts.pos.y + sz);
+      p = self.field.calcCircularPos(pos.x + sz, pos.y + sz);
       Screen::glVertex3(p);
-      p = self.field.calcCircularPos(ps.ts.pos.x - sz, ps.ts.pos.y + sz);
+      p = self.field.calcCircularPos(pos.x - sz, pos.y + sz);
       Screen::glVertex3(p);
       glEnd();
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);

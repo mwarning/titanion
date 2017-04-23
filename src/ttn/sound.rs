@@ -78,7 +78,7 @@ impl Sound {
       self.noSound = true;
       panic!("Couldn't open audio: {}", SDL_GetError());
     }
-    Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels);
+    Mix_QuerySpec(&audio_rate, &mut audio_format, &mut audio_channels);
     Mix_VolumeMusic(self.bgmVol);
     Mix_Volume(-1, self.seVol);
   }

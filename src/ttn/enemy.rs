@@ -1449,14 +1449,14 @@ impl<'a> EnemySpec for MiddleEnemySpec<'a> {
         if (ts.nway > 1) && (rand.nextInt(2) == 0) {
           let nsa : f32 = (ts.speed * (0.2 + ts.nway * 0.05 + rand.nextFloat(0.1))) / ((ts.nway - 1) as f32);
           if rand.nextInt(2) == 0 {
-            nsa *= -1;
+            nsa *= -1.0;
           }
           self.es.turretSpecs[1].nwaySpeedAccel = nsa;
           self.es.turretSpecs[2].nwaySpeedAccel = -nsa;
         }
         self.es.turretSpecs[1].nwayBaseDeg = -PI / 8.0 - rand.nextFloat(PI / 12.0);
         if self.es.turretSpecs[1].nway > 1 {
-          self.es.turretSpecs[1].nwayBaseDeg -= self.es.turretSpecs[1].nwayAngle * (self.es.turretSpecs[1].nway - 1) / 2;
+          self.es.turretSpecs[1].nwayBaseDeg -= self.es.turretSpecs[1].nwayAngle * ((self.es.turretSpecs[1].nway - 1) as f32) / 2.0;
         }
         self.es.turretSpecs[2].nwayBaseDeg = -self.es.turretSpecs[1].nwayBaseDeg;
         self.es.turretWidth = 1.5 + rand.nextFloat(0.5);
@@ -1475,7 +1475,7 @@ impl<'a> EnemySpec for MiddleEnemySpec<'a> {
       }
       match es.phase {
       1 => {
-        if (self.es.gameState.mode() != Mode::MODERN) && !self.es.player.hasCollision {
+        if (self.es.gameState.mode() != Mode::MODERN) && !self.es.player.hasCollision() {
           es.phase = 0;
           es.nextPhaseCnt = self.es.calcStandByTime(es);
         } else {
@@ -1483,7 +1483,7 @@ impl<'a> EnemySpec for MiddleEnemySpec<'a> {
           if self.es.gameState.mode() != Mode::MODERN {
             es.centerPos.x = self.field.size.x * (0.6 + rand.nextSignedFloat(0.1));
             if rand.nextInt(2) == 0 {
-              es.centerPos.x *= -1;
+              es.centerPos.x *= -1.0;
             }
             es.centerPos.y = self.field.size.y * (0.2 + rand.nextFloat(0.2));
             es.nextPhaseCnt = 60;
@@ -1796,7 +1796,7 @@ impl<'a> EnemySpec for SE2Spec<'a> {
       }
       match es.phase {
       1 => {
-        if !self.es.player.hasCollision || (self.es.enemies.numInAttack > self.es.stage.attackSmallEnemyNum) {
+        if !self.es.player.hasCollision() || (self.es.enemies.numInAttack() > self.es.stage.attackSmallEnemyNum()) {
           es.phase = 0;
           es.nextPhaseCnt = self.es.calcStandByTime(es);
         } else {

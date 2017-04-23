@@ -60,9 +60,9 @@ impl SdlScreen for Screen {
     self.setIcon();
     // Create an OpenGL screen.
     let mut videoFlags : u32 = if self._windowMode {
-      SDL_OPENGL | SDL_RESIZABLE;
+      SDL_OPENGL | SDL_RESIZABLE
     } else {
-      SDL_OPENGL | SDL_FULLSCREEN;
+      SDL_OPENGL | SDL_FULLSCREEN
     };
 
     if SDL_SetVideoMode(self._width, self._height, 0, videoFlags) == None {
@@ -206,7 +206,7 @@ impl Screen {
     glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
-    self.setClearColor(0, 0, 0, 1);
+    self.setClearColor(0.0, 0.0, 0.0, 1.0);
   }
 
   // inlined from util/sdl/screen3d.d
@@ -221,14 +221,14 @@ impl Screen {
   // inlined from util/sdl/screen3d.d
   fn screenResized(&mut self) {
     self.screenResized1();
-    let lw : f32 = ((self.width as f32) / 640.0 + (self._height as f32) / 480.0) / 2.0;
+    let lw : f32 = ((self._width as f32) / 640.0 + (self._height as f32) / 480.0) / 2.0;
     if lw < 1.0 {
       lw = 1.0;
     }  else if lw > 4.0 {
       lw = 4.0;
     }
     glLineWidth(lw);
-    glViewport(0, 0, self._width, self._height);
+    glViewport(0, 0, self._width as f32, self._height as f32);
     if self.field {
       self.field.setLookAt();
     }
