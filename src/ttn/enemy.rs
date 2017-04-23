@@ -36,7 +36,7 @@ pub struct EnemyPool<'a> {
 
 impl<'a> ActorPool<Enemy<'a>> for EnemyPool<'a> {
   fn getActorPoolData(&mut self) -> &mut ActorPoolData<Enemy<'a>> {
-    &self.ap
+    &mut self.ap
   }
 }
 
@@ -225,11 +225,13 @@ impl<'a> EnemyPool<'a> {
       }
     }
   }
-
+/*
+  // needed?
   fn field(&self, v : Field) -> Field {
     self._field = v;
     v
   }
+*/
 }
 
 pub struct Enemy<'a> {
@@ -244,6 +246,7 @@ impl<'a> Actor for Enemy<'a> {
     Enemy {
       state : EnemyState::new(),
       spec : EnemySpec::new(),  //use generic spec or Option type?
+      _exists : false,
     }
   }
 
@@ -283,7 +286,7 @@ impl<'a> Token<EnemyState, EnemySpec> for Enemy<'a> {
   }
 
   fn draw1(&self) {
-    self.spec.draw(self.state);
+    self.spec.draw(&self.state);
   }
 
   fn set5Vec(&self, spec : &EnemySpec, pos : Vector, deg : f32, speed : f32) {
@@ -298,8 +301,8 @@ impl<'a> Token<EnemyState, EnemySpec> for Enemy<'a> {
 
   fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
     self.state.clear();
-    self.state.pos.x = x;
-    self.state.pos.y = y;
+    self.state.ts.pos.x = x;
+    self.state.ts.pos.y = y;
     self.state.deg = deg;
     self.state.speed = speed;
     self.spec.set(self.state);
@@ -312,7 +315,7 @@ impl<'a> Token<EnemyState, EnemySpec> for Enemy<'a> {
   }
 
   fn pos(&self) -> Vector {
-    self.state.pos
+    self.state.ts.pos
   }
 }
 
@@ -396,7 +399,7 @@ impl<'a> Enemy<'a> {
     if self.spec.isBeingCaptured(&self.state) {
       return false;
     }
-    self.spec.isInScreen(&self.state);
+    self.spec.isInScreen(&self.state)
   }
 
   fn isBeingCaptured(&self) -> bool {
@@ -510,7 +513,7 @@ impl EnemyState {
       //size : Vector::new(0.0, 0.0),
       //targetSize : Vector::new(0.0, 0.0),
       sizeVel : Vector::new(0.0, 0.0),
-      trails : [Trail::new(), TRAIL_NUM],
+      trails : [Trail::new(); TRAIL_NUM],
       baseSpeed : 0.0,
       baseAngVel : 0.0,
       angVel : 0.0,
@@ -536,7 +539,7 @@ impl EnemyState {
 
   fn clear(&mut self) {
     // self = EnemyState::new(); // try this?
-    for ts in self.turretStates {
+    for ts in &self.turretStates {
       ts.clear();
     }
     self.vel.x = 0.0;
@@ -604,8 +607,8 @@ impl EnemyState {
       }
       let t = self.trails[ti];
       Screen::setColor(r * a, g * a, b * a, a * 0.66);
-      let p : Vector3 = field.calcCircularPos(t.pos);
-      let cd : f32 = field.calcCircularDeg(t.pos.x);
+      let p = field.calcCircularPos(t.pos);
+      let cd = field.calcCircularDeg(t.pos.x);
       s.draw(p, cd, t.deg, t.cnt, size);
       a *= 0.7;
     }
@@ -804,7 +807,7 @@ pub trait EnemySpec {
           1 => { tx -= spec.turretWidth; },
           2 => { tx += spec.turretWidth; },
           }
-          let turretDeg : f32 = spec.field.normalizeX(-(spec.player.pos().x - tx)).atan2(spec.player.pos().y - ty);
+          let turretDeg = spec.field.normalizeX(-(spec.player.pos().x - tx)).atan2(spec.player.pos().y - ty);
           match spec.gameState.mode() {
             Mode::CLASSIC => {
               if (turretDeg >= 0.0) && (turretDeg < (PI - PI / 6.0)) {
@@ -1304,10 +1307,10 @@ impl<'a> EnemySpec for GhostEnemySpec<'a> {
 
   fn draw(&self, es : &EnemyState) {
     //with (es) {
-      let p : Vector3 = self.field.calcCircularPos(es.ts.pos);
-      let cd : f32 = self.field.calcCircularDeg(es.ts.pos.x);
+      let p = self.field.calcCircularPos(es.ts.pos);
+      let cd = self.field.calcCircularDeg(es.ts.pos.x);
       Screen::setColor(0.5, 0.5, 1, 0.8);
-      (self.ts.shape as EnemyShape).draw(p, cd, es.ts.deg, self.cnt, es.size);
+      (self.shape as &EnemyShape).draw6(p, cd, es.ts.deg, es.cnt as f32, es.size);
     //}
   }
 
@@ -1405,13 +1408,13 @@ impl<'a> EnemySpec for MiddleEnemySpec<'a> {
     self.es.turretSpecs[0].setRankMiddle(tr);
     self.es.turretNum = 1;
     if self.es.gameState.mode() == Mode::MODERN {
-      let ts : TurretSpec = self.es.turretSpecs[0];
-      let ptn : i32 = rand.nextInt(6);
+      let ts = &self.es.turretSpecs[0];
+      let ptn = rand.nextInt(6);
       if (ptn == 1) || (ptn == 2) || (ptn == 4) {
         self.es.turretSpecs[1].copy(self.es.turretSpecs[0]);
         self.es.turretSpecs[2].copy(self.es.turretSpecs[0]);
         if (ts.nway > 1) && (rand.nextInt(2) == 0) {
-          let nsa : f32 = (ts.speed * (0.2 + (ts.nway as f32) * 0.05 + rand.nextFloat(0.1))) / (ts.nway - 1);
+          let nsa = (ts.speed * (0.2 + (ts.nway as f32) * 0.05 + rand.nextFloat(0.1))) / (ts.nway - 1);
           if rand.nextInt(2) == 0 {
             nsa *= -1.0;
           }
@@ -1442,7 +1445,7 @@ impl<'a> EnemySpec for MiddleEnemySpec<'a> {
         }
         self.es.turretSpecs[1].setRankMiddle(tr);
         self.es.turretSpecs[1].interval *= 2;
-        self.es.turretSpecs[2].copy(self.es.turretSpecs[1]);
+        self.es.turretSpecs[2].copy(&self.es.turretSpecs[1]);
         if (ts.nway > 1) && (rand.nextInt(2) == 0) {
           let nsa : f32 = (ts.speed * (0.2 + ts.nway * 0.05 + rand.nextFloat(0.1))) / ((ts.nway - 1) as f32);
           if rand.nextInt(2) == 0 {
@@ -1521,7 +1524,7 @@ impl<'a> EnemySpec for MiddleEnemySpec<'a> {
         return false;
       },
       };
-      es.nextPhaseCnt /= self.es.rank;
+      es.nextPhaseCnt /= self.es.rank as i32;
       es.phaseCnt = 0;
     //}
     true
@@ -1713,7 +1716,7 @@ impl<'a> EnemySpec for SE1Spec<'a> {
         es.nextPhaseCnt = self.es.calcStandByTime(es);
         },
       }
-      es.nextPhaseCnt /= self.es.rank;
+      es.nextPhaseCnt /= self.es.rank as i32;
       es.phaseCnt = 0;
     //}
     true
@@ -2286,7 +2289,7 @@ impl<'a> TurretSpec<'a> {
     if self.gameState.mode() != Mode::MODERN {
       p.y > 0.0
     } else {
-      (p.y > 0.0) && (p.dist(self.player.pos) > self.minimumFireDist)
+      (p.y > 0.0) && (p.dist(self.player.pos()) > self.minimumFireDist)
     }
   }
 

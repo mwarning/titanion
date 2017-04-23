@@ -137,7 +137,7 @@ impl<'a> Player<'a> {
 
   pub fn checkBulletHit(&self, p : Vector, pp : Vector) -> bool {
     //with (state) {
-      if !self.state.hasCollision {
+      if !self.state.hasCollision() {
         return false;
       }
       if self.spec.field.checkHitDist(self.state.pos, p, pp, self.spec.bulletHitWidth) {
@@ -153,7 +153,7 @@ impl<'a> Player<'a> {
       return false;
     }
     //with (state) {
-      if !self.state.hasCollision {
+      if !self.state.hasCollision() {
         return false;
       }
       if ((self.state.pos.x - p.x).abs() < size.x) && ((self.state.pos.y - p.y).abs() < size.y) {
@@ -463,7 +463,7 @@ impl<'a> TokenSpec<PlayerState<'a>> for PlayerSpec<'a> {
     //with (state) {
       let p = self.field.calcCircularPos(state.pos);
       let cd = self.field.calcCircularDeg(state.pos.x);
-      self.shape.draw(state.p, state.cd, state.deg);
+      self.shape.draw(state.p, state.ts.cd, state.ts.deg);
     //}
   }
 }
@@ -564,7 +564,7 @@ impl<'a> PlayerSpec<'a> {
       self.capturedEnemiesShots.move1();
       self.capturedEnemiesShots.checkParent();
       if self.gameState.isGameOver() {
-        if self.input.button & Button::A {
+        if self.input.button & BUTTON_A {
           if !self.aPressed {
             self.aPressed = true;
             if !self.replayMode {
@@ -583,15 +583,15 @@ impl<'a> PlayerSpec<'a> {
       let mut vx : f32 = 0.0;
       let mut vy : f32 = 0.0;
 
-      if self.input.dir & Dir::RIGHT {
+      if self.input.dir & DIR_RIGHT {
         vx = 1.0;
-      } else if self.input.dir & Dir::LEFT {
+      } else if self.input.dir & DIR_LEFT {
         vx = -1.0;
       }
 
-      if self.input.dir & Dir::UP {
+      if self.input.dir & DIR_UP {
         vy = 1.0;
-      } else if self.input.dir & Dir::DOWN {
+      } else if self.input.dir & DIR_DOWN {
         vy = -1.0;
       }
 
@@ -606,7 +606,7 @@ impl<'a> PlayerSpec<'a> {
         vy *= 0.5;
       }
       ps.pos().y += vy * ps.speed;
-      if !(input.button & Button::B) {
+      if !(input.button & BUTTON_B) {
         ps.deg += (-TILT_DEG * (vx * ps.speed) - ps.deg) * 0.1;
       }
       //assert(deg <>= 0);
@@ -622,7 +622,7 @@ impl<'a> PlayerSpec<'a> {
       }
       match self.gameState.mode() {
        Mode::CLASSIC => {
-        /*if (input.button & Button::A) {
+        /*if (input.button & BUTTON_A) {
           if (!aPressed) {
             aPressed = true;
             if (!captureBeamReleased)
@@ -631,7 +631,7 @@ impl<'a> PlayerSpec<'a> {
         } else {
           aPressed = false;
         }*/
-        if (self.input.button & Button::A) && !self.captureBeamReleased {
+        if (self.input.button & BUTTON_A) && !self.captureBeamReleased {
           if self.shotCnt <= 0 {
             self.fireShot(ps);
           }
@@ -640,7 +640,7 @@ impl<'a> PlayerSpec<'a> {
         }
       },
       Mode::BASIC => {
-        if (self.input.button & Button::A) && !(self.input.button & Button::B) {
+        if (self.input.button & BUTTON_A) && !(self.input.button & BUTTON_B) {
           if self.shotCnt <= 0 {
             self.fireShot(ps);
           }
@@ -649,7 +649,7 @@ impl<'a> PlayerSpec<'a> {
         }
       },
       Mode::MODERN => {
-        if self.input.button & Button::A {
+        if self.input.button & BUTTON_A {
           if self.shotCnt <= 0 {
             self.fireShot(ps);
           }
@@ -658,7 +658,7 @@ impl<'a> PlayerSpec<'a> {
         }
       },
       }
-      if self.input.button & Button::B {
+      if self.input.button & BUTTON_B {
         ps.speed += (BASE_SPEED * 1.2 - ps.speed) * 0.33;
         ps.deg *= 0.9;
         if self.gameState.mode() == Mode::MODERN {
@@ -678,7 +678,7 @@ impl<'a> PlayerSpec<'a> {
       }
       match self.gameState.mode() {
         Mode::CLASSIC => {
-        if (self.input.button & Button::B) &&
+        if (self.input.button & BUTTON_B) &&
             !self.captureBeamReleased && (ps.captureBeamEnergy >= 1.0) &&
             (self.capturedEnemyNum < MAX_CAPTURED_ENEMIES_NUM) {
           self.captureBeamReleased = true;
@@ -699,7 +699,7 @@ impl<'a> PlayerSpec<'a> {
         }
         },
       Mode::BASIC => {
-        if (self.input.button & Button::B) &&
+        if (self.input.button & BUTTON_B) &&
             (self.capturedEnemyNum < MAX_CAPTURED_ENEMIES_NUM) {
           self.tractorBeam.extendLength(1.0);
         } else {
@@ -707,8 +707,8 @@ impl<'a> PlayerSpec<'a> {
         }
       },
       Mode::MODERN => {
-        if (self.input.button & Button::B) &&
-            !(self.input.button & Button::A) {
+        if (self.input.button & BUTTON_B) &&
+            !(self.input.button & BUTTON_A) {
           self.tractorBeam.extendLength(1.0);
         } else {
           self.tractorBeam.reduceLength(1.0);
@@ -825,12 +825,12 @@ impl<'a> PlayerSpec<'a> {
     let d : f32 = (rv.x, -rv.y).atan2();
     let sp : f32 = rv.vctSize();
     for i in 0..36 {
-      let mut pt : Particle = self.particles.getInstanceForced();
+      let mut pt = self.particles.getInstanceForced();
       let mut r : f32 = 0.5 + rand.nextFloat(0.5);
       let mut g : f32 = 0.3 + rand.nextFloat(0.3);
       let mut b : f32 = 0.8 + rand.nextFloat(0.2);
       pt.set(ParticleShape::LINE, ps.pos().x, ps.pos().y,
-             d + rand.nextSignedFloat(0.3), sp * (1.0 + rand.nextFloat(2)),
+             d + rand.nextSignedFloat(0.3), sp * (1.0 + rand.nextFloat(2.0)),
              1, r, g, b, 30 + rand.nextInt(30));
     }
     self.frame.sound.borrow().playSe("flick.wav");
@@ -850,15 +850,15 @@ impl<'a> PlayerSpec<'a> {
       let mut g : f32= 0.3 + rand.nextFloat(0.3);
       let mut b : f32 = 0.8 + rand.nextFloat(0.2);
       for i in 0..100 {
-        let mut p : Particle = self.particles.getInstanceForced();
+        let mut p = self.particles.getInstanceForced();
         p.set(ParticleShape::QUAD, ps.pos.x, ps.pos.y, rand.nextFloat(PI * 2.0), 0.01 + rand.nextFloat(1.0),
-              1 + rand.nextFloat(4), r, g, b, 10 + rand.nextInt(200));
+              1 + rand.nextFloat(4.0), r, g, b, 10 + rand.nextInt(200));
       }
       r = 0.5 + rand.nextFloat(0.5);
       g = 0.3 + rand.nextFloat(0.3);
       b = 0.8 + rand.nextFloat(0.2);
       for i in 0..30 {
-        let mut p : Particle = self.particles.getInstanceForced();
+        let mut p = self.particles.getInstanceForced();
         p.set(ParticleShape::TRIANGLE, ps.pos.x, ps.pos.y, rand.nextFloat(PI * 2.0), 0.03 + rand.nextFloat(0.3),
               3, r, g, b, 50 + rand.nextInt(150));
       }
@@ -866,7 +866,7 @@ impl<'a> PlayerSpec<'a> {
       g = 0.3 + rand.nextFloat(0.3);
       b = 0.8 + rand.nextFloat(0.2);
       for i in 0..300 {
-        let mut p : Particle = self.particles.getInstanceForced();
+        let mut p = self.particles.getInstanceForced();
         p.set(ParticleShape::LINE, ps.pos.x, ps.pos.y, rand.nextFloat(PI * 2.0), 0.07 + rand.nextFloat(0.7),
               1, r, g, b, 100 + rand.nextInt(100));
       }
@@ -895,17 +895,16 @@ impl<'a> PlayerSpec<'a> {
         return;
       }
       let p : Vector3 = self.field.calcCircularPos(ps.pos);
-      let cd : f32 = self.field.calcCircularDeg(ps.pos.x);
+      let cd = self.field.calcCircularDeg(ps.pos.x);
       if self.hasShape {
         self.shape.draw(p, cd, ps.deg);
       }
       let c : i32 = ps.colorCnt % 60;
-      let mut a : f32;
-      if c < 30 {
-        a = (c as f32) / 30.0;
+      let a = if c < 30 {
+        (c as f32) / 30.0
       } else {
-        a = 1.0 - ((c - 30) as f32) / 30.0;
-      }
+        1.0 - ((c - 30) as f32) / 30.0
+      };
       Screen::setColor(a, a, a);
       self.lineShape.draw(p, cd, ps.deg);
     //}
@@ -921,17 +920,16 @@ impl<'a> PlayerSpec<'a> {
       glVertex3f(25.0, 420.0, 0.0);
       glEnd();
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      let mut a : f32;
-      if ps.captureBeamEnergy < 1 {
-        a = ps.captureBeamEnergy;
+      let a = if ps.captureBeamEnergy < 1 {
+        ps.captureBeamEnergy
       } else {
         let c  : i32 = ps.colorCnt % 60;
         if c < 30 {
-          a = (c / 30) as f32;
+          (c / 30) as f32
         } else {
-          a = 1.0 - ((c - 30) as f32) / 30.0;
+          1.0 - ((c - 30) as f32) / 30.0
         }
-      }
+      };
       Screen::setColor(1.0, 1.0, 1.0, a);
       glBegin(GL_LINE_LOOP);
       glVertex3f(15.0, 400.0, 0.0);

@@ -28,7 +28,7 @@ pub struct Sound {
   se : HashMap<&'static str, Chunk>,
   seMark : HashMap<&'static str, bool>,
   bgmFileName : Vec<&'static str>,
-  currentBgm : String,
+  currentBgm : &'static str,
   prevBgmIdx : i32,
   nextIdxMv : i32,
   _bgmEnabled : bool,
@@ -150,7 +150,7 @@ impl Sound {
   }
 
   pub fn playBgm(&self) {
-    let bgmIdx = self.rand.nextInt(self.bgm.length);
+    let bgmIdx = self.rand.nextInt(self.bgm.len() as i32);
     let nextIdxMv = self.rand.nextInt(2) * 2 - 1;
     self.prevBgmIdx = self.bgmIdx;
     self.playBgm2(self.bgmFileName[bgmIdx as usize]);
@@ -159,8 +159,8 @@ impl Sound {
   pub fn nextBgm(&mut self) {
     let mut bgmIdx = self.prevBgmIdx + self.nextIdxMv;
     if bgmIdx < 0 {
-      bgmIdx = self.bgm.length - 1;
-    } else if bgmIdx >= self.bgm.length {
+      bgmIdx = (self.bgm.len() as i32) - 1;
+    } else if bgmIdx >= (self.bgm.len() as i32) {
       bgmIdx = 0;
     }
     self.prevBgmIdx = bgmIdx;

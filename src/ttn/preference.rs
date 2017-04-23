@@ -57,14 +57,14 @@ impl Preference {
     //try {
     let fd = File::new(PREF_FILE_NAME, File::ReadExisting);
     let mut ver : i32;
-    read::<i32>(fd, &ver);
+    read::<i32>(fd, &mut ver);
     if ver != VERSION_NUM {
       panic!("Wrong version num");
     }
-    read::<i32>(fd, &self._lastMode);
+    read::<i32>(fd, &mut self._lastMode);
     for j in 0..MODE_NUM {
       for i in 0..RANKING_NUM {
-        read::<i32>(fd, &self._highScore[j][i]);
+        read::<i32>(fd, &mut self._highScore[j][i]);
       }
     }
     //} catch (Object e) {

@@ -76,7 +76,7 @@ impl<'a> Title<'a> {
 
   pub fn move1(&mut self) {
     let input = self.pad.getState(false);
-    if self.input.button & Button::A {
+    if self.input.button & BUTTON_A {
       if !self.aPressed {
         self.aPressed = true;
         self.frame.startInGame(self.cursorIdx);
@@ -84,12 +84,12 @@ impl<'a> Title<'a> {
     } else {
       self.aPressed = false;
     }
-    if self.input.dir & (Dir::UP | Dir::DOWN) {
+    if self.input.dir & (DIR_UP | DIR_DOWN) {
       if !self.udPressed {
         self.udPressed = true;
-        if self.input.dir & Dir::UP {
+        if self.input.dir & DIR_UP {
           self.cursorIdx -= 1;
-        } else if input.dir & Dir::DOWN {
+        } else if input.dir & DIR_DOWN {
           self.cursorIdx += 1;
         }
         if self.cursorIdx < 0 {
@@ -206,7 +206,7 @@ impl<'a> Title<'a> {
         sx += ((c * 2.35) as i32) as f32;
         sz -= c * 0.03;
       }
-      Letter::drawNum(self.preference.highScore[self.cursorIdx][i], sx, sy, sz, 0, -1.0, -1);
+      Letter::drawNum7(self.preference.highScore[self.cursorIdx][i], sx, sy, sz, 0, -1.0, -1);
       y += 24.0;
     }
   }

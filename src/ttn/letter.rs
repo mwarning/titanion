@@ -113,11 +113,11 @@ impl<'a> Letter<'a> {
   }
 
 
-  pub fn drawString(string : &String, lx : f32, y : f32, s : f32) {
+  pub fn drawString(string : &'static str, lx : f32, y : f32, s : f32) {
     Letter::drawString11(string, lx, y, s, Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 1.0);
   }
 
-  pub fn drawString11(string : &String, lx : f32, y : f32, s : f32,
+  pub fn drawString11(string : &'static str, lx : f32, y : f32, s : f32,
                                 d : Direction /*= Direction::TO_RIGHT*/,
                                 rev : bool /*= false*/, od : f32 /*= 0*/,
                                 r : f32 /*= 1*/, g : f32 /*= 1*/,  b : f32 /*= 1*/) {
@@ -169,7 +169,11 @@ impl<'a> Letter<'a> {
     }
   }
 
-  pub fn drawNum(num : i32, lx : f32, y : f32, s : f32, dg : i32 /*= 0*/, headChar : f32 /*= -1*/, floatDigit : i32 /*= -1*/) {
+  pub fn drawNum(num : i32, lx : f32, y : f32, s : f32) {
+    Letter::drawNum7(num, lx, y, s, 0, -1.0, -1);
+  }
+
+  pub fn drawNum7(num : i32, lx : f32, y : f32, s : f32, dg : i32 /*= 0*/, headChar : f32 /*= -1*/, floatDigit : i32 /*= -1*/) {
     lx += LETTER_WIDTH * s / 2;
     y += LETTER_HEIGHT * s / 2;
     let n : i32 = num;

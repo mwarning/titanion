@@ -637,14 +637,14 @@ impl<'a> GameState<'a> {
 
   pub fn draw(&mut self) {
     Letter::drawNum(self.score, 132, 5, 7);
-    Letter::drawNum(self.nextExtendScore, 134, 25, 5);
+    Letter::drawNum(self.nextExtendScore, 134.0, 25.0, 5);
     if self._lastGameScore >= 0 {
-      Letter::drawNum(self._lastGameScore, 360, 5, 7);
+      Letter::drawNum(self._lastGameScore, 360.0, 5.0, 7);
       //Letter.drawString(GameState.MODE_NAME[_lastGameMode], 292, 24, 5);
     }
     Letter::drawNum((self._multiplier * 100) as i32, 626, 4, 9, 3, 33, 2);
     if self.pmDispCnt > 0 {
-      Letter::drawNum(self.proximityMultiplier, 626, 30, 7, 0, 33);
+      Letter::drawNum7(self.proximityMultiplier, 626.0, 30.0, 7.0, 0, 33.0);
     }
     self.stage.drawPhaseNum();
     if self.isInGame {
@@ -653,15 +653,15 @@ impl<'a> GameState<'a> {
       }
       if self._isGameOver {
         if self.gameOverCnt > 60 {
-          Letter::drawString("GAME OVER", 214, 200, 12);
+          Letter::drawString("GAME OVER", 214.0, 200.0, 12.0);
           self.stage.drawGameover();
         }
       } else if self._paused {
         if (self.pauseCnt % 120) < 60 {
-          Letter::drawString("PAUSE", 290, 420, 7);
+          Letter::drawString("PAUSE", 290.0, 420.0, 7.0);
         }
       }
-      Letter::drawString(GameState::MODE_NAME[self.mode], 540, 400, 5);
+      Letter::drawString(GameState::MODE_NAME[self.mode], 540.0, 400.0, 5.0);
     }
   }
 

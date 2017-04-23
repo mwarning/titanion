@@ -4,6 +4,7 @@
 
 use std::ptr;
 use std::ops::BitOr;
+use std::mem::transmute;
 
 use util::sdl::input::*;
 use util::sdl::recordableinput::*;
@@ -17,53 +18,31 @@ use ttn::dummy::*;
 const JOYSTICK_AXIS : i32 = 16384;
 
 pub struct Pad {
-  keys : &'static u8,
+  keys : &'static [u8; 16],
   pub buttonsExchanged : bool,
   stick : *const SDL_Joystick, //= null;
   state : PadState,
 }
 
-#[derive(Copy, Clone, PartialEq, Debug)]
-pub enum Dir {
-  NONE,
-  UP = 1,
-  DOWN = 2,
-  LEFT = 4,
-  RIGHT = 8,
-}
+pub const DIR_NONE : i32 = 0;
+pub const DIR_UP : i32 = 1;
+pub const DIR_DOWN : i32 = 2;
+pub const DIR_LEFT : i32 = 4;
+pub const DIR_RIGHT : i32 = 8;
 
-impl BitOr for Dir {
-    type Output = u32;
-
-    fn bitor(self, rhs: Self) -> u32 {
-      (self as u32) | (rhs as u32)
-    }
-}
-
-#[derive(Copy, Clone, PartialEq, Debug)]
-pub enum Button {
-  NONE,
-  A = 16,
-  B = 32,
-  ANY = 48,
-}
-
-impl BitOr for Button {
-    type Output = u32;
-
-    fn bitor(self, rhs: Self) -> u32 {
-      (self as u32) | (rhs as u32)
-    }
-}
+pub const BUTTON_NONE : i32 = 0;
+pub const BUTTON_A : i32 = 16;
+pub const BUTTON_B : i32 = 32;
+pub const BUTTON_ANY : i32 = 48;
 
 pub struct PadState {
-  dir : Dir,
-  button : Button,
+  dir : i32,
+  button : i32,
 }
 
 impl PadState {
   pub fn new() -> PadState {
-    PadState{dir : Dir::NONE, button : Button::NONE}
+    PadState{dir : DIR_NONE, button : BUTTON_NONE}
   }
 
   pub fn newInstance1(s : PadState) -> PadState {
@@ -76,15 +55,15 @@ impl PadState {
   }
 
   pub fn clear(&mut self) {
-    self.dir = Dir::NONE;
-    self.button = Button::NONE;
+    self.dir = DIR_NONE;
+    self.button = BUTTON_NONE;
   }
 
   pub fn read(&mut self, fd : &File) {
     let mut s : i32;
     fd.read2(&s);
-    self.dir = (s & ((Dir::UP | Dir::DOWN | Dir::LEFT | Dir::RIGHT) as i32)) as Dir;
-    self.button = s & (Button::ANY as i32);
+    self.dir = unsafe { transmute(s & ((DIR_UP | DIR_DOWN) | (DIR_LEFT | DIR_RIGHT))) };
+    self.button = unsafe { transmute(s & (BUTTON_ANY as i32)) };
   }
 
   pub fn write(&mut self, fd : &File) {
@@ -117,7 +96,7 @@ pub struct RecordablePad {
 impl Input for RecordablePad {
   //inlined from class Pad
   fn handleEvent(&mut self, event : SDL_Event) {
-    self.keys = SDL_GetKeyState(ptr::null());
+    self.pad.keys = SDL_GetKeyState(ptr::null());
   }
 }
 
@@ -135,7 +114,7 @@ impl RecordablePad {
   pub fn new() -> RecordablePad {
     RecordablePad {
       //inline from RecordableInput!(T)
-      inputRecord : InputRecord::<PadState>::new(),
+      inputRecord : InputRecord::new(),
       //inlined from Pad
       pad : Pad {
         keys : SDL_GetKeyState(ptr::null()),
@@ -152,7 +131,7 @@ impl RecordablePad {
       if SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0 {
         return ptr::null();
       }
-      self.pad.stick = SDL_JoystickOpen(ptr::null());
+      self.pad.stick = SDL_JoystickOpen(0);
     } else {
       self.pad.stick = st;
     }
@@ -163,32 +142,33 @@ impl RecordablePad {
   fn getState(&mut self) -> PadState {
     let x : i32 = 0;
     let y : i32 = 0;
-    self.pad.state.dir = 0;
+    self.pad.state.dir = DIR_NONE;
     if self.pad.stick != ptr::null() {
       x = SDL_JoystickGetAxis(self.pad.stick, 0);
       y = SDL_JoystickGetAxis(self.pad.stick, 1);
     }
-    if (self.keys[SDLK_RIGHT] == SDL_PRESSED) || (self.keys[SDLK_KP6] == SDL_PRESSED) || 
-        (self.keys[SDLK_d] == SDL_PRESSED) || (self.keys[SDLK_l] == SDL_PRESSED) ||
+    let keys = self.pad.keys;
+    if (keys[SDLK_RIGHT] == SDL_PRESSED) || (keys[SDLK_KP6] == SDL_PRESSED) || 
+        (keys[SDLK_d] == SDL_PRESSED) || (keys[SDLK_l] == SDL_PRESSED) ||
         (x > JOYSTICK_AXIS) {
-      self.pad.state.dir |= Dir::RIGHT;
+      self.pad.state.dir |= DIR_RIGHT;
     }
-    if self.keys[SDLK_LEFT] == SDL_PRESSED || (self.keys[SDLK_KP4] == SDL_PRESSED) ||
-        self.keys[SDLK_a] == SDL_PRESSED || (self.keys[SDLK_j] == SDL_PRESSED) ||
+    if keys[SDLK_LEFT] == SDL_PRESSED || (keys[SDLK_KP4] == SDL_PRESSED) ||
+        keys[SDLK_a] == SDL_PRESSED || (keys[SDLK_j] == SDL_PRESSED) ||
         (x < -JOYSTICK_AXIS) {
-      self.pad.state.dir |= Dir::LEFT;
+      self.pad.state.dir |= DIR_LEFT;
     }
-    if (self.keys[SDLK_DOWN] == SDL_PRESSED) || (self.keys[SDLK_KP2] == SDL_PRESSED) ||
-        (self.keys[SDLK_s] == SDL_PRESSED) || (self.keys[SDLK_k] == SDL_PRESSED) ||
+    if (keys[SDLK_DOWN] == SDL_PRESSED) || (keys[SDLK_KP2] == SDL_PRESSED) ||
+        (keys[SDLK_s] == SDL_PRESSED) || (keys[SDLK_k] == SDL_PRESSED) ||
         (y > JOYSTICK_AXIS) {
-      self.pad.state.dir |= Dir::DOWN;
+      self.pad.state.dir |= DIR_DOWN;
     }
-    if (self.keys[SDLK_UP] == SDL_PRESSED) || (self.keys[SDLK_KP8] == SDL_PRESSED) ||
-        (self.keys[SDLK_w] == SDL_PRESSED) || (self.keys[SDLK_i] == SDL_PRESSED) ||
+    if (keys[SDLK_UP] == SDL_PRESSED) || (keys[SDLK_KP8] == SDL_PRESSED) ||
+        (keys[SDLK_w] == SDL_PRESSED) || (keys[SDLK_i] == SDL_PRESSED) ||
         (y < -JOYSTICK_AXIS) {
-      self.pad.state.dir |= Dir::UP;
+      self.pad.state.dir |= DIR_UP;
     }
-    self.pad.state.button = 0;
+    self.pad.state.button = BUTTON_NONE;
     let btn1 : i32 = 0;
     let btn2 : i32 = 0;
     let leftTrigger : f32 = 0.0;
@@ -202,24 +182,24 @@ impl RecordablePad {
              SDL_JoystickGetButton(stick, 5) + SDL_JoystickGetButton(stick, 7) +
              SDL_JoystickGetButton(stick, 9) + SDL_JoystickGetButton(stick, 11);
     }
-    if (self.keys[SDLK_z] == SDL_PRESSED) || (self.keys[SDLK_PERIOD] == SDL_PRESSED) ||
-        (self.keys[SDLK_LCTRL] == SDL_PRESSED) || (self.keys[SDLK_RCTRL] == SDL_PRESSED) || 
-        btn1 {
-      if !self.buttonsExchanged {
-        self.pad.state.button |= Button::A;
+    if (keys[SDLK_z] == SDL_PRESSED) || (keys[SDLK_PERIOD] == SDL_PRESSED) ||
+        (keys[SDLK_LCTRL] == SDL_PRESSED) || (keys[SDLK_RCTRL] == SDL_PRESSED) || 
+        (btn1 != 0) {
+      if !self.pad.buttonsExchanged {
+        self.pad.state.button |= BUTTON_A;
       } else {
-        self.pad.state.button |= Button::B;
+        self.pad.state.button |= BUTTON_B;
       }
     }
-    if (self.keys[SDLK_x] == SDL_PRESSED) || (self.keys[SDLK_SLASH] == SDL_PRESSED) ||
-        (self.keys[SDLK_LALT] == SDL_PRESSED) || (self.keys[SDLK_RALT] == SDL_PRESSED) ||
-        (self.keys[SDLK_LSHIFT] == SDL_PRESSED) || (self.keys[SDLK_RSHIFT] == SDL_PRESSED) ||
-        (self.keys[SDLK_RETURN] == SDL_PRESSED) ||
-        btn2 {
-      if !self.buttonsExchanged {
-        self.pad.state.button |= Button::B;
+    if (keys[SDLK_x] == SDL_PRESSED) || (keys[SDLK_SLASH] == SDL_PRESSED) ||
+        (keys[SDLK_LALT] == SDL_PRESSED) || (keys[SDLK_RALT] == SDL_PRESSED) ||
+        (keys[SDLK_LSHIFT] == SDL_PRESSED) || (keys[SDLK_RSHIFT] == SDL_PRESSED) ||
+        (keys[SDLK_RETURN] == SDL_PRESSED) ||
+        (btn2 != 0) {
+      if !self.pad.buttonsExchanged {
+        self.pad.state.button |= BUTTON_B;
       } else {
-        self.pad.state.button |= Button::A;
+        self.pad.state.button |= BUTTON_A;
       }
     }
     self.pad.state
@@ -233,7 +213,7 @@ impl RecordablePad {
 
   //inlined from RecordableInput!(PadState)
   fn startRecord(&mut self) {
-    self.inputRecord = InputRecord::<PadState>::new();
+    self.inputRecord = InputRecord::new();
     self.inputRecord.clear();
   }
 

@@ -20,7 +20,7 @@ pub struct GLenum;
 pub fn glGetError() -> GLenum { GLenum{} }
 
 pub struct SDL_Joystick;
-pub fn SDL_Init(flags : u32) {}
+pub fn SDL_Init(flags : u32) -> i32 { 0 }
 pub fn SDL_WM_SetCaption(title : &str, icon : &str) {}
 
 pub struct SDL_Surface;
@@ -64,7 +64,7 @@ pub fn Mix_LoadMUS(filename : &str) -> *const Mix_Music { ptr::null() }
 pub fn Mix_FreeMusic(m : *const Mix_Music) {}
 pub fn Mix_PlayMusic(m : *const Mix_Music, n : i32) {}
 
-pub const SDL_PRESSED : usize = 0;
+pub const SDL_PRESSED : u8 = 0;
 pub const SDLK_ESCAPE : usize = 0;
 pub const SDLK_p : usize = 0;
 
@@ -108,11 +108,13 @@ pub const SDLK_RETURN : usize = 0;
 pub const SDL_INIT_JOYSTICK : u32 = 0;
 pub const SDL_INIT_AUDIO : u32 = 0;
 
-pub fn SDL_JoystickGetButton(stick : *const SDL_Joystick, n : u32) {}
-pub fn SDL_JoystickGetAxis(stick : *const SDL_Joystick, n : u32) {}
+pub fn SDL_JoystickGetButton(stick : *const SDL_Joystick, n : u32) -> i32 { 0 }
+pub fn SDL_JoystickGetAxis(stick : *const SDL_Joystick, n : u32) -> i32 { 0 }
 pub fn SDL_InitSubSystem(n : u32) -> u32 { 0 }
 pub fn SDL_JoystickOpen(n : u32) -> *const SDL_Joystick { ptr::null() }
-pub fn SDL_GetKeyState(x :  *const SDL_Event) -> *const u8 { ptr::null() } //accepts a pointer...
+
+static keys : [u8; 16] = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+pub fn SDL_GetKeyState(x :  *const SDL_Event) -> &'static [u8; 16] { &keys }
 pub fn SDL_Delay(d : u32) {}
 pub fn SDL_GetTicks() -> i64 { 0 }
 pub fn SDL_Quit() {}
@@ -164,7 +166,7 @@ pub fn glColor4f(a : f32, b : f32, c : f32, d : f32) {}
 pub fn glFrustum(left : f64, right : f64, bottom : f64, top : f64, nearVal : f64, farVal : f64) {}
 
 pub const GL_NO_ERROR : usize = 0;
-pub const GL_COLOR_BUFFER_BIT : usize = 0;
+pub const GL_COLOR_BUFFER_BIT : u32 = 0;
 pub const SDL_ENABLE : usize = 0;
 pub const SDL_DISABLE : usize = 0;
 pub const GL_BLEND : usize = 0;

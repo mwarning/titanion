@@ -272,16 +272,16 @@ impl<'a> Field<'a> {
         cp.z = d1.cos() * torusRad;
         Field::createRingOffset(&ringOfs, cp, ringRad, d1, d2);
         Screen::setColor(0.3, 0.3, 0.3, 0.8);
-        Screen::glVertex(ringOfs);
+        Screen::glVertex3(ringOfs);
         Field::createRingOffset(&ringOfs, cp, ringRad, d1, d2 + PI * 2.0 / 16.0);
-        Screen::glVertex(ringOfs);
+        Screen::glVertex3(ringOfs);
         cp.x = (d1 + PI * 2.0 / 32.0).sin() * torusRad;
         cp.z = (d1 + PI * 2.0 / 32.0).cos() * torusRad;
         Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0, d2 + PI * 2.0 / 16.0);
-        Screen::glVertex(ringOfs);
+        Screen::glVertex3(ringOfs);
         Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0, d2);
         Screen::setColor(0.3, 0.3, 0.3, 0.2);
-        Screen::glVertex(ringOfs);
+        Screen::glVertex3(ringOfs);
         d2 += PI * 2.0 / 16.0
       }
       d1 += PI * 2.0 / 32.0;
@@ -290,22 +290,22 @@ impl<'a> Field<'a> {
     glEnd();
     glBegin(GL_LINE_STRIP);
     ringRad = CIRCLE_RADIUS * 0.3;
-    Screen::setColor(0.1, 0.1, 0.1);
+    Screen::setColor(0.1, 0.1, 0.1, 1.0);
     d1 = d1s;
     for _ in 0..16 {
         let mut d2 = self.cnt * 0.003;
         for _ in 0..16 {
           cp.x = (d1 + PI * 2.0 / 32.0 * 0.1).sin() * torusRad;
           cp.z = (d1 + PI * 2.0 / 32.0 * 0.1).cos() * torusRad;
-          Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.1, d2 + PI * 2.0 / 16.0 * 0.1);
+          Field::createRingOffset(&mut ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.1, d2 + PI * 2.0 / 16.0 * 0.1);
           Screen::glVertex3(ringOfs);
-          Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.1, d2 + PI * 2.0 / 16.0 * 0.9);
+          Field::createRingOffset(&mut ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.1, d2 + PI * 2.0 / 16.0 * 0.9);
           Screen::glVertex3(ringOfs);
           cp.x = (d1 + PI * 2.0 / 32.0 * 0.9).sin() * torusRad;
           cp.z = (d1 + PI * 2.0 / 32.0 * 0.9).cos() * torusRad;
-          Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.9, d2 + PI * 2.0 / 32.0 * 0.1);
+          Field::createRingOffset(&mut ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.9, d2 + PI * 2.0 / 32.0 * 0.1);
           Screen::glVertex3(ringOfs);
-          Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.9, d2 + PI * 2.0 / 16.0 * 0.9);
+          Field::createRingOffset(&mut ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0 * 0.9, d2 + PI * 2.0 / 16.0 * 0.9);
           Screen::glVertex3(ringOfs);
           d2 += PI * 2.0 / 16.0
         }
