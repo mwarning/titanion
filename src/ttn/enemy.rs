@@ -1431,7 +1431,7 @@ impl<'a> EnemySpec for MiddleEnemySpec<'a> {
           self.es.turretSpecs[2].fireIntervalRatio = 0.25;
           self.es.turretSpecs[0].fireIntervalRatio = 0.5;
         } else {
-          self.es.turretSpecs[0].disabled = true;
+          self.es.turretSpecs[0].disabled(true);
           self.es.turretSpecs[1].interval *= 2;
           self.es.turretSpecs[2].interval *= 2;
           if rand.nextInt(2) == 0 {
@@ -1447,7 +1447,7 @@ impl<'a> EnemySpec for MiddleEnemySpec<'a> {
         self.es.turretSpecs[1].interval *= 2;
         self.es.turretSpecs[2].copy(&self.es.turretSpecs[1]);
         if (ts.nway > 1) && (rand.nextInt(2) == 0) {
-          let nsa : f32 = (ts.speed * (0.2 + ts.nway * 0.05 + rand.nextFloat(0.1))) / ((ts.nway - 1) as f32);
+          let nsa : f32 = (ts.speed * (0.2 + (ts.nway as f32) * 0.05 + rand.nextFloat(0.1))) / ((ts.nway - 1) as f32);
           if rand.nextInt(2) == 0 {
             nsa *= -1.0;
           }
@@ -2212,26 +2212,26 @@ impl<'a> TurretSpec<'a> {
     if self._disabled {
       return true;
     }
-    let itv : f32 = (self.interval as f32) * ((1.0 - anger) * 0.99 + 0.01);
+    let itv = (self.interval as f32) * ((1.0 - anger) * 0.99 + 0.01);
     if itv < 3.0 {
       itv = 3.0;
     }
     if ts.fireCnt > itv {
       ts.fireCnt = itv;
     }
-    let spd : f32 = self.speed * (1 + anger * 0.2);
+    let spd = self.speed * (1 + anger * 0.2);
     if self.fireingAtATime {
       ts.fireCnt -= time;
-      if ts.fireCnt <= 0 {
+      if ts.fireCnt <= 0.0 {
         ts.fireCnt = itv;
-        if ts.fireCnt < 3 {
-          ts.fireCnt = 3;
+        if ts.fireCnt < 3.0 {
+          ts.fireCnt = 3.0;
         }
         if self.isAbleToFire(ts.pos) {
-          let sp : f32 = spd - self.speedAccel * (self.burstNum - 1.0) / 2.0;
+          let sp = spd - self.speedAccel * (self.burstNum - 1.0) / 2.0;
           for i in 0..self.burstNum {
-            let d : f32 = ts.deg - self.nwayAngle * ((self.nway as f32) - 1.0) / 2.0 + self.nwayBaseDeg;
-            let nsp : f32 = sp - self.nwaySpeedAccel * ts.nwaySpeedAccelDir * ((self.nway as f32) - 1.0) / 2.0;
+            let d = ts.deg - self.nwayAngle * ((self.nway as f32) - 1.0) / 2.0 + self.nwayBaseDeg;
+            let nsp = sp - self.nwaySpeedAccel * ts.nwaySpeedAccelDir * ((self.nway as f32) - 1.0) / 2.0;
             for j in 0..self.nway {
               if let Some(b) = self.bullets.getInstance() {
                 b.set(self.bulletSpec, ts.pos, d, nsp * SPEED_RATIO);
@@ -2266,16 +2266,16 @@ impl<'a> TurretSpec<'a> {
           ts.burstCnt = self.burstInterval;
           ts.burstNum -= 1;
           if self.isAbleToFire(ts.pos) {
-            let d : f32 = ts.deg - self.nwayAngle * ((self.nway as f32) - 1.0) / 2.0 + self.nwayBaseDeg;
-            let nsp : f32 = ts.speed - self.nwaySpeedAccel * ts.nwaySpeedAccelDir * ((self.nway as f32) - 1.0) / 2.0;
+            let d = ts.deg - self.nwayAngle * ((self.nway as f32) - 1.0) / 2.0 + self.nwayBaseDeg;
+            let nsp = ts.speed - self.nwaySpeedAccel * ts.nwaySpeedAccelDir * ((self.nway as f32) - 1.0) / 2.0;
             for i in 0..self.nway {
-              let b : Bullet = self.bullets.getInstance();
-              if !b {
+              if let Some(b) = self.bullets.getInstance() {
+                b.set(self.bulletSpec, ts.pos, d, nsp * SPEED_RATIO);
+                d += self.nwayAngle;
+                nsp += self.nwaySpeedAccel * ts.nwaySpeedAccelDir;
+              } else {
                 break;
               }
-              b.set(self.bulletSpec, ts.pos, d, nsp * SPEED_RATIO);
-              d += self.nwayAngle;
-              nsp += self.nwaySpeedAccel * ts.nwaySpeedAccelDir;
             }
           }
           ts.speed += self.speedAccel;

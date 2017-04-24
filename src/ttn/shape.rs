@@ -251,9 +251,9 @@ impl ShotShape {
 }
 
 impl Shape for ShotShape {
-  pub fn get_display_list(&mut self) -> &mut DisplayList {
-    &mut self.displayList
-  }
+    fn get_display_list(&mut self) -> &mut DisplayList {
+        &mut self.displayList
+    }
 }
 
 impl DisplayListShape for ShotShape {

@@ -775,22 +775,22 @@ impl<'a> PlayerSpec<'a> {
             continue;
           }
           if self.capturedEnemies[i as usize].isCaptured {
-            let ces : Shot = self.capturedEnemiesShots.getInstance();
-            if !ces {
+            if let Some(ces) = self.capturedEnemiesShots.getInstance() {
+              let mut d : f32 = ps.deg;
+              if self.gameState.mode == Mode::MODERN {
+                d -= (self.capturedEnemies[i].pos.x - self.pos.x) * 0.3;
+              }
+              ces.set(self.shotSpec, self.capturedEnemies[i].pos, d, 0.66);
+              if self.gameState.mode() != Mode::MODERN {
+                ces.setParent(s);
+              }
+              else {
+                self.gameState.countShotFired();
+              }
+              self.addShotParticle(self.capturedEnemies[i].pos, ps.deg);
+            } else {
               break;
             }
-            let mut d : f32 = ps.deg;
-            if self.gameState.mode == Mode::MODERN {
-              d -= (self.capturedEnemies[i].pos.x - self.pos.x) * 0.3;
-            }
-            ces.set(self.shotSpec, self.capturedEnemies[i].pos, d, 0.66);
-            if self.gameState.mode() != Mode::MODERN {
-              self.ces.setParent(s);
-            }
-            else {
-              self.gameState.countShotFired();
-            }
-            self.addShotParticle(self.capturedEnemies[i].pos, ps.deg);
           }
         }
         if self.gameState.mode() == Mode::MODERN {
@@ -896,8 +896,8 @@ impl<'a> PlayerSpec<'a> {
       }
       let p = self.field.calcCircularPos(ps.ts.pos);
       let cd = self.field.calcCircularDeg(ps.ts.pos.x);
-      if self.hasShape {
-        self.shape.draw(p, cd, ps.deg);
+      if self.hasShape() {
+        self.shape.draw(p, cd, ps.ts.deg);
       }
       let c : i32 = ps.colorCnt % 60;
       let a = if c < 30 {
@@ -920,7 +920,7 @@ impl<'a> PlayerSpec<'a> {
       glVertex3f(25.0, 420.0, 0.0);
       glEnd();
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      let a = if ps.captureBeamEnergy < 1 {
+      let a = if ps.captureBeamEnergy < 1.0 {
         ps.captureBeamEnergy
       } else {
         let c  : i32 = ps.colorCnt % 60;
@@ -939,7 +939,7 @@ impl<'a> PlayerSpec<'a> {
       glEnd();
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
       if ps.captureBeamEnergy >= 1.0 {
-        Letter::drawString("READY", 50, 390, 4);
+        Letter::drawString("READY", 50.0, 390.0, 4);
       }
     //}
   }
@@ -1056,11 +1056,11 @@ impl<'a> Token<ShotState<'a>, ShotSpec<'a>> for Shot<'a> {
 
   fn remove(&self) {
     self._exists = false;
-    self.spec.removed(self.state);
+    self.spec.removed(&self.state);
   }
 
   fn pos(&self) -> Vector {
-    self.state.pos
+    self.state.ts.pos
   }
 }
 
@@ -1263,9 +1263,9 @@ impl<'a> TractorBeam<'a> {
     if self.length <= 0.0 {
       return false;
     }
-    p.x > (self.playerState.pos.x - WIDTH / 2.0) &&
-            p.x < (self.playerState.pos.x + WIDTH / 2.0) &&
-            p.y > self.playerState.pos.y && p.y < (self.playerState.pos.y + self.length + WIDTH);
+    p.x > (self.playerState.ts.pos.x - WIDTH / 2.0) &&
+            p.x < (self.playerState.ts.pos.x + WIDTH / 2.0) &&
+            p.y > self.playerState.ts.pos.y && p.y < (self.playerState.ts.pos.y + self.length + WIDTH);
   }
 
   fn draw(&mut self) {
@@ -1273,7 +1273,7 @@ impl<'a> TractorBeam<'a> {
       return;
     }
     let y : f32 = SHAPE_INTERVAL_LENGTH - (self.cnt % SHAPE_INTERVAL_TIME) * SHAPE_INTERVAL_LENGTH / SHAPE_INTERVAL_TIME;
-    let c : i32 = (self.cnt / SHAPE_INTERVAL_TIME) as i32;
+    let c = (self.cnt / SHAPE_INTERVAL_TIME) as i32;
     loop {
       if y > self.length {
         break;

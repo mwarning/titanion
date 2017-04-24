@@ -63,13 +63,13 @@ impl<'a> Letter<'a> {
 
   fn getWidthNum(num : i32, s : f32) -> f32 {
     let n = num;
-    let c = 1;
+    let c = 1.0;
     loop {
       if n < 10 {
         break;
       }
       n /= 10;
-      c += 1;
+      c += 1.0;
     }
     c * s * LETTER_WIDTH
   }
@@ -78,7 +78,7 @@ impl<'a> Letter<'a> {
     s * LETTER_HEIGHT
   }
 
-  fn drawLetter(&mut self, n : i32) -> f32 {
+  fn drawLetter(&mut self, n : i32) {
     self.displayList.call(n);
   }
 
@@ -125,8 +125,8 @@ impl<'a> Letter<'a> {
                                 r : f32 /*= 1*/, g : f32 /*= 1*/,  b : f32 /*= 1*/) {
     lx += LETTER_WIDTH * s / 2.0;
     y += LETTER_HEIGHT * s / 2.0;
-    let mut x : f32 = lx;
-    let ld : f32 = match d {
+    let mut x = lx;
+    let ld = match d {
       Direction::TO_RIGHT => 0.0,
       Direction::TO_DOWN => 90.0,
       Direction::TO_LEFT => 180.0,
@@ -157,7 +157,7 @@ impl<'a> Letter<'a> {
           }
         }
       }
-      if od == 0 {
+      if od == 0.0 {
         match d {
           Direction::TO_RIGHT => { x += s * LETTER_WIDTH; },
           Direction::TO_DOWN => { y += s * LETTER_WIDTH; },
@@ -268,14 +268,14 @@ impl<'a> Letter<'a> {
   pub fn setLetter(&mut self, idx : i32, type_ : LetterShape /* = Shape::NORMAL*/) {
     let mut i = 0;
     loop {
-      let deg = spData[idx][i][4] as i32;
+      let deg = SP_DATA[idx][i][4] as i32;
       if deg > 99990 {
         break;
       };
-      let mut x = -spData[idx][i][0];
-      let mut y = -spData[idx][i][1];
-      let mut size = spData[idx][i][2];
-      let mut length = spData[idx][i][3];
+      let mut x = -SP_DATA[idx][i][0];
+      let mut y = -SP_DATA[idx][i][1];
+      let mut size = SP_DATA[idx][i][2];
+      let mut length = SP_DATA[idx][i][3];
       y *= 0.9;
       size *= 1.4;
       length *= 1.05;

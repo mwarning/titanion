@@ -103,7 +103,7 @@ impl Input for RecordablePad {
 impl RecordablePad {
   //mixin RecordableInput!(PadState); //was inlined
 
-  fn getState2(&self, doRecord : bool /*= true*/) -> PadState {
+  pub fn getState2(&self, doRecord : bool /*= true*/) -> PadState {
     let s = self.getState();
     if doRecord {
       self.record(s);
@@ -126,7 +126,7 @@ impl RecordablePad {
   }
 
   //inlined from class Pad
-  fn openJoystick(&mut self, st : *const SDL_Joystick /*= null*/) -> *const SDL_Joystick {
+  pub fn openJoystick(&mut self, st : *const SDL_Joystick /*= null*/) -> *const SDL_Joystick {
     if st == ptr::null() {
       if SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0 {
         return ptr::null();
@@ -139,7 +139,7 @@ impl RecordablePad {
   }
 
   //inlined from class Pad
-  fn getState(&mut self) -> PadState {
+  pub fn getState(&mut self) -> PadState {
     let x : i32 = 0;
     let y : i32 = 0;
     self.pad.state.dir = DIR_NONE;
@@ -206,30 +206,30 @@ impl RecordablePad {
   }
 
   //inlined from class Pad
-  fn getNullState(&mut self) -> PadState {
+  pub fn getNullState(&mut self) -> PadState {
     self.pad.state.clear();
     self.pad.state
   }
 
   //inlined from RecordableInput!(PadState)
-  fn startRecord(&mut self) {
+  pub fn startRecord(&mut self) {
     self.inputRecord = InputRecord::new();
     self.inputRecord.clear();
   }
 
   //inlined from RecordableInput!(PadState)
-  fn record(&mut self, d : PadState) {
+  pub fn record(&mut self, d : PadState) {
     self.inputRecord.add(d);
   }
 
   //inlined from RecordableInput!(PadState)
-  fn startReplay(&mut self, pr : InputRecord) { //<PadState>) {
+  pub fn startReplay(&mut self, pr : InputRecord) { //<PadState>) {
     self.inputRecord = pr;
     self.inputRecord.reset();
   }
 
   //inlined from RecordableInput!(PadState)
-  fn replay(&mut self) -> PadState {
+  pub fn replay(&mut self) -> PadState {
     if !self.inputRecord.hasNext() {
       panic!("No record data.");
     }

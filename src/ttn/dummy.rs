@@ -16,9 +16,9 @@ impl SDL_Event {
 }
 
 
-enum GLenum {}
+enum GLenum { DUMMY }
 
-pub fn glGetError() -> GLenum { GLenum{} }
+pub fn glGetError() -> GLenum { GLenum::DUMMY }
 
 pub struct SDL_Joystick;
 pub fn SDL_Init(flags : u32) -> i32 { 0 }
@@ -27,7 +27,7 @@ pub fn SDL_WM_SetCaption(title : &str, icon : &str) {}
 pub struct SDL_Surface;
 pub fn SDL_WM_SetIcon(icon : *const SDL_Surface, mask : &'static str) {}
 
-pub fn SDL_LoadBMP(file : &str) -> *const SDL_Surface {}
+pub fn SDL_LoadBMP(file : &str) -> *const SDL_Surface { ptr::null() }
 pub const SDL_INIT_VIDEO : u32 = 0;
 
 pub const SDL_VIDEORESIZE : usize = 0;

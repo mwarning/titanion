@@ -201,7 +201,7 @@ impl<'a> Frame<'a> {
     self.clearAll();
     field.set();
     if let Some(replayData) = self.replayData.borrow_mut() {
-      gameState.mode = replayData.mode as GameState::Mode;
+      gameState.mode2(replayData.mode as GameState::Mode);
       gameState.setExtendScore();
       gameState.inReplay = true;
       player.set();

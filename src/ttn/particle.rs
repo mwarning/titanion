@@ -490,13 +490,13 @@ impl<'a> Token<ParticleState, ParticleSpec<'a>> for Particle<'a> {
   }
 
   fn move1(&self) {
-    if !self.spec.move2(self.state) {
+    if !self.spec.move2(&self.state) {
       self.remove();
     }
   }
 
   fn draw1(&self) {
-    self.spec.draw(self.state);
+    self.spec.draw(&self.state);
   }
 
   fn set5Vec(&self, spec : &ParticleSpec, pos : Vector, deg : f32, speed : f32) {
@@ -532,6 +532,7 @@ impl<'a> Token<ParticleState, ParticleSpec<'a>> for Particle<'a> {
 impl<'a> Actor for Particle<'a> {
   fn new() -> Particle<'a> {
     Particle {
+      _exists : false,
       state : ParticleState::new(),
       spec : ParticleSpec::new(),  //use generic spec or Option type?
     }

@@ -51,21 +51,21 @@ impl<'a> BulletPool<'a> {
       if b.exists {
         if b.pos.dist(pos) < BULLET_REMOVED_RANGE {
           b.remove();
-          player.addScore(cnt);
-          cnt += 1;
-          let wc = if cnt <= 50 {
-            cnt;
+          player.addScore(*cnt);
+          *cnt += 1;
+          let wc = if *cnt <= 50 {
+            *cnt;
           } else {
-            50 + ((cnt - 50) as f32).sqrt() as i32
+            50 + ((*cnt - 50) as f32).sqrt() as i32
           };
           let mut bp : &Particle = bonusParticles.getInstanceForced();
-          bp.set(ParticleShape::BONUS, b.state.pos.x, b.state.pos.y, 0, 0.2,
-                 0.5, 1, 1, 1, 60, false, cnt, wc);
-          let mut p : &Particle = particles.getInstanceForced();
+          bp.set(ParticleShape::BONUS, b.state.pos.x, b.state.pos.y, 0.0, 0.2,
+                 0.5, 1.0, 1.0, 1.0, 60, false, *cnt, wc);
+          let mut p = particles.getInstanceForced();
           p.set(ParticleShape::QUAD, b.state.pos.x, b.state.pos.y,
                 b.state.deg, b.state.speed,
                 1.5, 0.5, 0.75, 1.0, 60, false);
-          self.removeAround(cnt, b.pos, particles, bonusParticles, player);
+          self.removeAround(*cnt, b.pos, particles, bonusParticles, player);
         }
       }
     }

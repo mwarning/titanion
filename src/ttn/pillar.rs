@@ -165,14 +165,16 @@ impl<'a> Pillar<'a> {
     self.state.isEnded = true;
   }
 
-
+/*
+  //TODO: use for sort..
   fn opCmp(&mut self, o : Object) -> i32 {
     let p = o as &Pillar;
     if !p {
       return 0;
     }
-    (p.pos.y.abs() - self.pos().y.abs()) as i32
+    (p.pos().y.abs() - self.pos().y.abs()) as i32
   }
+*/
 }
 
 pub struct PillarState<'a> {
