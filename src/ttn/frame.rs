@@ -169,8 +169,8 @@ impl<'a> Frame<'a> {
 
   pub fn startInGame(&self, mode : i32) {
     self.gameState.borrow_mut().startInGame(mode as GameState::Mode);
-    self.player.borrow_mut().replayMode = false;
-    let rp : RecordablePad = self.pad as &RecordablePad;
+    self.player.borrow_mut().replayMode(false);
+    let rp = self.pad as &RecordablePad;
     rp.startRecord();
     let replayData = ReplayData::new();
     replayData.inputRecord = rp.inputRecord;
@@ -195,7 +195,7 @@ impl<'a> Frame<'a> {
     gameState.startTitle();
     if let Some(replayData) = self.replayData.borrow_mut() {
       player.replayMode = true;
-      let rp : RecordablePad = self.pad as &RecordablePad;
+      let rp = self.pad as &RecordablePad;
       rp.startReplay(replayData.inputRecord);
     }
     self.clearAll();
@@ -230,7 +230,7 @@ impl<'a> Frame<'a> {
     gameState.move1();
     self.field.borrow_mut().move1();
     if self.gameState.isInGame || (self.replayData != None) {
-      if !self.gameState.paused {
+      if !self.gameState.paused() {
         self.stage.borrow_mut().move1();
         self.pillars.borrow_mut().move1();
         self.player.borrow_mut().move1();
@@ -332,13 +332,13 @@ impl<'a> Frame<'a> {
     //}
   }
 
-  fn saveReplay(&self, fileName : String) {
+  fn saveReplay(&self, fileName : &'static str) {
     if let Some(replayData) = self.replayData.borrow_mut() {
       replayData.save(fileName);
     }
   }
 
-  fn loadReplay(&self, fileName : String) {
+  fn loadReplay(&self, fileName : &'static str) {
     if let mut replayData = self.replayData.borrow_mut() {
       replayData = Some(ReplayData::new());
       replayData.load(fileName);
@@ -579,9 +579,8 @@ impl<'a> GameState<'a> {
     if !self._isGameOver {
       if noMultiplier {
         self.score += sc;
-      }
-      else {
-        self.score += sc * self._multiplier;
+      } else {
+        self.score += ((sc as f32) * self._multiplier) as i32;
       }
       if self.score >= self.nextExtendScore {
         if self.left < MAX_LEFT {
@@ -636,13 +635,13 @@ impl<'a> GameState<'a> {
   }
 
   pub fn draw(&mut self) {
-    Letter::drawNum(self.score, 132, 5, 7);
-    Letter::drawNum(self.nextExtendScore, 134.0, 25.0, 5);
+    Letter::drawNum(self.score, 132.0, 5.0, 7.0);
+    Letter::drawNum(self.nextExtendScore, 134.0, 25.0, 5.0);
     if self._lastGameScore >= 0 {
-      Letter::drawNum(self._lastGameScore, 360.0, 5.0, 7);
+      Letter::drawNum(self._lastGameScore, 360.0, 5.0, 7.0);
       //Letter.drawString(GameState.MODE_NAME[_lastGameMode], 292, 24, 5);
     }
-    Letter::drawNum((self._multiplier * 100) as i32, 626, 4, 9, 3, 33, 2);
+    Letter::drawNum((self._multiplier * 100) as i32, 626.0, 4.0, 9.0, 3.0, 33, 2.0);
     if self.pmDispCnt > 0 {
       Letter::drawNum7(self.proximityMultiplier, 626.0, 30.0, 7.0, 0, 33.0);
     }
@@ -661,7 +660,7 @@ impl<'a> GameState<'a> {
           Letter::drawString("PAUSE", 290.0, 420.0, 7.0);
         }
       }
-      Letter::drawString(GameState::MODE_NAME[self.mode], 540.0, 400.0, 5.0);
+      Letter::drawString(GameState::MODE_NAME[self.mode() as usize], 540.0, 400.0, 5.0);
     }
   }
 
@@ -671,7 +670,7 @@ impl<'a> GameState<'a> {
       glTranslatef(-10.2 + (i as f32), -7.5, -10.0);
       glScalef(0.6, 0.6, 0.6);
       self.playerShape.draw();
-      Screen::setColor(0, 0, 0);
+      Screen::setColor(0.0, 0.0, 0.0);
       self.playerLineShape.draw();
       glPopMatrix();
     }

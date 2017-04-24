@@ -142,9 +142,9 @@ impl<'a> TokenSpec<BulletState> for BulletSpec<'a> {
 
   fn draw(&self, state : &BulletState) {
     //with (state) {
-      let p = self.field.calcCircularPos(state.pos);
-      let cd = self.field.calcCircularDeg(state.pos.x);
-      self.shape.draw(state.p, state.cd, state.deg);
+      let p = self.field.calcCircularPos(state.ts.pos);
+      let cd = self.field.calcCircularDeg(state.ts.pos.x);
+      self.shape.draw(p, cd, state.ts.deg);
     //}
   }
 } 
@@ -183,8 +183,8 @@ impl<'a> BulletSpec<'a> {
       bs.ppos.x = bs.ts.pos.x;
       bs.ppos.y = bs.ts.pos.y;
       let mut sp = bs.ts.speed;
-      if (self.gameState.mode != Frame::Mode::CLASSIC) && (bs.cnt < 40) {
-        sp *= ((bs.cnt + 10) as f32) / 50;
+      if (self.gameState.mode != Mode::CLASSIC) && (bs.cnt < 40) {
+        sp *= ((bs.cnt + 10) as f32) / 50.0;
       }
       bs.tailPos.x -= bs.ts.deg.cos() * sp * 0.7;
       bs.tailPos.y += bs.ts.deg.cos() * sp * 0.7;
@@ -228,14 +228,14 @@ impl<'a> BulletSpec<'a> {
       glEnd();
       p = self.field.calcCircularPos(bs.ts.pos);
       let d : f32 = match self.gameState.mode {
-        Frame::Mode::CLASSIC => PI,
-        Frame::Mode::BASIC => bs.ts.deg,
-        Frame::Mode::MODERN => bs.ts.deg,
+        Mode::CLASSIC => PI,
+        Mode::BASIC => bs.ts.deg,
+        Mode::MODERN => bs.ts.deg,
       };
       let cd = self.field.calcCircularDeg(bs.ts.pos.x);
-      (self.ts.shape as &BulletShapeBase).draw(p, cd, d, bs.cnt * 3.0);
+      (self.ts.shape as &BulletShapeBase).draw(p, cd, d, bs.cnt * 3);
       Screen::setColor(0.6 * colorAlpha, 0.9 * colorAlpha, 0.9 * colorAlpha, 1.0);
-      (self.lineShape as &BulletShapeBase).draw(p, cd, d, bs.cnt * 3.0);
+      (self.lineShape as &BulletShapeBase).draw(p, cd, d, bs.cnt * 3);
     }
 }
 

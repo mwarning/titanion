@@ -82,7 +82,7 @@ impl Music {
     Music{music : ptr::null()}
   }
 
-  pub fn load(&mut self, name : &String) {
+  pub fn load(&mut self, name : &'static str) {
     if noSound {
       return;
     }

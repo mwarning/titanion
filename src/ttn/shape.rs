@@ -148,7 +148,7 @@ pub struct PlayerShape {
 }
 
 impl PlayerShape {
-    fn new() -> PlayerShape { PlayerShape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> PlayerShape { PlayerShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for PlayerShape {
@@ -208,7 +208,7 @@ pub struct PlayerLineShape {
 }
 
 impl PlayerLineShape {
-    fn new() -> PlayerLineShape { PlayerLineShape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> PlayerLineShape { PlayerLineShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for PlayerLineShape {
@@ -247,17 +247,17 @@ pub struct ShotShape {
 }
 
 impl ShotShape {
-    fn new() -> ShotShape { ShotShape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> ShotShape { ShotShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for ShotShape {
-  fn get_display_list(&mut self) -> &mut DisplayList {
+  pub fn get_display_list(&mut self) -> &mut DisplayList {
     &mut self.displayList
   }
 }
 
 impl DisplayListShape for ShotShape {
-  fn drawList(&self) {
+  pub fn drawList(&self) {
     glPushMatrix();
     glRotatef(180.0, 0.0, 0.0, 1.0);
     glTranslatef(0.5, -0.5, 0.0);
@@ -309,7 +309,7 @@ pub struct TractorBeamShapeRed {
 }
 
 impl TractorBeamShapeRed {
-    fn new() -> TractorBeamShapeRed { TractorBeamShapeRed{ displayList: DisplayList::new(1) } }
+    pub fn new() -> TractorBeamShapeRed { TractorBeamShapeRed{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TractorBeamShapeRed {
@@ -332,7 +332,7 @@ pub struct TractorBeamShapeBlue {
 }
 
 impl TractorBeamShapeBlue {
-    fn new() -> TractorBeamShapeBlue { TractorBeamShapeBlue{ displayList: DisplayList::new(1) } }
+    pub fn new() -> TractorBeamShapeBlue { TractorBeamShapeBlue{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TractorBeamShapeBlue {
@@ -355,7 +355,7 @@ pub struct TractorBeamShapePurple {
 }
 
 impl TractorBeamShapePurple {
-    fn new() -> TractorBeamShapePurple { TractorBeamShapePurple{ displayList: DisplayList::new(1) } }
+    pub fn new() -> TractorBeamShapePurple { TractorBeamShapePurple{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TractorBeamShapePurple {
@@ -378,7 +378,7 @@ pub struct TractorBeamShapeDarkRed {
 }
 
 impl TractorBeamShapeDarkRed {
-    fn new() -> TractorBeamShapeDarkRed { TractorBeamShapeDarkRed{ displayList: DisplayList::new(1) } }
+    pub fn new() -> TractorBeamShapeDarkRed { TractorBeamShapeDarkRed{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TractorBeamShapeDarkRed {
@@ -401,7 +401,7 @@ pub struct TractorBeamShapeDarkBlue {
 }
 
 impl TractorBeamShapeDarkBlue {
-    fn new() -> TractorBeamShapeDarkBlue { TractorBeamShapeDarkBlue{ displayList: DisplayList::new(1) } }
+    pub fn new() -> TractorBeamShapeDarkBlue { TractorBeamShapeDarkBlue{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TractorBeamShapeDarkBlue {
@@ -424,7 +424,7 @@ pub struct TractorBeamShapeDarkPurple {
 }
 
 impl TractorBeamShapeDarkPurple {
-    fn new() -> TractorBeamShapeDarkPurple { TractorBeamShapeDarkPurple{ displayList: DisplayList::new(1) } }
+    pub fn new() -> TractorBeamShapeDarkPurple { TractorBeamShapeDarkPurple{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TractorBeamShapeDarkPurple {
@@ -437,9 +437,9 @@ impl TractorBeamShape for TractorBeamShapeDarkPurple {
 }
 
 impl DisplayListShape for TractorBeamShapeDarkPurple {
-  fn drawList(&self) {
-    self.drawTractorBeamLine(0.4, 0.1, 0.4);
-  }
+    fn drawList(&self) {
+        self.drawTractorBeamLine(0.4, 0.1, 0.4);
+    }
 }
 
 pub trait BulletShapeBase : DisplayListShape {
@@ -459,7 +459,7 @@ pub struct BulletShape {
 }
 
 impl BulletShape {
-    fn new() -> BulletShape { BulletShape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> BulletShape { BulletShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for BulletShape {
@@ -507,7 +507,7 @@ pub struct BulletLineShape {
 }
 
 impl BulletLineShape {
-    fn new() -> BulletLineShape { BulletLineShape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> BulletLineShape { BulletLineShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for BulletLineShape {
@@ -540,7 +540,7 @@ pub struct MiddleBulletShape {
 }
 
 impl MiddleBulletShape {
-    fn new() -> MiddleBulletShape { MiddleBulletShape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> MiddleBulletShape { MiddleBulletShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for MiddleBulletShape {
@@ -609,7 +609,7 @@ pub struct MiddleBulletLineShape {
 }
 
 impl MiddleBulletLineShape {
-    fn new() -> MiddleBulletLineShape { MiddleBulletLineShape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> MiddleBulletLineShape { MiddleBulletLineShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for MiddleBulletLineShape {
@@ -658,7 +658,7 @@ pub struct CounterBulletShape {
 }
 
 impl CounterBulletShape {
-    fn new() -> CounterBulletShape { CounterBulletShape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> CounterBulletShape { CounterBulletShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for CounterBulletShape {
@@ -698,7 +698,7 @@ pub struct CounterBulletLineShape {
 }
 
 impl CounterBulletLineShape {
-    fn new() -> CounterBulletLineShape { CounterBulletLineShape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> CounterBulletLineShape { CounterBulletLineShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for CounterBulletLineShape {
@@ -752,11 +752,11 @@ pub struct Enemy1Shape {
 }
 
 impl Enemy1Shape {
-    fn new() -> Enemy1Shape { Enemy1Shape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> Enemy1Shape { Enemy1Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Enemy1Shape {
-   fn get_display_list(&mut self) -> &mut DisplayList {
+    fn get_display_list(&mut self) -> &mut DisplayList {
         &mut self.displayList
     }
 }
@@ -814,7 +814,7 @@ pub struct Enemy1TrailShape {
 }
 
 impl Enemy1TrailShape {
-    fn new() -> Enemy1TrailShape { Enemy1TrailShape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> Enemy1TrailShape { Enemy1TrailShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Enemy1TrailShape {
@@ -853,7 +853,7 @@ pub struct Enemy2Shape {
 }
 
 impl Enemy2Shape {
-    fn new() -> Enemy2Shape { Enemy2Shape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> Enemy2Shape { Enemy2Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Enemy2Shape {
@@ -914,7 +914,7 @@ pub struct Enemy2TrailShape {
 }
 
 impl Enemy2TrailShape {
-    fn new() -> Enemy2TrailShape { Enemy2TrailShape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> Enemy2TrailShape { Enemy2TrailShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Enemy2TrailShape {
@@ -953,7 +953,7 @@ pub struct Enemy3Shape {
 }
 
 impl Enemy3Shape {
-    fn new() -> Enemy3Shape { Enemy3Shape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> Enemy3Shape { Enemy3Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Enemy3Shape {
@@ -1015,7 +1015,7 @@ pub struct Enemy3TrailShape {
 }
 
 impl Enemy3TrailShape {
-    fn new() -> Enemy3TrailShape { Enemy3TrailShape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> Enemy3TrailShape { Enemy3TrailShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Enemy3TrailShape {
@@ -1054,7 +1054,7 @@ pub struct TriangleParticleShape {
 }
 
 impl TriangleParticleShape {
-    fn new() -> TriangleParticleShape { TriangleParticleShape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> TriangleParticleShape { TriangleParticleShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for TriangleParticleShape {
@@ -1076,7 +1076,7 @@ impl DisplayListShape for TriangleParticleShape {
   }
 }
 
-const TICKNESS : f32 = 4.0;
+pub const TICKNESS : f32 = 4.0;
 const RADIUS_RATIO : f32 = 0.3;
 
 pub trait PillarShape : DisplayListShape {

@@ -38,7 +38,7 @@ impl SizableScreen for Screen {
   }
 
   fn width1(&self) -> i32 {
-    self._width;
+    self._width
   }
 
   fn height1(&self) -> i32 {
@@ -59,7 +59,7 @@ impl SdlScreen for Screen {
     }
     self.setIcon();
     // Create an OpenGL screen.
-    let mut videoFlags : u32 = if self._windowMode {
+    let mut videoFlags : i32 = if self._windowMode {
       SDL_OPENGL | SDL_RESIZABLE
     } else {
       SDL_OPENGL | SDL_FULLSCREEN
@@ -68,7 +68,7 @@ impl SdlScreen for Screen {
     if SDL_SetVideoMode(self._width, self._height, 0, videoFlags) == None {
       panic!("Unable to create SDL screen: {}", SDL_GetError());
     }
-    glViewport(0, 0, self.width, self.height);
+    glViewport(0, 0, self._width as f32, self._height as f32);
     glClearColor(0.0, 0.0, 0.0, 0.0);
     self.resized(self._width, self._height);
     SDL_ShowCursor(SDL_DISABLE);
@@ -81,7 +81,7 @@ impl SdlScreen for Screen {
   }
 
   fn flip(&mut self) {
-    Screen::handleError();
+    self.handleError();
     SDL_GL_SwapBuffers();
   }
 
@@ -144,13 +144,13 @@ impl Screen {
     self.screenResized();
   }
 
-  fn handleError() {
+  fn handleError(&mut self) {
     let error : GLenum  = glGetError();
     if error == GL_NO_ERROR {
       return;
     }
-    Screen::closeSDL();
-    panic!("OpenGL error({})", error);
+    self.closeSDL();
+    panic!("OpenGL error({})", error as i32);
   }
 
   fn setCaption(name : &str) {
@@ -197,7 +197,7 @@ impl Screen {
 
   // inlined from util/sdl/screen3d.d
   fn init(&self) {
-    self.setCaption(CAPTION);
+    Scree::setCaption(CAPTION);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glEnable(GL_BLEND);
     glEnable(GL_LINE_SMOOTH);
@@ -206,7 +206,7 @@ impl Screen {
     glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
-    self.setClearColor(0.0, 0.0, 0.0, 1.0);
+    Screen::setClearColor(0.0, 0.0, 0.0, 1.0);
   }
 
   // inlined from util/sdl/screen3d.d

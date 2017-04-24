@@ -59,7 +59,7 @@ impl Sound {
 
   // inline from util/sdl/sound.rs
   pub fn init(&mut self) {
-    if Sound::noSound {
+    if noSound {
       return;
     }
 
@@ -67,7 +67,7 @@ impl Sound {
     DerelictSDLMixer::load(); 
 
     if SDL_InitSubSystem(SDL_INIT_AUDIO) < 0 {
-      self.noSound = true;
+      noSound = true;
       panic!("Unable to initialize SDL_AUDIO: {}", SDL_GetError());
     }
     let audio_rate : i32 = 44100;
@@ -75,20 +75,20 @@ impl Sound {
     let audio_channels : i32 = 1;
     let audio_buffers : i32 = 4096;
     if Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers) < 0 {
-      self.noSound = true;
+      noSound = true;
       panic!("Couldn't open audio: {}", SDL_GetError());
     }
     Mix_QuerySpec(&audio_rate, &mut audio_format, &mut audio_channels);
-    Mix_VolumeMusic(self.bgmVol);
-    Mix_Volume(-1, self.seVol);
+    Mix_VolumeMusic(bgmVol);
+    Mix_Volume(-1, seVol);
   }
 
   // inline from util/sdl/sound.rs
   pub fn close(&self) {
-    if self.noSound {
+    if noSound {
       return;
     }
-    if Mix_PlayingMusic() {
+    if Mix_PlayingMusic() != 0 {
       Mix_HaltMusic();
     }
     Mix_CloseAudio();
@@ -125,10 +125,10 @@ impl Sound {
   }
 
   fn loadChunks(&mut self) {
-    let i : i32 = 0;
-    for fileName in self.seFileName {
+    let i : usize = 0;
+    for fileName in seFileName {
       let chunk = Chunk::new();
-      chunk.load(fileName, self.seChannel[i]);
+      chunk.load(fileName, seChannel[i]);
       self.se[fileName] = chunk;
       self.seMark[fileName] = false;
       println!("Load SE: {}", fileName);
@@ -142,7 +142,7 @@ impl Sound {
       return;
     }
     Music::halt();
-    if self.bgm.contains(name) {
+    if self.bgm.contains_key(name) {
       self.bgm[name].play();
     } else {
       println!("Invalid bgm: {}", name);
@@ -152,7 +152,7 @@ impl Sound {
   pub fn playBgm(&self) {
     let bgmIdx = self.rand.nextInt(self.bgm.len() as i32);
     let nextIdxMv = self.rand.nextInt(2) * 2 - 1;
-    self.prevBgmIdx = self.bgmIdx;
+    self.prevBgmIdx = bgmIdx;
     self.playBgm2(self.bgmFileName[bgmIdx as usize]);
   }
 
@@ -188,7 +188,7 @@ impl Sound {
 
   pub fn playMarkedSes(&self) {
     for (key, _) in self.seMark {
-      if self.seMark.contains(key) {
+      if self.seMark.contains_key(key) {
         self.se[key].play();
         self.seMark[key] = false;
       }

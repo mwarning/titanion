@@ -16,7 +16,8 @@ impl SDL_Event {
 }
 
 
-pub struct GLenum;
+enum GLenum {}
+
 pub fn glGetError() -> GLenum { GLenum{} }
 
 pub struct SDL_Joystick;
@@ -24,9 +25,9 @@ pub fn SDL_Init(flags : u32) -> i32 { 0 }
 pub fn SDL_WM_SetCaption(title : &str, icon : &str) {}
 
 pub struct SDL_Surface;
-pub fn SDL_WM_SetIcon(icon : *const SDL_Surface, mask : *const u8) {}
+pub fn SDL_WM_SetIcon(icon : *const SDL_Surface, mask : &'static str) {}
 
-pub fn SDL_LoadBMP(file : &str) {}
+pub fn SDL_LoadBMP(file : &str) -> *const SDL_Surface {}
 pub const SDL_INIT_VIDEO : u32 = 0;
 
 pub const SDL_VIDEORESIZE : usize = 0;
@@ -156,7 +157,7 @@ pub const SDL_OPENGL : i32 = 0;
 pub const SDL_RESIZABLE : i32 = 0;
 pub const SDL_FULLSCREEN : i32 = 0;
 
-pub fn SDL_SetVideoMode(_width : i32, _height : i32, n : u32, x : u32) {}
+pub fn SDL_SetVideoMode(_width : i32, _height : i32, n : u32, x : i32) {}
 pub fn SDL_GL_SwapBuffers() {}
 pub fn SDL_ShowCursor(n : usize) {}
 pub fn glClear(d : u32) {}
@@ -199,6 +200,9 @@ pub fn glDisable(n : usize) {}
 pub fn glBlendFunc(a : usize, b : usize) {}
 pub fn glScalef(a : f32, b : f32, c : f32) {}
 
+pub const FileReadExisting : usize = 0;
+pub const FileWriteCreate : usize = 0;
+
 pub struct File;
 
 impl File {
@@ -210,6 +214,7 @@ impl File {
   pub fn write2(&self, n : usize) {}
   pub fn read1(&self, n : &PadState) {}
   pub fn read2(&self, n : &i32) {}
+  pub fn close(&self) {}
 }
 
 //TODO: remove

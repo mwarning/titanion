@@ -109,7 +109,7 @@ impl Vector {
     self.x * v.x + self.y * v.y
   }
 
-  unsafe fn getElement(&self, v : &Vector) -> Vector {
+  pub fn getElement(&self, v : &Vector) -> Vector {
     let ll : f32 = v * v;
     if ll > 0.1 {
       let mag : f32 = self * v;
@@ -123,8 +123,8 @@ impl Vector {
   }
 
   // was getElement
-  unsafe fn getElementMinMax(&self, v : &Vector, min : f32, max : f32) -> Vector {
-    let ll : f32 = v * v;
+  pub fn getElementMinMax(&self, v : &Vector, min : f32, max : f32) -> Vector {
+    let ll = v * v;
     if ll > 0.1 {
       let mag : f32 = (self * v) / ll;
       RSL.x = mag * self.x;
@@ -133,7 +133,7 @@ impl Vector {
       RSL.x = 0.0;
       RSL.y = 0.0;
     }
-    let d : f32 = RSL.vctSize();
+    let d = RSL.vctSize();
     if d > 0.1 && d < min {
       RSL *= min / d;
     } else if d > max {
@@ -163,8 +163,8 @@ impl Vector {
   }
 
   pub fn checkSide(&self, pos1 : Vector, pos2 : Vector) -> f32 {
-   let xo : f32 = pos2.x - pos1.x;
-   let yo : f32 = pos2.y - pos1.y;
+   let xo = pos2.x - pos1.x;
+   let yo = pos2.y - pos1.y;
     if xo == 0.0 {
       if yo == 0.0 {
         return 0.0;
@@ -191,10 +191,10 @@ impl Vector {
 
   // was checkSide
   pub fn checkSideOffset(&self, pos1 : Vector, pos2 : Vector, ofs : Vector) -> f32 {
-    let xo : f32 = pos2.x - pos1.x;
-    let yo : f32 = pos2.y - pos1.y;
-    let mx : f32 = self.x + ofs.x;
-    let my : f32 = self.y + ofs.y;
+    let xo = pos2.x - pos1.x;
+    let yo = pos2.y - pos1.y;
+    let mx = self.x + ofs.x;
+    let my = self.y + ofs.y;
     if xo == 0.0 {
       if yo == 0.0 {
         return 0.0;

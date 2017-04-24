@@ -91,12 +91,12 @@ impl<'a> Token<PlayerState<'a>, PlayerSpec<'a>> for Player<'a> {
 
   fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
     self.state.clear();
-    self.state.pos.x = x;
-    self.state.pos.y = y;
-    self.state.deg = deg;
-    self.state.speed = speed;
+    self.state.ts.pos.x = x;
+    self.state.ts.pos.y = y;
+    self.state.ts.deg = deg;
+    self.state.ts.speed = speed;
     self.spec.set(self.state);
-    self.actor._exists = true;
+    self._exists = true;
   }
 
   fn remove(&self) {
@@ -105,7 +105,7 @@ impl<'a> Token<PlayerState<'a>, PlayerSpec<'a>> for Player<'a> {
   }
 
   fn pos(&self) -> Vector {
-    self.state.pos
+    self.state.ts.pos
   }
 }
 
@@ -132,7 +132,7 @@ impl<'a> Player<'a> {
     self.spec.start();
     self.hitOffset.x = 0.0;
     self.hitOffset.y = 0.0;
-    self.spec.field.setEyePos(self.pos());
+    self.spec.field.setEyePos(self.state.pos());
   }
 
   pub fn checkBulletHit(&self, p : Vector, pp : Vector) -> bool {
@@ -156,8 +156,8 @@ impl<'a> Player<'a> {
       if !self.state.hasCollision() {
         return false;
       }
-      if ((self.state.pos.x - p.x).abs() < size.x) && ((self.state.pos.y - p.y).abs() < size.y) {
-        match self.spec.gameState.mode {
+      if ((self.state.ts.pos.x - p.x).abs() < size.x) && ((self.state.ts.pos.y - p.y).abs() < size.y) {
+        match self.spec.gameState.mode() {
           Mode::CLASSIC => { self.destroy(); },
           Mode::BASIC => {
           self.hitOffset.x = self.pos().x - p.x;
@@ -212,19 +212,19 @@ impl<'a> Player<'a> {
   }
 
   pub fn multiplier(&self) -> f32 {
-    self.spec.multiplier
+    self.spec.multiplier()
   }
 
   pub fn deg(&self) -> f32 {
-    self.state.deg
+    self.state.ts.deg
   }
 
   pub fn isActive(&self) -> bool {
-    self.state.isActive
+    self.state.isActive()
   }
 
   pub fn hasCollision(&self) -> bool {
-    self.state.hasCollision
+    self.state.hasCollision()
   }
 
   pub fn enemiesHasCollision(&self) -> bool {
@@ -461,9 +461,9 @@ impl<'a> TokenSpec<PlayerState<'a>> for PlayerSpec<'a> {
 
   fn draw(&self, state : &PlayerState) {
     //with (state) {
-      let p = self.field.calcCircularPos(state.pos);
-      let cd = self.field.calcCircularDeg(state.pos.x);
-      self.shape.draw(state.p, state.ts.cd, state.ts.deg);
+      let p = self.field.calcCircularPos(state.ts.pos);
+      let cd = self.field.calcCircularDeg(state.ts.pos.x);
+      self.shape.draw(p, cd, state.ts.deg);
     //}
   }
 }
@@ -724,32 +724,32 @@ impl<'a> PlayerSpec<'a> {
       }
       match self.gameState.mode() {
       Mode::CLASSIC => {
-        if self.pos().y > 0.0 {
-          self.pos().y = 0.0;
+        if ps.ts.pos.y > 0.0 {
+          ps.ts.pos.y = 0.0;
         }
       },
       Mode::BASIC => {
-        if self.pos().y > 0 {
-          self.pos().y = 0;
+        if ps.ts.pos.y > 0 {
+          ps.ts.pos.y = 0;
         }
       },
       Mode::MODERN => {
-        if self.pos().y > self.field.size().y {
-          self.pos().y = self.field.size().y;
+        if ps.ts.pos.y > self.field.size().y {
+          ps.ts.pos.y = self.field.size().y;
         }
       },
       }
-      if self.pos().y < -self.field.size().y {
-        self.pos().y = -self.field.size().y;
+      if ps.ts.pos.y < -self.field.size().y {
+        ps.ts.pos.y = -self.field.size().y;
       }
-      if self.pos().x > self.field.size().x {
-        self.pos().x = self.field.size().x;
+      if ps.ts.pos.x > self.field.size().x {
+        ps.ts.pos.x = self.field.size().x;
       }
-      else if self.pos().x < -self.field.size().x {
-        self.pos().x = -self.field.size().x;
+      else if ps.ts.pos.x < -self.field.size().x {
+        ps.ts.pos.x = -self.field.size().x;
       }
-      self.pos().x = self.field.normalizeX(self.pos().x);
-      self.field.setEyePos(self.pos());
+      ps.ts.pos.x = self.field.normalizeX(ps.ts.pos.x);
+      self.field.setEyePos(ps.ts.pos);
       true
     //}
   }
@@ -819,16 +819,16 @@ impl<'a> PlayerSpec<'a> {
   pub fn addVelocity(&mut self, ps : &PlayerState, v : Vector, o : Vector) {
     let rand = &self.gameState.player_spec_rand;
 
-    let mut rv : Vector = v.getElement(o, 0.05, 0.25);
+    let mut rv = v.getElementMinMax(o, 0.05, 0.25);
     rv *= 5.0;
     ps.vel += rv;
-    let d : f32 = (rv.x, -rv.y).atan2();
-    let sp : f32 = rv.vctSize();
+    let d = (rv.x, -rv.y).atan2();
+    let sp = rv.vctSize();
     for i in 0..36 {
       let mut pt = self.particles.getInstanceForced();
-      let mut r : f32 = 0.5 + rand.nextFloat(0.5);
-      let mut g : f32 = 0.3 + rand.nextFloat(0.3);
-      let mut b : f32 = 0.8 + rand.nextFloat(0.2);
+      let mut r = 0.5 + rand.nextFloat(0.5);
+      let mut g = 0.3 + rand.nextFloat(0.3);
+      let mut b = 0.8 + rand.nextFloat(0.2);
       pt.set(ParticleShape::LINE, ps.ts.pos.x, ps.ts.pos.y,
              d + rand.nextSignedFloat(0.3), sp * (1.0 + rand.nextFloat(2.0)),
              1, r, g, b, 30 + rand.nextInt(30));
@@ -883,7 +883,7 @@ impl<'a> PlayerSpec<'a> {
   }
 
   pub fn multiplier(&self) -> f32 {
-    self.gameState.multiplier
+    self.gameState.multiplier()
   }
 
   pub fn draw(&mut self, ps : &PlayerState) {
@@ -894,7 +894,7 @@ impl<'a> PlayerSpec<'a> {
       if !self.isActive {
         return;
       }
-      let p : Vector3 = self.field.calcCircularPos(ps.ts.pos);
+      let p = self.field.calcCircularPos(ps.ts.pos);
       let cd = self.field.calcCircularDeg(ps.ts.pos.x);
       if self.hasShape {
         self.shape.draw(p, cd, ps.deg);
@@ -1048,10 +1048,10 @@ impl<'a> Token<ShotState<'a>, ShotSpec<'a>> for Shot<'a> {
     self.state.clear();
     self.state.pos.x = x;
     self.state.pos.y = y;
-    self.state.deg = deg;
-    self.state.speed = speed;
+    self.state.ts.deg = deg;
+    self.state.ts.speed = speed;
     self.spec.set(self.state);
-    self.actor._exists = true;
+    self._exists = true;
   }
 
   fn remove(&self) {
@@ -1112,9 +1112,9 @@ impl<'a> TokenSpec<ShotState<'a>> for ShotSpec<'a> {
 
   fn draw(&self, state : &ShotState) {
     //with (state) {
-      let p = self.field.calcCircularPos(state.pos);
-      let cd = self.field.calcCircularDeg(state.pos.x);
-      self.shape.draw(state.p, state.cd, state.deg);
+      let p = self.field.calcCircularPos(state.ts.pos);
+      let cd = self.field.calcCircularDeg(state.ts.pos.x);
+      self.shape.draw(p, cd, state.ts.deg);
     //}
   }
 }
@@ -1279,9 +1279,9 @@ impl<'a> TractorBeam<'a> {
         break;
       }
       glPushMatrix();
-      let p : Vector3 = self.field.calcCircularPos(self.playerState.pos.x, self.playerState.pos.y + y);
-      Screen::glTranslate(p);
-      let mut s : f32 = y;
+      let p = self.field.calcCircularPos(self.playerState.pos.x, self.playerState.pos.y + y);
+      Screen::glTranslate3(p);
+      let mut s = y;
       if s > 1.0 {
         s = 1.0;
       }

@@ -396,18 +396,18 @@ impl<'a> Stage<'a> {
 
     if self.appCnt <= 0 {
       if (self.formationIdx % self.middleEnemyAppInterval) == (self.middleEnemyAppInterval - 1) {
-        let me = self.enemies.getInstance();
-        if !me {
+        if let Some(me) = self.enemies.getInstance() {
+          let mut x = rand.nextFloat(self.field.circularDistance);
+          x = self.field.normalizeX(x);
+          let sp = 0.1 + rand.nextSignedFloat(0.01);
+          let av = sp * 0.4 + rand.nextSignedFloat(0.005);
+          let er = rand.nextFloat(0.5);
+          let ed = rand.nextFloat(PI * 2.0);
+          me.set(self.middleEnemySpec, x, self.field.size().y * /*Field.*/ PIT_SIZE_Y_RATIO, PI, sp);
+          me.setMiddleEnemyState(sp, av, er, ed);
+        } else {
           return;
         }
-        let mut x = rand.nextFloat(self.field.circularDistance);
-        x = self.field.normalizeX(x);
-        let sp = 0.1 + rand.nextSignedFloat(0.01);
-        let av = sp * 0.4 + rand.nextSignedFloat(0.005);
-        let er = rand.nextFloat(0.5);
-        let ed = rand.nextFloat(PI * 2.0);
-        me.set(self.middleEnemySpec, x, self.field.size.y * /*Field.*/ PIT_SIZE_Y_RATIO, PI, sp);
-        me.setMiddleEnemyState(sp, av, er, ed);
       }
       let mut x = rand.nextFloat(self.field.circularDistance);
       x = self.field.normalizeX(x);
@@ -503,7 +503,7 @@ impl<'a> Stage<'a> {
   }
 
   pub fn drawPhaseNum(&self) {
-    Letter::drawNum(self.phaseNum, 622, 448, 10);
+    Letter::drawNum(self.phaseNum, 622.0, 448.0, 10);
   }
 
   pub fn drawGameover(&self) {
@@ -513,9 +513,9 @@ impl<'a> Stage<'a> {
       0.0
     };
     Letter::drawString11("SHOTS FIRED", 152.0, 250.0, 6.0, Letter::Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 0.33);
-    Letter::drawNum(self.shotFiredNumTotal, 480.0, 250.0, 6);
+    Letter::drawNum(self.shotFiredNumTotal, 480.0, 250.0, 6.0);
     Letter::drawString("NUMBER OF HITS", 152.0, 280.0, 6.0, Letter::Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 0.33);
-    Letter::drawNum(self.shotHitNumTotal, 480.0, 280.0, 6);
+    Letter::drawNum(self.shotHitNumTotal, 480.0, 280.0, 6.0);
     Letter::drawString("HIT-MISS RATIO", 152.0, 310.0, 6.0);
     Letter::drawNum7((hr * 10000.0) as i32, 480.0, 310.0, 6.0, 3, -1.0, 2);
   }

@@ -157,7 +157,7 @@ impl<'a> TokenSpec<ParticleState> for ParticleSpec<'a> {
     //with (state) {
       let p = self.field.calcCircularPos(state.ts.pos);
       let cd = self.field.calcCircularDeg(state.ts.pos.x);
-      self.shape.draw(state.p, state.cd, state.deg);
+      self.shape.draw(p, cd, state.ts.deg);
     //}
   }
 }
@@ -207,10 +207,10 @@ impl<'a> TriangleParticleSpec<'a> {
   }
 
   pub fn set(&mut self, ps : &ParticleState) {
-    ps.d1 = self.rand.nextFloat(PI * 2.0);
-    ps.d2 = self.rand.nextFloat(PI * 2.0);
-    ps.vd1 = self.rand.nextSignedFloat(0.1);
-    ps.vd2 = self.rand.nextSignedFloat(0.1);
+    ps.d1 = self.ps.rand.nextFloat(PI * 2.0);
+    ps.d2 = self.ps.rand.nextFloat(PI * 2.0);
+    ps.vd1 = self.ps.rand.nextSignedFloat(0.1);
+    ps.vd2 = self.ps.rand.nextSignedFloat(0.1);
   }
 
   pub fn move2(&mut self, ps : &ParticleState) -> bool {
@@ -226,21 +226,24 @@ impl<'a> TriangleParticleSpec<'a> {
       ps.vd1 *= 1.0 - TPS_SLOW_DOWN_RATIO * 0.2;
       ps.vd2 *= 1.0 - TPS_SLOW_DOWN_RATIO * 0.2;
       let cfr = 1.0 - (1.0 / (ps.startCnt as f32));
-      if cfr < 0 {
-        cfr = 0;
+      if cfr < 0.0 {
+        cfr = 0.0;
       }
       ps.r *= cfr;
       ps.g *= cfr;
       ps.b *= cfr;
       ps.a *= cfr;
-      let fs = if (ps.size > 2.0) && (self.rand.nextInt(45) == 0) {
-        0.5 - self.rand.nextFloat(0.2)
-      } else if (ps.size > 0.5) && (self.rand.nextInt(10) == 0) {
-        0.1 + self.rand.nextSignedFloat(0.05)
+      let rand = &mut self.ps.rand;
+      let fs = if (ps.size > 2.0) && (rand.nextInt(45) == 0) {
+        0.5 - rand.nextFloat(0.2)
+      } else if (ps.size > 0.5) && (rand.nextInt(10) == 0) {
+        0.1 + rand.nextSignedFloat(0.05)
+      } else {
+        0.0
       };
-      if fs > 0 {
-        let vx = ps.vel.x * self.rand.nextSignedFloat(0.8);
-        let vy = ps.vel.y * self.rand.nextSignedFloat(0.8);
+      if fs > 0.0 {
+        let vx = ps.vel.x * rand.nextSignedFloat(0.8);
+        let vy = ps.vel.y * rand.nextSignedFloat(0.8);
         ps.vel.x -= vx * fs;
         ps.vel.y -= vy * fs;
         let cr = 1.0 - fs * 0.2;
@@ -251,7 +254,7 @@ impl<'a> TriangleParticleSpec<'a> {
           p.setByVelocity(ps.ts.pos.x, ps.ts.pos.y, vx, vy, ps.size * fs, ps.r, ps.g, ps.b, ps.a, nc, ps.effectedByGravity);
         }
         ps.size *= 1 - fs;
-        ps.cnt *= cr;
+        ps.cnt *= cr as i32;
       };
       ps.cnt -= 1;
       ps.cnt > 0
@@ -288,10 +291,10 @@ impl<'a> LineParticleSpec<'a> {
 
   fn move2(&mut self, ps : &ParticleState) -> bool {
     //with (ps) {
-      ps.stepForward();
+      ps.ts.stepForward();
       ps.tailPos.x += (ps.ts.pos.x - ps.tailPos.x) * 0.05;
       ps.tailPos.y += (ps.ts.pos.y - ps.tailPos.y) * 0.05;
-      ps.speed *= 1.0 - LPS_SLOW_DOWN_RATIO;
+      ps.ts.speed *= 1.0 - LPS_SLOW_DOWN_RATIO;
       ps.ts.pos.x = self.field.normalizeX(ps.ts.pos.x);
       let cfr = 1.0 - (1.0 / (ps.startCnt as f32));
       if cfr < 0.0 {
@@ -413,8 +416,8 @@ impl<'a> BonusParticleSpec<'a> {
         ps.waitCnt -= 1;
         return true;
       }
-      ps.stepForward();
-      ps.speed *= 1 - BPS_SLOW_DOWN_RATIO;
+      ps.ts.stepForward();
+      ps.ts.speed *= 1.0 - BPS_SLOW_DOWN_RATIO;
       self.field.addSlowdownRatio(0.01);
       ps.ts.pos.x = self.field.normalizeX(ps.ts.pos.x);
       let mut cfr = 1.0 - (1.0 / (ps.startCnt as f32));
@@ -438,7 +441,7 @@ impl<'a> BonusParticleSpec<'a> {
         return;
       }
       glPushMatrix();
-      let p : Vector3 = self.field.calcCircularPos(ps.ts.pos);
+      let p = self.field.calcCircularPos(ps.ts.pos);
       let aa = ps.a * self.ps.calcNearPlayerAlpha(ps.ts.pos);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       Screen::setColor(1.0, 1.0, 1.0, aa * 0.5);
@@ -513,7 +516,7 @@ impl<'a> Token<ParticleState, ParticleSpec<'a>> for Particle<'a> {
     self.state.deg = deg;
     self.state.speed = speed;
     self.spec.set(self.state);
-    self.actor._exists = true;
+    self._exists = true;
   }
 
   fn remove(&self) {
@@ -591,7 +594,7 @@ impl<'a> Particle<'a> {
       ParticleShape::LINE => self.lineParticleSpec,
       ParticleShape::QUAD => self.quadParticleSpec,
       ParticleShape::BONUS => self.bonusParticleSpec,
-    };
+    } as &ParticleSpec;
     self.set(x, y, deg, speed);
     self.state.size = sz;
     self.state.vel.x = -deg.sin() * speed;

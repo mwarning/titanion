@@ -55,24 +55,24 @@ impl Preference {
   pub fn load(&mut self) {
     //let fd : File;
     //try {
-    let fd = File::new(PREF_FILE_NAME, File::ReadExisting);
+    let fd = File::new(PREF_FILE_NAME, FileReadExisting);
     let mut ver : i32;
-    read::<i32>(fd, &mut ver);
+    read::<i32>(&fd, &mut ver);
     if ver != VERSION_NUM {
       panic!("Wrong version num");
     }
-    read::<i32>(fd, &mut self._lastMode);
+    read::<i32>(&fd, &mut self._lastMode);
     for j in 0..MODE_NUM {
       for i in 0..RANKING_NUM {
-        read::<i32>(fd, &mut self._highScore[j][i]);
+        read::<i32>(&fd, &mut self._highScore[j][i]);
       }
     }
     //} catch (Object e) {
     //  init();
     //} finally {
-      if fd {
+      //if fd {
         fd.close();
-      }
+      //}
     //}
   }
 /*
@@ -86,12 +86,12 @@ impl Preference {
   }
 */
   pub fn save(&mut self) {
-    let fd = File::new(PREF_FILE_NAME, File::WriteCreate);
-    write::<i32>(fd, &VERSION_NUM);
-    write::<i32>(fd, &self._lastMode);
+    let fd = File::new(PREF_FILE_NAME, FileWriteCreate);
+    write::<i32>(&fd, &VERSION_NUM);
+    write::<i32>(&fd, &self._lastMode);
     for j in 0..MODE_NUM {
       for i in 0..RANKING_NUM {
-        write::<i32>(fd, &self._highScore[j][i]);
+        write::<i32>(&fd, &self._highScore[j][i]);
       }
     }
     fd.close();
@@ -104,18 +104,18 @@ impl Preference {
   pub fn recordResult(&mut self, score : i32, mode : i32) {
     self.setMode(mode);
     for i in 0..RANKING_NUM {
-      if score > self._highScore[mode][i] {
+      if score > self._highScore[mode as usize][i] {
         for j in ((i+1)..RANKING_NUM).rev() {
-          self._highScore[mode][j] = self._highScore[mode][j - 1];
+          self._highScore[mode as usize][j] = self._highScore[mode as usize][j - 1];
         }
-        self._highScore[mode][i] = score;
+        self._highScore[mode as usize][i] = score;
         return;
       }
     }
   }
 
   pub fn highScore(&self) -> &[[i32; RANKING_NUM]; MODE_NUM] {
-    self._highScore
+    &self._highScore
   }
 
   pub fn lastMode(&self) -> i32 {

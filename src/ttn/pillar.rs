@@ -132,10 +132,10 @@ impl<'a> Token<PillarState<'a>, PillarSpec<'a>> for Pillar<'a> {
 
   fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
     self.state.clear();
-    self.state.pos.x = x;
-    self.state.pos.y = y;
-    self.state.deg = deg;
-    self.state.speed = speed;
+    self.state.ts.pos.x = x;
+    self.state.ts.pos.y = y;
+    self.state.ts.deg = deg;
+    self.state.ts.speed = speed;
     self.spec.set(self.state);
     self.actor._exists = true;
   }
@@ -230,9 +230,9 @@ impl<'a> TokenSpec<PillarState<'a>> for PillarSpec<'a> {
 
   fn draw(&self, state : &PillarState) {
     //with (state) {
-      let p = self.field.calcCircularPos(state.pos);
-      let cd = self.field.calcCircularDeg(state.pos.x);
-      self.shape.draw(state.p, state.cd, state.deg);
+      let p = self.field.calcCircularPos(state.ts.pos);
+      let cd = self.field.calcCircularDeg(state.ts.pos.x);
+      self.shape.draw(p, cd, state.ts.deg);
     //}
   }
 }
@@ -250,26 +250,26 @@ impl<'a> PillarSpec<'a> {
         ps.vy *= 0.98;
         ps.ts.pos.y += ps.vy;
         if ps.vy > 0.0 {
-          let mut ty : f32 = if self.previousPillar && self.previousPillar.exists {
-            self.previousPillar.pos.y - PillarShape::TICKNESS
+          let mut ty : f32 = if self.previousPillar && self.previousPillar.exists() {
+            self.previousPillar.pos.y - TICKNESS
           } else {
             ps.maxY
           };
-          ps.ty -= PillarShape::TICKNESS;
+          ty -= TICKNESS;
           if !ps.isEnded && ps.ts.pos.y > ty {
             ps.vy *= -0.5;
-            ps.ts.pos.y += (ps.ty - ps.ts.pos.y) * 0.5;
+            ps.ts.pos.y += (ty - ps.ts.pos.y) * 0.5;
             if let Some(p) = ps.previousPillar {
               p.state.vy -= ps.vy * 0.5;
             }
           }
-          if ps.ts.pos.y > 100 {
+          if ps.ts.pos.y > 100.0 {
             return false;
           }
         }
       } else {
         ps.ts.pos.y -= 0.2;
-        if ps.ts.pos.y < -50 {
+        if ps.ts.pos.y < -50.0 {
           return false;
         }
       }
@@ -278,7 +278,7 @@ impl<'a> PillarSpec<'a> {
     //}
   }
 
-  fn draw(ps : &PillarState) {
-    ps.pshape.draw(ps.pos.y, ps.deg);
+  fn draw(&self, ps : &PillarState) {
+    ps.pshape.draw(ps.ts.pos.y, ps.ts.deg);
   }
 }

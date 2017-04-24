@@ -36,8 +36,8 @@ pub const BUTTON_B : i32 = 32;
 pub const BUTTON_ANY : i32 = 48;
 
 pub struct PadState {
-  dir : i32,
-  button : i32,
+  pub dir : i32,
+  pub button : i32,
 }
 
 impl PadState {

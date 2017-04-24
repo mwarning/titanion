@@ -656,9 +656,9 @@ impl<'a> TokenSpec<EnemyState> for EnemySpecData<'a> {
 
   fn draw(&self, state : &EnemyState) {
     //with (state) {
-      let p = self.field.calcCircularPos(state.pos);
-      let cd = self.field.calcCircularDeg(state.pos.x);
-      self.shape.draw(state.p, state.cd, state.deg);
+      let p = self.field.calcCircularPos(state.ts.pos);
+      let cd = self.field.calcCircularDeg(state.ts.pos.x);
+      self.shape.draw(p, cd, state.ts.deg);
     //}
   }
 }
@@ -1345,22 +1345,22 @@ impl<'a> MiddleEnemySpec<'a> {
     }
     match gameState.mode() {
     Mode::CLASSIC => {
-      inst.shield = 2;
-      inst.capturable = false;
-      inst.removeBullets = false;
+      inst.es.shield = 2;
+      inst.es.capturable = false;
+      inst.es.removeBullets = false;
     },
     Mode::BASIC => {
-      inst.shield = 3;
-      inst.capturable = false;
-      inst.removeBullets = false;
+      inst.es.shield = 3;
+      inst.es.capturable = false;
+      inst.es.removeBullets = false;
     },
     Mode::MODERN => {
-      inst.shield = 32;
-      inst.capturable = true;
-      inst.removeBullets = true;
+      inst.es.shield = 32;
+      inst.es.capturable = true;
+      inst.es.removeBullets = true;
       },
     }
-    inst.score = 100;
+    inst.es.score = 100;
     inst.es.explosionSeName = "explosion3.wav";
     inst
   }
@@ -1946,9 +1946,9 @@ impl<'a> TokenSpec<TurretState> for TurretSpec<'a> {
 
   fn draw(&self, state : &TurretState) {
     //with (state) {
-      let p = self.field.calcCircularPos(state.pos);
-      let cd = self.field.calcCircularDeg(state.pos.x);
-      self.shape.draw(state.p, state.cd, state.deg);
+      let p = self.field.calcCircularPos(state.ts.pos);
+      let cd = self.field.calcCircularDeg(state.ts.pos.x);
+      self.shape.draw(p, cd, state.ts.deg);
     //}
   }
 }
@@ -2256,13 +2256,13 @@ impl<'a> TurretSpec<'a> {
             ts.fireCnt = 3;
           }
           ts.burstNum = self.burstNum;
-          ts.burstCnt = 0;
+          ts.burstCnt = 0.0;
           ts.speed = spd - self.speedAccel * ((ts.burstNum as f32) - 1.0) / 2.0;
         }
       }
       if ts.burstNum > 0 {
         ts.burstCnt -= time;
-        if ts.burstCnt <= 0 {
+        if ts.burstCnt <= 0.0 {
           ts.burstCnt = self.burstInterval;
           ts.burstNum -= 1;
           if self.isAbleToFire(ts.pos) {
