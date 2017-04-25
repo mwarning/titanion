@@ -458,7 +458,7 @@ impl<'a> TokenSpec<PlayerState<'a>> for PlayerSpec<'a> {
   fn draw(&self, state : &PlayerState) {
     //with (state) {
       let p = self.field.calcCircularPos(state.ts.pos);
-      let cd = self.field.calcCircularDeg(state.ts.pos.x);
+      let cd = Field::calcCircularDeg(state.ts.pos.x);
       self.shape.draw(p, cd, state.ts.deg);
     //}
   }
@@ -887,11 +887,11 @@ impl<'a> PlayerSpec<'a> {
       self.shots.draw();
       self.capturedEnemiesShots.draw();
       self.tractorBeam.draw();
-      if !self.isActive {
+      if !self.isActive() {
         return;
       }
       let p = self.field.calcCircularPos(ps.ts.pos);
-      let cd = self.field.calcCircularDeg(ps.ts.pos.x);
+      let cd = Field::calcCircularDeg(ps.ts.pos.x);
       if self.hasShape() {
         self.shape.draw(p, cd, ps.ts.deg);
       }
@@ -1097,7 +1097,7 @@ impl<'a> TokenSpec<ShotState<'a>> for ShotSpec<'a> {
   fn draw(&self, state : &ShotState) {
     //with (state) {
       let p = self.field.calcCircularPos(state.ts.pos);
-      let cd = self.field.calcCircularDeg(state.ts.pos.x);
+      let cd = Field::calcCircularDeg(state.ts.pos.x);
       self.shape.draw(p, cd, state.ts.deg);
     //}
   }

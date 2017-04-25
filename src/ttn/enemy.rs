@@ -589,7 +589,7 @@ impl EnemyState {
   }
 
   fn recordTrail(&mut self) {
-    self.trails[self.trailIdx].set(self.pos.x, self.pos.y, self.deg, self.cnt);
+    self.trails[self.trailIdx].set5(self.pos.x, self.pos.y, self.deg, self.cnt);
     self.trailIdx += 1;
     if self.trailIdx >= TRAIL_NUM {
       self.trailIdx = 0;
@@ -612,7 +612,7 @@ impl EnemyState {
       let t = self.trails[ti];
       Screen::setColor(r * a, g * a, b * a, a * 0.66);
       let p = field.calcCircularPos(t.pos);
-      let cd = field.calcCircularDeg(t.pos.x);
+      let cd = Field::calcCircularDeg(t.pos.x);
       s.draw(p, cd, t.deg, t.cnt, size);
       a *= 0.7;
     }
@@ -661,7 +661,7 @@ impl<'a> TokenSpec<EnemyState> for EnemySpecData<'a> {
   fn draw(&self, state : &EnemyState) {
     //with (state) {
       let p = self.field.calcCircularPos(state.ts.pos);
-      let cd = self.field.calcCircularDeg(state.ts.pos.x);
+      let cd = Field::calcCircularDeg(state.ts.pos.x);
       self.shape.draw(p, cd, state.ts.deg);
     //}
   }
@@ -1233,7 +1233,7 @@ pub trait EnemySpec {
   fn draw(&self, es : &EnemyState) {
     let spec = self.get_enemyspec_data();
     let mut p : Vector3 = spec.field.calcCircularPos1(es.ts.pos);
-    let mut cd = spec.field.calcCircularDeg(es.ts.pos.x);
+    let mut cd = Field::calcCircularDeg(es.ts.pos.x);
     (spec.shape as &EnemyShape).draw6(p, cd, es.ts.deg, es.cnt as f32, es.size);
     for i in 1..spec.turretNum {
       let mut x = es.ts.pos.x;
@@ -1246,7 +1246,7 @@ pub trait EnemySpec {
       },
       }
       p = spec.field.calcCircularPos(x, es.ts.pos.y);
-      cd = spec.field.calcCircularDeg(x);
+      cd = Field::calcCircularDeg(x);
       Screen::setColor(0.5, 0.5, 1.0, 1.0);
       (spec.trailShape as &EnemyShape).draw7(p, cd, es.ts.deg, es.cnt as f32, es.size.x * 0.5, es.size.y * 0.5);
     }
@@ -1312,7 +1312,7 @@ impl<'a> EnemySpec for GhostEnemySpec<'a> {
   fn draw(&self, es : &EnemyState) {
     //with (es) {
       let p = self.field.calcCircularPos(es.ts.pos);
-      let cd = self.field.calcCircularDeg(es.ts.pos.x);
+      let cd = Field::calcCircularDeg(es.ts.pos.x);
       Screen::setColor(0.5, 0.5, 1, 0.8);
       (self.shape as &EnemyShape).draw6(p, cd, es.ts.deg, es.cnt as f32, es.size);
     //}
@@ -1951,7 +1951,7 @@ impl<'a> TokenSpec<TurretState> for TurretSpec<'a> {
   fn draw(&self, state : &TurretState) {
     //with (state) {
       let p = self.field.calcCircularPos(state.ts.pos);
-      let cd = self.field.calcCircularDeg(state.ts.pos.x);
+      let cd = Field::calcCircularDeg(state.ts.pos.x);
       self.shape.draw(p, cd, state.ts.deg);
     //}
   }

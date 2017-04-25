@@ -156,7 +156,7 @@ impl<'a> TokenSpec<ParticleState> for ParticleSpec<'a> {
   fn draw(&self, state : &ParticleState) {
     //with (state) {
       let p = self.field.calcCircularPos(state.ts.pos);
-      let cd = self.field.calcCircularDeg(state.ts.pos.x);
+      let cd = Field::calcCircularDeg(state.ts.pos.x);
       self.shape.draw(p, cd, state.ts.deg);
     //}
   }
@@ -343,15 +343,15 @@ impl<'a> QuadParticleSpec<'a> {
       if ps.effectedByGravity {
         ps.vel.y -= QPS_GRAVITY;
       }
-      ps.vel *= 1 - QPS_SLOW_DOWN_RATIO;
+      ps.vel *= 1.0 - QPS_SLOW_DOWN_RATIO;
       let mut cfr = 1.0 - (1.0 / (ps.startCnt as f32));
       if cfr < 0.0 {
         cfr = 0.0;
       }
-      ps.ts.pos.r *= cfr;
-      ps.ts.pos.g *= cfr;
-      ps.ts.pos.b *= cfr;
-      ps.ts.pos.a *= cfr;
+      ps.r *= cfr;
+      ps.g *= cfr;
+      ps.b *= cfr;
+      ps.a *= cfr;
       ps.size *= 1.0 - (1.0 - cfr) * 0.5;
       ps.cnt -= 1;
       ps.cnt > 0
@@ -584,7 +584,7 @@ impl<'a> Particle<'a> {
       ParticleShape::QUAD => self.quadParticleSpec,
       ParticleShape::BONUS => self.bonusParticleSpec,
     } as &ParticleSpec;
-    self.set(x, y, deg, speed);
+    self.set5(x, y, deg, speed);
     self.state.size = sz;
     self.state.vel.x = -deg.sin() * speed;
     self.state.vel.y = deg.cos() * speed;

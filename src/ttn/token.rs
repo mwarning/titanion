@@ -167,7 +167,7 @@ pub trait TokenSpec<T : Sized> {
   fn draw(&self, state : &T); /* {
     //with (state) {
       let p = self.field.calcCircularPos(state.ts.pos);
-      let cd = self.field.calcCircularDeg(state.ts.pos.x);
+      let cd = Field::calcCircularDeg(state.ts.pos.x);
       self.shape.draw(p, cd, state.ts.deg);
     //}
   }*/

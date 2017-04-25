@@ -105,7 +105,7 @@ impl<'a> Field<'a> {
   }
 
   pub fn calcCircularPos(&mut self, x : f32, y : f32) -> Vector3 {
-    let d : f32 = self.calcCircularDeg(x);
+    let d = Field::calcCircularDeg(x);
     if y < self._size.y {
       self.circlePos.x = d.sin() * CIRCLE_RADIUS;
       self.circlePos.z = d.cos() * CIRCLE_RADIUS;
@@ -131,24 +131,19 @@ impl<'a> Field<'a> {
     self.circlePos
   }
 
-  pub fn calcCircularDeg(&self, x : f32) -> f32 {
+  pub fn calcCircularDeg(x : f32) -> f32 {
     x * X_EXPANSION_RATIO / CIRCLE_RADIUS
   }
 
-  pub fn calcCircularDist1(&self, d : f32) -> f32 {
+  pub fn calcCircularDist1(d : f32) -> f32 {
     d * CIRCLE_RADIUS / X_EXPANSION_RATIO
   }
 
   pub fn checkHitDist(pos : Vector, p : Vector, pp : Vector, dist : f32) -> bool {
-    let mut bmvx : f32;
-    let mut bmvy : f32;
-    let mut inaa : f32;
-    bmvx = pp.x;
-    bmvy = pp.y;
-    bmvx -= p.x;
-    bmvy -= p.y;
+    let mut bmvx = pp.x - p.x;
+    let mut bmvy = pp.y - p.y;
     bmvx = Field::normalizeX(bmvx);
-    inaa = bmvx * bmvx + bmvy * bmvy;
+    let inaa = bmvx * bmvx + bmvy * bmvy;
     if inaa > 0.00001 {
       let mut sofsx = pos.x - p.x;
       let mut sofsy = pos.y - p.y;
@@ -169,7 +164,7 @@ impl<'a> Field<'a> {
   }
 
   pub fn setEyePos(&mut self, p : Vector) {
-    self.eyeDeg = self.calcCircularDeg(p.x) * 0.25;
+    self.eyeDeg = Field::calcCircularDeg(p.x) * 0.25;
     self._eyePos.x = self.eyeDeg.sin() * CIRCLE_RADIUS * EYE_POS_DIST_RATIO;
     self._eyePos.z = self.eyeDeg.cos() * CIRCLE_RADIUS * EYE_POS_DIST_RATIO;
   }

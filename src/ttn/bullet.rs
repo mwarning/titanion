@@ -143,7 +143,7 @@ impl<'a> TokenSpec<BulletState> for BulletSpec<'a> {
   fn draw(&self, state : &BulletState) {
     //with (state) {
       let p = self.field.calcCircularPos(state.ts.pos);
-      let cd = self.field.calcCircularDeg(state.ts.pos.x);
+      let cd = Field::calcCircularDeg(state.ts.pos.x);
       self.shape.draw(p, cd, state.ts.deg);
     //}
   }
@@ -159,7 +159,6 @@ impl<'a> BulletSpec<'a> {
       player : player,
       enemies : enemies,
       particles : particles,
-      shape : shape,
       lineShape : lineShape,
       gameState : gameState
     }
@@ -183,7 +182,7 @@ impl<'a> BulletSpec<'a> {
       bs.ppos.x = bs.ts.pos.x;
       bs.ppos.y = bs.ts.pos.y;
       let mut sp = bs.ts.speed;
-      if (self.gameState.mode != Mode::CLASSIC) && (bs.cnt < 40) {
+      if (self.gameState.mode() != Mode::CLASSIC) && (bs.cnt < 40) {
         sp *= ((bs.cnt + 10) as f32) / 50.0;
       }
       bs.tailPos.x -= bs.ts.deg.cos() * sp * 0.7;
@@ -227,12 +226,12 @@ impl<'a> BulletSpec<'a> {
       Screen::glVertex(p);
       glEnd();
       p = self.field.calcCircularPos(bs.ts.pos);
-      let d : f32 = match self.gameState.mode {
+      let d : f32 = match self.gameState.mode() {
         Mode::CLASSIC => PI,
         Mode::BASIC => bs.ts.deg,
         Mode::MODERN => bs.ts.deg,
       };
-      let cd = self.field.calcCircularDeg(bs.ts.pos.x);
+      let cd = Field::calcCircularDeg(bs.ts.pos.x);
       (self.ts.shape as &BulletShapeBase).draw(p, cd, d, bs.cnt * 3);
       Screen::setColor(0.6 * colorAlpha, 0.9 * colorAlpha, 0.9 * colorAlpha, 1.0);
       (self.lineShape as &BulletShapeBase).draw(p, cd, d, bs.cnt * 3);
