@@ -17,8 +17,8 @@ pub trait Actor {
   fn getExists(&self) -> bool;
   fn setExists(&mut self, v : bool)-> bool;
   fn init(&mut self); //, args : [Object]);
-  fn move1(&self) {}
-  fn draw1(&self) {}
+  fn move1(&self);
+  fn draw1(&self);
 }
 
 /**

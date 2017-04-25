@@ -191,7 +191,7 @@ impl<'a> BulletSpec<'a> {
       bs.ts.pos.pos.x -= bs.ts.deg.sin() * sp;
       bs.ts.pos.y += bs.ts.deg.cos() * sp;
       self.field.addSlowdownRatio(bs.ts.speed * 0.04);
-      bs.ts.pos.x = self.field.normalizeX(bs.ts.pos.x);
+      bs.ts.pos.x = Field::normalizeX(bs.ts.pos.x);
       if !self.field.containsOuter(bs.ts.pos) {
         return false;
       }
@@ -199,7 +199,7 @@ impl<'a> BulletSpec<'a> {
         bs.tailPos.x += (bs.ts.pos.x - bs.tailPos.x) * 0.1;
         bs.tailPos.y += (bs.ts.pos.y - bs.tailPos.y) * 0.1;
       }
-      bs.tailPos.x = self.field.normalizeX(bs.tailPos.x);
+      bs.tailPos.x = Field::normalizeX(bs.tailPos.x);
       if self.player.enemiesHasCollision() {
         if self.enemies.checkBulletHit(bs.ts.pos, bs.ppos) {
           return false;
@@ -298,20 +298,6 @@ impl<'a> Token<BulletState, BulletSpec<'a>> for Bullet<'a> {
     self._exists = v;
     v
   }*/
-
-  fn init(&mut self /*Object[] args*/) {
-    self.state = BulletState::new();
-  }
-
-  fn move1(&self) {
-    if !self.spec.move2(self.state) {
-      self.remove();
-    }
-  }
-
-  fn draw1(&self) {
-    self.spec.draw(self.state);
-  }
 
   fn set5Vec(&self, spec : &BulletSpec, pos : Vector, deg : f32, speed : f32) {
     self.spec = spec;

@@ -265,8 +265,8 @@ impl<'a> Letter<'a> {
     }
   }
 
-  pub fn setLetter(&mut self, idx : i32, type_ : LetterShape /* = Shape::NORMAL*/) {
-    let mut i = 0;
+  pub fn setLetter(&mut self, idx : usize, type_ : LetterShape /* = Shape::NORMAL*/) {
+    let mut i : usize = 0;
     loop {
       let deg = SP_DATA[idx][i][4] as i32;
       if deg > 99990 {
@@ -283,9 +283,9 @@ impl<'a> Letter<'a> {
       y = y;
       deg %= 180;
       match type_ {
-        LetterShape::NORMAL => Letter::drawSegment(x, y, size, length, deg),
-        LetterShape::POLYGON => Letter::drawSegmentPolygon(x, y, size, length, deg),
-        LetterShape::LINE => Letter::drawSegmentLine(x, y, size, length, deg),
+        LetterShape::NORMAL => Letter::drawSegment(x, y, size, length, deg as f32),
+        LetterShape::POLYGON => Letter::drawSegmentPolygon(x, y, size, length, deg as f32),
+        LetterShape::LINE => Letter::drawSegmentLine(x, y, size, length, deg as f32),
       }
       i += 1;
     }

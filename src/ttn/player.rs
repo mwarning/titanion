@@ -52,6 +52,16 @@ impl<'a> Actor for Player<'a> {
   fn init(&mut self /*Object[] args*/) {
     self.state = PlayerState::new();
   }
+
+  fn move1(&self) {
+    if !self.spec.move2(self.state) {
+      self.remove();
+    }
+  }
+
+  fn draw1(&self) {
+    self.spec.draw(self.state);
+  }
 }
 
 impl<'a> Token<PlayerState<'a>, PlayerSpec<'a>> for Player<'a> {
@@ -65,20 +75,6 @@ impl<'a> Token<PlayerState<'a>, PlayerSpec<'a>> for Player<'a> {
     v
   }
 */
-  fn init(&mut self /*Object[] args*/) {
-    self.state = PlayerState::new();
-  }
-
-  fn move1(&self) {
-    if !self.spec.move2(self.state) {
-      self.remove();
-    }
-  }
-
-  fn draw1(&self) {
-    self.spec.draw(self.state);
-  }
-
   fn set5Vec(&self, spec : &PlayerSpec, pos : Vector, deg : f32, speed : f32) {
     self.spec = spec;
     self.set5(pos.x, pos.y, deg, speed);
@@ -748,7 +744,7 @@ impl<'a> PlayerSpec<'a> {
       else if ps.ts.pos.x < -self.field.size().x {
         ps.ts.pos.x = -self.field.size().x;
       }
-      ps.ts.pos.x = self.field.normalizeX(ps.ts.pos.x);
+      ps.ts.pos.x = Field::normalizeX(ps.ts.pos.x);
       self.field.setEyePos(ps.ts.pos);
       true
     //}
@@ -989,6 +985,7 @@ impl<'a> Actor for Shot<'a> {
   fn getExists(&self) -> bool {
     self._exists
   }
+
   fn setExists(&mut self, v : bool)-> bool {
     self._exists = v;
     v
@@ -1020,19 +1017,6 @@ impl<'a> Token<ShotState<'a>, ShotSpec<'a>> for Shot<'a> {
     v
   }
 */
-  fn init(&mut self /*Object[] args*/) {
-    self.state = ShotState::new();
-  }
-
-  fn move1(&self) {
-    if !self.spec.move2(self.state) {
-      self.remove();
-    }
-  }
-
-  fn draw1(&self) {
-    self.spec.draw(self.state);
-  }
 
   fn set5Vec(&self, spec : &ShotSpec, pos : Vector, deg : f32, speed : f32) {
     self.spec = spec;
@@ -1157,7 +1141,7 @@ impl<'a> ShotSpec<'a> {
         }
       }
       self.stepForward();
-      ss.pos.x = self.tok.field.normalizeX(ss.pos.x);
+      ss.pos.x = Field::normalizeX(ss.pos.x);
       if !self.tok.field.containsOuterY(ss.pos.y) {
         return false;
       }
@@ -1175,8 +1159,8 @@ impl<'a> ShotSpec<'a> {
   }
 
   fn checkParent(ss : ShotState) -> bool {
-    if ss.parent {
-      if ss.parent.exists == false {
+    if let Some(parent) = ss.parent {
+      if parent.exists == false {
         return false;
       }
     }

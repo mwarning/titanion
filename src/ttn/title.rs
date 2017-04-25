@@ -69,13 +69,13 @@ impl<'a> Title<'a> {
     self.cnt = 0;
     self.aPressed = true;
     self.udPressed = true;
-    self.titlePos.x = 150;
-    self.titlePos.y = 150;
+    self.titlePos.x = 150.0;
+    self.titlePos.y = 150.0;
     self.titleSize = 1.0;
   }
 
   pub fn move1(&mut self) {
-    let input = self.pad.getState(false);
+    let input = self.pad.getState2(false);
     if self.input.button & BUTTON_A {
       if !self.aPressed {
         self.aPressed = true;

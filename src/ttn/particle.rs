@@ -216,7 +216,7 @@ impl<'a> TriangleParticleSpec<'a> {
   pub fn move2(&mut self, ps : &ParticleState) -> bool {
     //with (ps) {
       ps.ts.pos += ps.vel;
-      ps.ts.pos.x = self.field.normalizeX(ps.ts.pos.x);
+      ps.ts.pos.x = Field::normalizeX(ps.ts.pos.x);
       if ps.effectedByGravity {
         ps.vel.y -= TPS_GRAVITY;
       }
@@ -295,7 +295,7 @@ impl<'a> LineParticleSpec<'a> {
       ps.tailPos.x += (ps.ts.pos.x - ps.tailPos.x) * 0.05;
       ps.tailPos.y += (ps.ts.pos.y - ps.tailPos.y) * 0.05;
       ps.ts.speed *= 1.0 - LPS_SLOW_DOWN_RATIO;
-      ps.ts.pos.x = self.field.normalizeX(ps.ts.pos.x);
+      ps.ts.pos.x = Field::normalizeX(ps.ts.pos.x);
       let cfr = 1.0 - (1.0 / (ps.startCnt as f32));
       if cfr < 0.0 {
         cfr = 0.0;
@@ -339,7 +339,7 @@ impl<'a> QuadParticleSpec<'a> {
   fn move1(&mut self, ps : &ParticleState) -> bool {
     //with (ps) {
       ps.ts.pos += ps.vel;
-      ps.ts.pos.x = self.field.normalizeX(ps.ts.pos.x);
+      ps.ts.pos.x = Field::normalizeX(ps.ts.pos.x);
       if ps.effectedByGravity {
         ps.vel.y -= QPS_GRAVITY;
       }
@@ -419,7 +419,7 @@ impl<'a> BonusParticleSpec<'a> {
       ps.ts.stepForward();
       ps.ts.speed *= 1.0 - BPS_SLOW_DOWN_RATIO;
       self.field.addSlowdownRatio(0.01);
-      ps.ts.pos.x = self.field.normalizeX(ps.ts.pos.x);
+      ps.ts.pos.x = Field::normalizeX(ps.ts.pos.x);
       let mut cfr = 1.0 - (1.0 / (ps.startCnt as f32));
       if cfr < 0.0 {
         cfr = 0.0;
@@ -485,19 +485,6 @@ impl<'a> Token<ParticleState, ParticleSpec<'a>> for Particle<'a> {
     v
   }
 */
-  fn init(&mut self /*Object[] args*/) {
-    self.state = ParticleState::new();
-  }
-
-  fn move1(&self) {
-    if !self.spec.move2(&self.state) {
-      self.remove();
-    }
-  }
-
-  fn draw1(&self) {
-    self.spec.draw(&self.state);
-  }
 
   fn set5Vec(&self, spec : &ParticleSpec, pos : Vector, deg : f32, speed : f32) {
     self.spec = spec;
@@ -511,10 +498,10 @@ impl<'a> Token<ParticleState, ParticleSpec<'a>> for Particle<'a> {
 
   fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
     self.state.clear();
-    self.state.pos.x = x;
-    self.state.pos.y = y;
-    self.state.deg = deg;
-    self.state.speed = speed;
+    self.state.ts.pos.x = x;
+    self.state.ts.pos.y = y;
+    self.state.ts.deg = deg;
+    self.state.ts.speed = speed;
     self.spec.set(self.state);
     self._exists = true;
   }
@@ -547,7 +534,8 @@ impl<'a> Actor for Particle<'a> {
     v
   }
 
-  fn init(&mut self) { //, args : &Vec<Object>) {
+  fn init(&mut self /*Object[] args*/) {
+    self.state = ParticleState::new();
     /*
     //moved to new()
     self.init(args);
@@ -558,15 +546,15 @@ impl<'a> Actor for Particle<'a> {
     */
   }
 
-/*
   fn move1(&self) {
-    self.move1();
+    if !self.spec.move2(&self.state) {
+      self.remove();
+    }
   }
 
   fn draw1(&self) {
-    self.draw1();
+    self.spec.draw(&self.state);
   }
-*/
 }
 
 impl<'a> Particle<'a> {

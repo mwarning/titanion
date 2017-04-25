@@ -50,8 +50,8 @@ impl<'a> EnemyPool<'a> {
     let ne : Option<&Enemy> = None;
     for e in &self.ap.actors {
       if e.getExists() && !e.isBeingCaptured() {
-        if self._field.calcCircularDist2(e.pos(), p) < dst {
-          dst = self._field.calcCircularDist2(e.pos(), p);
+        if Field::calcCircularDist2(e.pos(), p) < dst {
+          dst = Field::calcCircularDist2(e.pos(), p);
           ne = Some(&e);
         }
       }
@@ -65,8 +65,8 @@ impl<'a> EnemyPool<'a> {
     for e in &self.ap.actors {
       if e.getExists() && !e.isBeingCaptured() {
         if e.spec.get_type() == EnemySpecType::MiddleEnemySpec {
-          if self._field.calcCircularDist2(e.pos(), p) < dst {
-            dst = self._field.calcCircularDist2(e.pos(), p);
+          if Field::calcCircularDist2(e.pos(), p) < dst {
+            dst = Field::calcCircularDist2(e.pos(), p);
             ne = Some(&e);
           }
         }
@@ -77,8 +77,8 @@ impl<'a> EnemyPool<'a> {
 
   pub fn checkShotHit(&self, p : Vector, deg : f32, widthRatio : f32 /*= 1.0*/) -> bool {
     if let Some(e) = self.getNearestEnemy(p) {
-      let ox : f32 = self._field.normalizeX(e.pos().x - p.x);
-      let oy : f32 = e.pos().y - p.y;
+      let ox = Field::normalizeX(e.pos().x - p.x);
+      let oy = e.pos().y - p.y;
       if ox.abs() < (1.0 * e.state.size.x) && oy.abs() < (1.0 * e.state.size.y * widthRatio) {
         e.hitShot(deg);
         return true
@@ -104,7 +104,7 @@ impl<'a> EnemyPool<'a> {
     let hitf = false;
     for e in &self.ap.actors {
       if e.getExists() && e.isCaptured() {
-        let ox = self._field.normalizeX(e.pos().x - p.x);
+        let ox = Field::normalizeX(e.pos().x - p.x);
         let oy = e.pos().y - p.y;
         if ox.abs() < 0.5 * (e.state.size.x + size.x) &&
             oy.abs() < 0.5 * (e.state.size.y + size.y) {
@@ -260,8 +260,19 @@ impl<'a> Actor for Enemy<'a> {
   }
 
   fn init(&mut self /*, args : &[Object]*/) {
-    Token::<EnemyState, EnemySpec>::init(self /*, args*/);
+    //Token::<EnemyState, EnemySpec>::init(self /*, args*/);
+    self.state = EnemyState::new();
     self.state.enemy = self;
+  }
+
+  fn move1(&self) {
+    if !self.spec.move2(&self.state) {
+      self.remove();
+    }
+  }
+
+  fn draw1(&self) {
+    self.spec.draw1(&self.state);
   }
 }
 
@@ -275,19 +286,11 @@ impl<'a> Token<EnemyState, EnemySpec> for Enemy<'a> {
     v
   }*/
 
+  /*
   fn init(&mut self /*Object[] args*/) {
     self.state = EnemyState::new();
   }
-
-  fn move1(&self) {
-    if !self.spec.move2(self.state) {
-      self.remove();
-    }
-  }
-
-  fn draw1(&self) {
-    self.spec.draw(&self.state);
-  }
+  */
 
   fn set5Vec(&self, spec : &EnemySpec, pos : Vector, deg : f32, speed : f32) {
     self.spec = spec;
@@ -304,14 +307,14 @@ impl<'a> Token<EnemyState, EnemySpec> for Enemy<'a> {
     self.state.ts.pos.x = x;
     self.state.ts.pos.y = y;
     self.state.deg = deg;
-    self.state.speed = speed;
+    self.state.ts.speed = speed;
     self.spec.set(self.state);
     self.actor._exists = true;
   }
 
   fn remove(&self) {
     self._exists = false;
-    self.spec.removed(self.state);
+    self.spec.removed(&self.state);
   }
 
   fn pos(&self) -> Vector {
@@ -763,7 +766,7 @@ pub trait EnemySpec {
       if self.isInScreen(es) {
         spec.field.addSlowdownRatio(es.ts.speed * 0.04 * rk);
       }
-      es.ts.pos.x = spec.field.normalizeX(es.ts.pos.x);
+      es.ts.pos.x = Field::normalizeX(es.ts.pos.x);
       es.recordTrail();
       if (es.phase >= -50) && (es.phase < 0) && !spec.field.containsIncludingPit(es.ts.pos) {
         return false;
@@ -772,9 +775,9 @@ pub trait EnemySpec {
         es.waitCnt -= 1;
       } else {
         let cp : Vector = es.centerPos;
-        es.centerPos.x = spec.field.normalizeX(es.centerPos.x);
+        es.centerPos.x = Field::normalizeX(es.centerPos.x);
         es.phaseCnt += 1;
-        if spec.field.calcCircularDist2(es.centerPos, es.ts.pos) < NEXT_PHASE_DIST {
+        if Field::calcCircularDist2(es.centerPos, es.ts.pos) < NEXT_PHASE_DIST {
           es.nextPhaseCnt -= 1;
           if es.nextPhaseCnt <= 0 {
             es.phase += 1;
@@ -783,11 +786,11 @@ pub trait EnemySpec {
             }
           }
         }
-        cp.x = spec.field.normalizeX(cp.x);
-        let dst = spec.field.calcCircularDist2(cp, es.ts.pos);
+        cp.x = Field::normalizeX(cp.x);
+        let dst = Field::calcCircularDist2(cp, es.ts.pos);
         es.ts.speed += ((es.baseSpeed * (1.0 + dst * 0.1)) - es.ts.speed) * 0.05;
         let mut av = es.angVel * rk;
-        let mut td = spec.field.normalizeX(-(cp.x - es.ts.pos.x)).atan2(cp.y - es.ts.pos.y);
+        let mut td = Field::normalizeX(-(cp.x - es.ts.pos.x)).atan2(cp.y - es.ts.pos.y);
         let mut ad = normalize_deg(td - es.ts.deg);
         av *= 2.5 - er;
         if (ad > av) || (ad < (-PI * 0.8)) {
@@ -807,7 +810,7 @@ pub trait EnemySpec {
           1 => { tx -= spec.turretWidth; },
           2 => { tx += spec.turretWidth; },
           }
-          let turretDeg = spec.field.normalizeX(-(spec.player.pos().x - tx)).atan2(spec.player.pos().y - ty);
+          let turretDeg = Field::normalizeX(-(spec.player.pos().x - tx)).atan2(spec.player.pos().y - ty);
           match spec.gameState.mode() {
             Mode::CLASSIC => {
               if (turretDeg >= 0.0) && (turretDeg < (PI - PI / 6.0)) {
@@ -1644,9 +1647,9 @@ impl<'a> SE1Spec<'a> {
       Mode::BASIC => 1,
       Mode::MODERN => 2,
     };
-    inst.capturable = true;
-    inst.score = 10;
-    inst.removeBullets = false;
+    inst.es.capturable = true;
+    inst.es.score = 10;
+    inst.es.removeBullets = false;
 
     inst.ses.es.explosionSeName = "explosion1.wav";
     inst
@@ -1748,9 +1751,9 @@ impl<'a> SE2Spec<'a> {
       Mode::BASIC => 1,
       Mode::MODERN => 2,
     };
-    inst.capturable = true;
-    inst.score = 10;
-    inst.removeBullets = false;
+    inst.es.capturable = true;
+    inst.es.score = 10;
+    inst.es.removeBullets = false;
 
     inst.ses.explosionSeName = "explosion2.wav";
     inst

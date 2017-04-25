@@ -398,7 +398,7 @@ impl<'a> Stage<'a> {
       if (self.formationIdx % self.middleEnemyAppInterval) == (self.middleEnemyAppInterval - 1) {
         if let Some(me) = self.enemies.getInstance() {
           let mut x = rand.nextFloat(self.field.circularDistance);
-          x = self.field.normalizeX(x);
+          x = Field::normalizeX(x);
           let sp = 0.1 + rand.nextSignedFloat(0.01);
           let av = sp * 0.4 + rand.nextSignedFloat(0.005);
           let er = rand.nextFloat(0.5);
@@ -410,7 +410,7 @@ impl<'a> Stage<'a> {
         }
       }
       let mut x = rand.nextFloat(self.field.circularDistance);
-      x = self.field.normalizeX(x);
+      x = Field::normalizeX(x);
       let sp = 0.15 + rand.nextSignedFloat(0.01);
       let av = sp * 0.5 + rand.nextSignedFloat(0.005);
       let dst = sp * 6.0;

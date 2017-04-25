@@ -87,25 +87,25 @@ impl<'a> Field<'a> {
   }
 
   pub fn containsOuterY(&self, y : f32) -> bool {
-    (y >= -self._outerSize.y && y <= self._outerSize.y)
+    (y >= -self._outerSize.y) && (y <= self._outerSize.y)
   }
 
   pub fn containsIncludingPit(&self, p : Vector) -> bool {
-    (p.y >= -self._outerSize.y && p.y <= (self._size.y * PIT_SIZE_Y_RATIO * 1.1))
+    (p.y >= -self._outerSize.y) && (p.y <= (self._size.y * PIT_SIZE_Y_RATIO * 1.1))
   }
 
-  pub fn normalizeX(&self, x : f32) -> f32 {
-    let rx : f32 = x;
-    let hd : f32 = CIRCLE_RADIUS * PI / X_EXPANSION_RATIO;
+  pub fn normalizeX(x : f32) -> f32 {
+    let rx = x;
+    let hd = CIRCLE_RADIUS * PI / X_EXPANSION_RATIO;
     if rx < -hd {
       rx = hd * 2.0 - (-rx % (hd * 2.0));
     }
     (rx + hd) % (hd * 2.0) - hd
   }
 
-  pub fn calcCircularDist2(&self, p1 : Vector, p2 : Vector) -> f32 {
-    let ax : f32 = (self.normalizeX(p1.x - p2.x)).abs();
-    let ay : f32 = (p1.y - p2.y).abs();
+  pub fn calcCircularDist2(p1 : Vector, p2 : Vector) -> f32 {
+    let ax  = (Field::normalizeX(p1.x - p2.x)).abs();
+    let ay = (p1.y - p2.y).abs();
     if ax > ay {
       ax + ay / 2.0
     } else {
@@ -164,12 +164,12 @@ impl<'a> Field<'a> {
     bmvy = pp.y;
     bmvx -= p.x;
     bmvy -= p.y;
-    bmvx = self.normalizeX(bmvx);
+    bmvx = Field::normalizeX(bmvx);
     inaa = bmvx * bmvx + bmvy * bmvy;
     if inaa > 0.00001 {
       let mut sofsx = pos.x - p.x;
       let mut sofsy = pos.y - p.y;
-      sofsx = self.normalizeX(sofsx);
+      sofsx = Field::normalizeX(sofsx);
       let inab = bmvx * sofsx + bmvy * sofsy;
       if (inab >= 0) && (inab <= inaa) {
         let hd = sofsx * sofsx + sofsy * sofsy - inab * inab / inaa;

@@ -16,7 +16,7 @@ impl SDL_Event {
 }
 
 
-enum GLenum { DUMMY }
+pub enum GLenum { DUMMY }
 
 pub fn glGetError() -> GLenum { GLenum::DUMMY }
 

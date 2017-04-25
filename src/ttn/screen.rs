@@ -197,7 +197,7 @@ impl Screen {
 
   // inlined from util/sdl/screen3d.d
   fn init(&self) {
-    Scree::setCaption(CAPTION);
+    Screen::setCaption(CAPTION);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glEnable(GL_BLEND);
     glEnable(GL_LINE_SMOOTH);

@@ -105,21 +105,6 @@ impl<'a> Token<PillarState<'a>, PillarSpec<'a>> for Pillar<'a> {
     v
   }
 */
-
-  fn init(&mut self /*Object[] args*/) {
-    self.state = PillarState::new();
-  }
-
-  fn move1(&self) {
-    if !self.spec.move2(self.state) {
-      self.remove();
-    }
-  }
-
-  fn draw1(&self) {
-    self.spec.draw(self.state);
-  }
-
   fn set5Vec(&self, spec : &PillarSpec, pos : Vector, deg : f32, speed : f32) {
     self.spec = spec;
     self.set5(pos.x, pos.y, deg, speed);

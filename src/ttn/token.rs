@@ -46,7 +46,7 @@ pub trait Token<ST : ?Sized, SP : ?Sized> : Actor {
     self._exists = v;
     v
   }*/
-
+/*
   fn init(&mut self /*Object[] args*/); /*{
     self.state = ST::new();
   }*/
@@ -60,7 +60,7 @@ pub trait Token<ST : ?Sized, SP : ?Sized> : Actor {
   fn draw1(&self); /* {
     self.spec.draw(self.state);
   }*/
-
+*/
   fn set5Vec(&self, spec : &SP, pos : Vector, deg : f32, speed : f32); /* {
     self.spec = spec;
     self.set5(pos.x, pos.y, deg, speed);

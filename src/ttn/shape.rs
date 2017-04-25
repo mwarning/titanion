@@ -257,7 +257,7 @@ impl Shape for ShotShape {
 }
 
 impl DisplayListShape for ShotShape {
-  pub fn drawList(&self) {
+  fn drawList(&self) {
     glPushMatrix();
     glRotatef(180.0, 0.0, 0.0, 1.0);
     glTranslatef(0.5, -0.5, 0.0);
