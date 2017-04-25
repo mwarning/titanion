@@ -138,7 +138,7 @@ impl<'a> Title<'a> {
       Title::drawTriangle(575.0, 398.0, 180.0);
       Title::drawTriangle(575.0, 417.0, 0.0);
     }
-    Letter::drawString(GameState::MODE_NAME[self.cursorIdx], 540.0, 400.0, 5.0);
+    Letter::drawString(MODE_NAME[self.cursorIdx as usize], 540.0, 400.0, 5.0);
   }
 
   fn drawBoard(x : f32, y : f32, w : f32, h : f32) {
@@ -176,8 +176,8 @@ impl<'a> Title<'a> {
 
   fn drawRanking(&self) {
     let rn : i32 = (self.cnt - 240) / 30;
-    if rn > RANKING_NUM {
-      rn = RANKING_NUM;
+    if rn > (RANKING_NUM as i32) {
+      rn = RANKING_NUM as i32;
     }
     let y = 140.0;
     for i in 0..rn {
@@ -206,7 +206,7 @@ impl<'a> Title<'a> {
         sx += ((c * 2.35) as i32) as f32;
         sz -= c * 0.03;
       }
-      Letter::drawNum7(self.preference.highScore[self.cursorIdx][i], sx, sy, sz, 0, -1.0, -1);
+      Letter::drawNum7(self.preference.highScore[self.cursorIdx as usize][i], sx, sy, sz, 0, -1.0, -1);
       y += 24.0;
     }
   }

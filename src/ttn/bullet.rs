@@ -142,7 +142,7 @@ impl<'a> TokenSpec<BulletState> for BulletSpec<'a> {
 
   fn draw(&self, state : &BulletState) {
     //with (state) {
-      let p = self.field.calcCircularPos(state.ts.pos);
+      let p = self.field.calcCircularPos1(state.ts.pos);
       let cd = Field::calcCircularDeg(state.ts.pos.x);
       self.shape.draw(p, cd, state.ts.deg);
     //}
@@ -219,13 +219,13 @@ impl<'a> BulletSpec<'a> {
       let p : Vector3;
       glBegin(GL_LINES);
       Screen::setColor(0.1, 0.4, 0.4, 0.5);
-      p = self.field.calcCircularPos(bs.tailPos);
+      p = self.field.calcCircularPos1(bs.tailPos);
       Screen::glVertex(p);
       Screen::setColor(0.2 * colorAlpha, 0.8 * colorAlpha, 0.8 * colorAlpha, 1.0);
-      p = self.field.calcCircularPos(bs.ts.pos);
+      p = self.field.calcCircularPos1(bs.ts.pos);
       Screen::glVertex(p);
       glEnd();
-      p = self.field.calcCircularPos(bs.ts.pos);
+      p = self.field.calcCircularPos1(bs.ts.pos);
       let d : f32 = match self.gameState.mode() {
         Mode::CLASSIC => PI,
         Mode::BASIC => bs.ts.deg,

@@ -275,11 +275,11 @@ impl<'a> Frame<'a> {
       pillars.drawCenter();
       enemies.drawBack(&field);
       field.drawFront();
-      self.particles.draw();
+      self.particles.draw1();
       self.bonusParticles.draw();
       enemies.drawFront(&field);
-      player.draw();
-      bullets.draw();
+      player.draw1();
+      bullets.draw1();
       field.beginDrawingFront();
       gameState.draw();
       if gameState.isTitle {
@@ -358,7 +358,7 @@ pub enum Mode {
 }
 
 const MODE_NUM : i32 = 3;
-const MODE_NAME: &'static [ &'static str ] = &["CLASSIC", " BASIC ", "MODERN"];
+pub const MODE_NAME: &'static [ &'static str ] = &["CLASSIC", " BASIC ", "MODERN"];
 pub static mut stageRandomized : bool = false;
 
 #[derive(PartialEq, Eq)]

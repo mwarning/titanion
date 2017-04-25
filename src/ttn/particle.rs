@@ -155,7 +155,7 @@ impl<'a> TokenSpec<ParticleState> for ParticleSpec<'a> {
 
   fn draw(&self, state : &ParticleState) {
     //with (state) {
-      let p = self.field.calcCircularPos(state.ts.pos);
+      let p = self.field.calcCircularPos1(state.ts.pos);
       let cd = Field::calcCircularDeg(state.ts.pos.x);
       self.shape.draw(p, cd, state.ts.deg);
     //}
@@ -249,11 +249,11 @@ impl<'a> TriangleParticleSpec<'a> {
         let cr = 1.0 - fs * 0.2;
         ps.vel /= cr;
         let p = self.particles.getInstanceForced();
-        let nc = (ps.cnt * (0.8 + fs * 0.2)) as i32;
+        let nc = ((ps.cnt as f32) * (0.8 + fs * 0.2)) as i32;
         if nc > 0 {
           p.setByVelocity(ps.ts.pos.x, ps.ts.pos.y, vx, vy, ps.size * fs, ps.r, ps.g, ps.b, ps.a, nc, ps.effectedByGravity);
         }
-        ps.size *= 1 - fs;
+        ps.size *= 1.0 - fs;
         ps.cnt *= cr as i32;
       };
       ps.cnt -= 1;
@@ -263,7 +263,7 @@ impl<'a> TriangleParticleSpec<'a> {
 
   pub fn draw(&self, ps : &ParticleState) {
     //with (ps) {
-      let p = self.field.calcCircularPos(ps.ts.pos);
+      let p = self.field.calcCircularPos1(ps.ts.pos);
       let aa = ps.a * self.ps.calcNearPlayerAlpha(ps.ts.pos);
       Screen::setColor(ps.r, ps.g, ps.b, aa);
       self.particleShape.draw(p, ps.d1, ps.d2);
@@ -314,9 +314,9 @@ impl<'a> LineParticleSpec<'a> {
       glBegin(GL_LINES);
       //let aa : f32 = ps.a;// * calcNearPlayerAlpha(pos());
       Screen::setColor(ps.r, ps.g, ps.b, ps.a);
-      let p1 = self.field.calcCircularPos(ps.ts.pos);
+      let p1 = self.field.calcCircularPos1(ps.ts.pos);
       Screen::glVertex(p1);
-      let p2 = self.field.calcCircularPos(ps.tailPos);
+      let p2 = self.field.calcCircularPos1(ps.tailPos);
       Screen::glVertex(p2);
       glEnd();
     //}
@@ -441,7 +441,7 @@ impl<'a> BonusParticleSpec<'a> {
         return;
       }
       glPushMatrix();
-      let p = self.field.calcCircularPos(ps.ts.pos);
+      let p = self.field.calcCircularPos1(ps.ts.pos);
       let aa = ps.a * self.ps.calcNearPlayerAlpha(ps.ts.pos);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       Screen::setColor(1.0, 1.0, 1.0, aa * 0.5);

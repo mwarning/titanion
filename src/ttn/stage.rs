@@ -297,7 +297,7 @@ impl<'a> Stage<'a> {
       Mode::CLASSIC => {
         en = 24 + ((50 + rand.nextInt(10)) * self.rank.sqrt() * 0.2) as i32;
         self.smallEnemyNum = 4 + rand.nextInt(2);
-        if self.rank > 10 {
+        if self.rank > 10.0 {
           self._existsCounterBullet = true;
         }
         self.middleEnemyAppInterval = 6 + rand.nextInt(2);
@@ -344,9 +344,9 @@ impl<'a> Stage<'a> {
       self.goingDownBeforeStandByRatio = rand.nextFloat(0.2) + 0.1;
     }
     self.appCntInterval = (48.0 + rand.nextSignedInt(10)) as f32;
-    self.appCntInterval *= 0.5 + 0.5 / self.rank.sqrt();
+    self.appCntInterval = ((self.appCntInterval as f32) * (0.5 + 0.5 / self.rank.sqrt())) as i32;
     if self.gameState.mode() == Mode::MODERN {
-      self.appCntInterval *= 0.75;
+      self.appCntInterval = ((self.appCntInterval as f32) * 0.75) as i32;
       self._attackSmallEnemyNum *= 2;
     }
     self.appCnt = 0;
