@@ -271,13 +271,13 @@ impl<'a> Frame<'a> {
     if gameState.isInGame || (self.replayData != None) {
       pillars.drawOutside();
       field.drawBack();
-      enemies.drawPillarBack();
+      enemies.drawPillarBack(&field);
       pillars.drawCenter();
-      enemies.drawBack();
+      enemies.drawBack(&field);
       field.drawFront();
       self.particles.draw();
       self.bonusParticles.draw();
-      enemies.drawFront();
+      enemies.drawFront(&field);
       player.draw();
       bullets.draw();
       field.beginDrawingFront();

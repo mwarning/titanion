@@ -136,7 +136,7 @@ impl<'a> Player<'a> {
       if !self.state.hasCollision() {
         return false;
       }
-      if self.spec.field.checkHitDist(self.state.pos, p, pp, self.spec.bulletHitWidth) {
+      if Field::checkHitDist(self.state.pos, p, pp, self.spec.bulletHitWidth) {
         self.destroy();
         return true;
       }

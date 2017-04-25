@@ -1,22 +1,6 @@
 /*
- * $Id: field.d,v 1.1.1.1 2006/11/19 07:54:55 kenta Exp $
- *
  * Copyright 2006 Kenta Cho. Some rights reserved.
  */
- /*
-module src.ttn.field;
-
-
-private import std.math;
-
-private import derelict.opengl.gl;
-private import derelict.opengl.glu;
-
-private import src.util.vector;
-private import src.util.math;
-private import src.ttn.screen;
-private import src.ttn.frame;
-*/
 
 use std::f32::consts::PI;
 
@@ -28,7 +12,6 @@ use ttn::dummy::*;
 /**
  * Game field.
  */
-
 
 pub const PIT_SIZE_Y_RATIO :f32 = 12.0;
 pub const CIRCLE_RADIUS : f32 = 64.0;
@@ -156,7 +139,7 @@ impl<'a> Field<'a> {
     d * CIRCLE_RADIUS / X_EXPANSION_RATIO
   }
 
-  pub fn checkHitDist(&self, pos : Vector, p : Vector, pp : Vector, dist : f32) -> bool {
+  pub fn checkHitDist(pos : Vector, p : Vector, pp : Vector, dist : f32) -> bool {
     let mut bmvx : f32;
     let mut bmvy : f32;
     let mut inaa : f32;

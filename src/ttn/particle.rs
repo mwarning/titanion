@@ -502,17 +502,17 @@ impl<'a> Token<ParticleState, ParticleSpec<'a>> for Particle<'a> {
     self.state.ts.pos.y = y;
     self.state.ts.deg = deg;
     self.state.ts.speed = speed;
-    self.spec.set(self.state);
+    self.spec.set(&self.state);
     self._exists = true;
   }
 
   fn remove(&self) {
     self._exists = false;
-    self.spec.removed(self.state);
+    self.spec.removed(&self.state);
   }
 
   fn pos(&self) -> Vector {
-    self.state.pos
+    self.state.ts.pos
   }
 }
 

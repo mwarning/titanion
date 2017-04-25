@@ -31,7 +31,7 @@ pub static mut trailEffect : bool = false;
 
 pub struct EnemyPool<'a> {
   ap : ActorPoolData<Enemy<'a>>,
-  _field : &'a Field<'a>,
+  //_field : &'a Field<'a>,
 }
 
 impl<'a> ActorPool<Enemy<'a>> for EnemyPool<'a> {
@@ -45,9 +45,9 @@ impl<'a> EnemyPool<'a> {
     EnemyPool{ap : ActorPoolData::<Enemy<'a>>::new(n)} //, _field : field}
   }
 
-  pub fn getNearestEnemy(&self, p : Vector) -> Option<&Enemy> {
+  pub fn getNearestEnemy(&self, p : Vector) -> Option<&Enemy<'a>> {
     let dst : f32 = 99999.0;
-    let ne : Option<&Enemy> = None;
+    let ne : Option<&Enemy<'a>> = None;
     for e in &self.ap.actors {
       if e.getExists() && !e.isBeingCaptured() {
         if Field::calcCircularDist2(e.pos(), p) < dst {
@@ -59,9 +59,9 @@ impl<'a> EnemyPool<'a> {
     ne
   }
 
-  pub fn getNearestMiddleEnemy(&self, p: Vector) -> Option<&Enemy> {
+  pub fn getNearestMiddleEnemy(&self, p: Vector) -> Option<&Enemy<'a>> {
     let dst : f32 = 99999.0;
-    let ne : Option<&Enemy> = None;
+    let ne : Option<&Enemy<'a>> = None;
     for e in &self.ap.actors {
       if e.getExists() && !e.isBeingCaptured() {
         if e.spec.get_type() == EnemySpecType::MiddleEnemySpec {
@@ -91,7 +91,7 @@ impl<'a> EnemyPool<'a> {
     let hitf : bool = false;
     for e in self.ap.actors {
       if e.getExists() && e.isCaptured() {
-        if self._field.checkHitDist(e.pos(), p, pp, BULLET_HIT_WIDTH) {
+        if Field::checkHitDist(e.pos(), p, pp, BULLET_HIT_WIDTH) {
           e.hitCaptured();
           hitf = true;
         }
@@ -169,35 +169,36 @@ impl<'a> EnemyPool<'a> {
     n
   }
 
-  pub fn drawFront(&self) {
+  pub fn drawFront(&self, field : &Field) {
     if trailEffect {
       for a in &self.ap.actors {
-        if a.getExists() && (a.state.ts.pos.y <= (self._field.size().y * 1.5)) {
+        if a.getExists() && (a.state.ts.pos.y <= (field.size().y * 1.5)) {
           a.drawTrails();
         }
       }
     }
     for a in &self.ap.actors {
-      if a.getExists() && (a.state.ts.pos.y <= (self._field.size().y * 1.5)) {
+      if a.getExists() && (a.state.ts.pos.y <= (field.size().y * 1.5)) {
         a.draw1();
       }
     }
   }
 
-  pub fn drawBack(&self) {
+  pub fn drawBack(&self, field : &Field) {
     if trailEffect {
       for a in &self.ap.actors {
         if a.getExists() &&
-            a.state.ts.pos.y > self._field.size().y * 1.5 &&
+            a.state.ts.pos.y > field.size().y * 1.5 &&
             (a.state.ts.pos.x <= Field::circularDistance() / 4.0 &&
              a.state.ts.pos.x >= -Field::circularDistance() / 4.0) {
           a.drawTrails();
         }
       }
     }
+
     for a in &self.ap.actors {
       if a.getExists() &&
-          a.state.ts.pos.y > self._field.size().y * 1.5 &&
+          a.state.ts.pos.y > field.size().y * 1.5 &&
           (a.state.ts.pos.x <= Field::circularDistance() / 4.0 &&
            a.state.ts.pos.x >= -Field::circularDistance() / 4.0) {
         a.draw1();
@@ -205,20 +206,20 @@ impl<'a> EnemyPool<'a> {
     }
   }
 
-  pub fn drawPillarBack(&self) {
+  pub fn drawPillarBack(&self, field : &Field) {
     if trailEffect {
       for a in &self.ap.actors {
         if a.getExists() &&
-            a.state.ts.pos.y > self._field.size().y * 1.5 &&
-            (a.state.ts.pos.x > Field::circularDistance() / 4.0 ||
-             a.state.ts.pos.x < -Field::circularDistance() / 4.0) {
+            a.state.ts.pos.y > (field.size().y * 1.5) &&
+            a.state.ts.pos.x > (Field::circularDistance() / 4.0) ||
+            a.state.ts.pos.x < (-Field::circularDistance() / 4.0) {
           a.drawTrails();
         }
       }
     }
     for a in &self.ap.actors {
       if a.getExists() &&
-          a.state.ts.pos.y > self._field.size().y * 1.5 &&
+          a.state.ts.pos.y > field.size().y * 1.5 &&
           (a.state.ts.pos.x > Field::circularDistance() / 4.0 ||
            a.state.ts.pos.x < -Field::circularDistance() / 4.0) {
         a.draw1();
@@ -266,7 +267,7 @@ impl<'a> Actor for Enemy<'a> {
   }
 
   fn move1(&self) {
-    if !self.spec.move2(&self.state) {
+    if !self.spec.move2(&mut self.state) {
       self.remove();
     }
   }
