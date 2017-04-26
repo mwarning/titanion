@@ -21,16 +21,16 @@ pub struct PillarPool<'a> {
 
 impl<'a> ActorPool<Pillar<'a>> for PillarPool<'a> {
   fn getActorPoolData(&mut self) -> &mut ActorPoolData<Pillar<'a>> {
-    &self.ap
+    &mut self.ap
   }
 }
 
 impl<'a> PillarPool<'a> {
-  fn new(n : i32) -> PillarPool<'a> {
+  pub fn new(n : i32) -> PillarPool<'a> {
     PillarPool{ap : PillarPool::<Pillar<'a>>::new(n)}
   }
 
-  fn setEnd(&mut self) {
+  pub fn setEnd(&mut self) {
     for a in &self.ap.actors {
       if a.exists {
         a.setEnd();
@@ -38,7 +38,7 @@ impl<'a> PillarPool<'a> {
     }
   }
 
-  fn drawCenter(&mut self) {
+  pub fn drawCenter(&mut self) {
     let sas = &self.actors.sort();
     for a in sas {
       if a.exists && !a.state.isOutside {
@@ -47,7 +47,7 @@ impl<'a> PillarPool<'a> {
     }
   }
 
-  fn drawOutside(&mut self) {
+  pub fn drawOutside(&mut self) {
     for a in &self.actors {
       if a.exists && a.state.isOutside {
         a.draw();
@@ -122,7 +122,7 @@ impl<'a> Token<PillarState<'a>, PillarSpec<'a>> for Pillar<'a> {
     self.state.ts.deg = deg;
     self.state.ts.speed = speed;
     self.spec.set(self.state);
-    self.actor._exists = true;
+    self._exists = true;
   }
 
   fn remove(&self) {
@@ -131,7 +131,7 @@ impl<'a> Token<PillarState<'a>, PillarSpec<'a>> for Pillar<'a> {
   }
 
   fn pos(&self) -> Vector {
-    self.state.pos
+    self.state.ts.pos
   }
 }
 
@@ -225,8 +225,7 @@ impl<'a> TokenSpec<PillarState<'a>> for PillarSpec<'a> {
 }
 
 impl<'a> PillarSpec<'a> {
-
-  fn new(field : &mut Field<'a>) -> PillarSpec<'a> {
+  pub fn new(field : &mut Field<'a>) -> PillarSpec<'a> {
     PillarSpec { shape : PillarState::new(), field : field }
   }
 
@@ -237,11 +236,12 @@ impl<'a> PillarSpec<'a> {
         ps.vy *= 0.98;
         ps.ts.pos.y += ps.vy;
         if ps.vy > 0.0 {
-          let mut ty : f32 = if self.previousPillar && self.previousPillar.exists() {
-            self.previousPillar.pos.y - TICKNESS
-          } else {
-            ps.maxY
-          };
+          let mut ty = ps.maxY;
+          if let Some(previousPillar) = ps.previousPillar {
+            if previousPillar.exists() {
+              ty = previousPillar.pos.y - TICKNESS
+            }
+          }
           ty -= TICKNESS;
           if !ps.isEnded && ps.ts.pos.y > ty {
             ps.vy *= -0.5;

@@ -54,18 +54,18 @@ impl<'a> BulletPool<'a> {
           player.addScore(*cnt);
           *cnt += 1;
           let wc = if *cnt <= 50 {
-            *cnt;
+            *cnt
           } else {
             50 + ((*cnt - 50) as f32).sqrt() as i32
           };
           let mut bp : &Particle = bonusParticles.getInstanceForced();
           bp.set(ParticleShape::BONUS, b.state.pos.x, b.state.pos.y, 0.0, 0.2,
-                 0.5, 1.0, 1.0, 1.0, 60, false, *cnt, wc);
+                 0.5, 1.0, 1.0, 1.0, 60, false, *cnt as f32, wc);
           let mut p = particles.getInstanceForced();
           p.set(ParticleShape::QUAD, b.state.pos.x, b.state.pos.y,
                 b.state.deg, b.state.speed,
                 1.5, 0.5, 0.75, 1.0, 60, false);
-          self.removeAround(*cnt, b.pos, particles, bonusParticles, player);
+          self.removeAround(cnt, b.pos, particles, bonusParticles, player);
         }
       }
     }
@@ -97,21 +97,21 @@ impl BulletState {
     }
   } 
 
-  fn move1(&mut self) {
-    self.colorCnt += 1;
-    let c : i32 = self.colorCnt % 30;
+  fn move1() {
+    colorCnt += 1;
+    let c : i32 = colorCnt % 30;
     if c < 15  {
-      self.colorAlpha = (c / 15) as f32;
+      colorAlpha = (c / 15) as f32;
     } else {
-      self.colorAlpha = 1.0 - ((c - 15) / 15) as f32;
+      colorAlpha = 1.0 - ((c - 15) / 15) as f32;
     }
   }
 
   fn clear(&mut self) {
     self.ppos.x = 0.0;
-    self.ppos.y = 0;
-    self.tailPos.x = 0;
-    self.tailPos.y = 0;
+    self.ppos.y = 0.0;
+    self.tailPos.x = 0.0;
+    self.tailPos.y = 0.0;
     self.cnt = 0;
     self.waitCnt = 0;
     self.speedRatio = 0.0;
@@ -133,14 +133,14 @@ pub struct BulletSpec<'a> {
 }
 
 impl<'a> TokenSpec<BulletState> for BulletSpec<'a> {
-  pub fn set(&self, state : &BulletState) {}
-  pub fn removed(&self, state : &BulletState) {}
+  fn set(&self, state : &BulletState) {}
+  fn removed(&self, state : &BulletState) {}
 
-  pub fn move2(&self, state : &BulletState) -> bool {
+  fn move2(&self, state : &BulletState) -> bool {
     true
   }
 
-  pub fn draw(&self, state : &BulletState) {
+  fn draw(&self, state : &BulletState) {
     //with (state) {
       let p = self.field.calcCircularPos1(state.ts.pos);
       let cd = Field::calcCircularDeg(state.ts.pos.x);
@@ -314,7 +314,7 @@ impl<'a> Token<BulletState, BulletSpec<'a>> for Bullet<'a> {
     self.state.ts.deg = deg;
     self.state.ts.speed = speed;
     self.spec.set(&self.state);
-    self.actor._exists = true;
+    self._exists = true;
   }
 
   fn remove(&self) {

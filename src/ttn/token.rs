@@ -78,7 +78,7 @@ pub trait Token<ST : ?Sized, SP : ?Sized> : Actor {
     self.state.deg = deg;
     self.state.speed = speed;
     self.spec.set(self.state);
-    self.actor._exists = true;
+    self._exists = true;
   }*/
 
   fn remove(&self); /* {

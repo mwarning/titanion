@@ -54,13 +54,13 @@ impl<'a> Actor for Player<'a> {
   }
 
   fn move1(&self) {
-    if !self.spec.move2(self.state) {
+    if !self.spec.move2(&self.state) {
       self.remove();
     }
   }
 
   fn draw1(&self) {
-    self.spec.draw(self.state);
+    self.spec.draw(&self.state);
   }
 }
 
@@ -91,7 +91,7 @@ impl<'a> Token<PlayerState<'a>, PlayerSpec<'a>> for Player<'a> {
     self.state.ts.pos.y = y;
     self.state.ts.deg = deg;
     self.state.ts.speed = speed;
-    self.spec.set(self.state);
+    self.spec.set(&self.state);
     self._exists = true;
   }
 
@@ -136,7 +136,7 @@ impl<'a> Player<'a> {
       if !self.state.hasCollision() {
         return false;
       }
-      if Field::checkHitDist(self.state.pos, p, pp, self.spec.bulletHitWidth) {
+      if Field::checkHitDist(self.state.ts.pos, p, pp, self.spec.bulletHitWidth) {
         self.destroy();
         return true;
       }
@@ -158,7 +158,7 @@ impl<'a> Player<'a> {
           Mode::BASIC => {
           self.hitOffset.x = self.pos().x - p.x;
           self.hitOffset.y = self.pos().y - p.y;
-          self.spec.addVelocity(self.state, v, self.hitOffset);
+          self.spec.addVelocity(&self.state, v, self.hitOffset);
           },
         _ => {},
         }
@@ -225,7 +225,7 @@ impl<'a> Player<'a> {
 
   pub fn enemiesHasCollision(&self) -> bool {
     match self.spec.gameState.mode() {
-      Mode::CLASSIC => self.state.hasCollision,
+      Mode::CLASSIC => self.state.hasCollision(),
       Mode::BASIC => true,
       Mode::MODERN => false
     }
@@ -392,16 +392,16 @@ impl<'a> PlayerState<'a> {
 
   pub fn addCapturedEnemy(&mut self, e : &Enemy) -> f32 {
     if self.isInRespawn || (self.capturedEnemyNum >= MAX_CAPTURED_ENEMIES_NUM) {
-      return -1;
+      return -1.0;
     }
     self.capturedEnemies[self.capturedEnemyNum as usize] = e;
     self.capturedEnemyNum += 1;
-    (self.capturedEnemyNum - 1)
+    (self.capturedEnemyNum - 1) as f32
   }
 
   pub fn destroyCapturedEnemies(&mut self, idx : i32) {
     for i in idx..self.capturedEnemyNum {
-      if self.capturedEnemies[i as usize].exists() {
+      if self.capturedEnemies[i as usize].getExists() {
         self.capturedEnemies[i as usize].destroyed();
       }
     }
@@ -496,7 +496,7 @@ impl<'a> PlayerSpec<'a> {
 
   pub fn setState(&mut self, ps : &PlayerState) {
     self.playerState = Some(ps);
-    self.shotSpec.setPlayerState(ps);
+    self.shotSpec.setPlayerState(&mut ps);
     self.tractorBeam = TractorBeam::new(self.field, ps, self.gameState);
   }
 
@@ -598,10 +598,10 @@ impl<'a> PlayerSpec<'a> {
 
       let mut px = ps.ts.pos.x;
       ps.ts.pos.x += vx * ps.speed;
-      if self.gameState.mode == Mode::CLASSIC {
+      if self.gameState.mode() == Mode::CLASSIC {
         vy *= 0.5;
       }
-      ps.ts.pos.y += vy * ps.speed;
+      ps.ts.pos.y += vy * ps.ts.speed;
       if !(input.button & BUTTON_B) {
         ps.deg += (-TILT_DEG * (vx * ps.speed) - ps.deg) * 0.1;
       }
@@ -609,8 +609,8 @@ impl<'a> PlayerSpec<'a> {
       ps.ts.pos += ps.vel;
       ps.vel *= 0.9;
       if self.gameState.mode() == Mode::MODERN {
-        let mut d : f32 = ps.ghostCnt * 0.05;
-        for i in 0..self.capturedEnemyNum() {
+        let mut d = (ps.ghostCnt as f32) * 0.05;
+        for i in 0..ps.capturedEnemyNum {
           let e : Enemy = self.capturedEnemies[i];
           e.setGhostEnemyState(ps.ts.pos.x + d.sin() * ps.capturedEnemyWidth * 2.0, ps.ts.pos.y, ps.deg, (d * 180.0 / PI / 3.0) as i32);
           d += PI / 2.0;
@@ -655,7 +655,7 @@ impl<'a> PlayerSpec<'a> {
       },
       }
       if self.input.button & BUTTON_B {
-        ps.speed += (BASE_SPEED * 1.2 - ps.speed) * 0.33;
+        ps.ts.speed += (BASE_SPEED * 1.2 - ps.ts.speed) * 0.33;
         ps.deg *= 0.9;
         if self.gameState.mode() == Mode::MODERN {
           ps.capturedEnemyWidth -= 0.05;
@@ -678,15 +678,15 @@ impl<'a> PlayerSpec<'a> {
             !ps.captureBeamReleased && (ps.captureBeamEnergy >= 1.0) &&
             (self.capturedEnemyNum < MAX_CAPTURED_ENEMIES_NUM) {
           ps.captureBeamReleased = true;
-          self.isInvincible = true;
-          self.invincibleCnt = 99999;
+          ps.isInvincible = true;
+          ps.invincibleCnt = 99999;
         }
         if ps.captureBeamReleased {
           if (ps.captureBeamEnergy <= 0.0) || (ps.capturedEnemyNum >= MAX_CAPTURED_ENEMIES_NUM) {
             ps.captureBeamEnergy = 0.0;
             if self.tractorBeam.reduceLength(0.5) {
               ps.captureBeamReleased = false;
-              self.invincibleCnt = 120;
+              ps.invincibleCnt = 120;
             }
           } else {
             self.tractorBeam.extendLength(0.5);

@@ -29,7 +29,7 @@ const PHASE_RESULT_SHOW_CNT : i32 = 150;
 const PHASE_START_SHOW_CNT : i32 = 90;
 
 pub struct Stage<'a> {
-  randomized : bool,
+  pub randomized : bool,
   field : &'a Field<'a>,
   enemies : &'a EnemyPool<'a>,
   bullets : &'a BulletPool<'a>,
@@ -357,7 +357,7 @@ impl<'a> Stage<'a> {
 
   pub fn initPillars(&mut self) {
     self.pillars.setEnd();
-    let mut pp : Option(&Pillar) = None;
+    let mut pp : Option<&Pillar> = None;
     let mut pln : i32 = 0;
     let pn = self.phaseNum;
     let mut pshapes = Vec::new();
@@ -380,14 +380,14 @@ impl<'a> Stage<'a> {
       }
       pln += 1;
     }
-    let maxY : f32 = -15.0 + pln * 8.0;
+    let maxY = -15.0 + (pln as f32) * 8.0;
     for i in 0..pln {
-      let p = self.pillars.getInstance();
-      if !p {
+      if let p = self.pillars.getInstance() {
+        p.set(self.pillarSpec, -80 - i * 10, maxY, pp, self.pillarShapes[pshapes[i]], (pln - i as f32) * 0.03);
+        pp = p;
+      } else {
         break;
       }
-      p.set(self.pillarSpec, -80 - i * 10, maxY, pp, self.pillarShapes[pshapes[i]], (pln - i as f32) * 0.03);
-      pp = p;
     }
   }
 
@@ -397,7 +397,7 @@ impl<'a> Stage<'a> {
     if self.appCnt <= 0 {
       if (self.formationIdx % self.middleEnemyAppInterval) == (self.middleEnemyAppInterval - 1) {
         if let Some(me) = self.enemies.getInstance() {
-          let mut x = rand.nextFloat(self.field.circularDistance);
+          let mut x = rand.nextFloat(Field::circularDistance());
           x = Field::normalizeX(x);
           let sp = 0.1 + rand.nextSignedFloat(0.01);
           let av = sp * 0.4 + rand.nextSignedFloat(0.005);
@@ -409,7 +409,7 @@ impl<'a> Stage<'a> {
           return;
         }
       }
-      let mut x = rand.nextFloat(self.field.circularDistance);
+      let mut x = rand.nextFloat(Field::circularDistance());
       x = Field::normalizeX(x);
       let sp = 0.15 + rand.nextSignedFloat(0.01);
       let av = sp * 0.5 + rand.nextSignedFloat(0.005);
@@ -426,8 +426,8 @@ impl<'a> Stage<'a> {
             1 => (self.smallEnemy1Spec as &SmallEnemySpec),
             2 => (self.smallEnemy2Spec as &SmallEnemySpec),
           };
-          e.set(ses, x, self.field.size.y * /*Field.*/ PIT_SIZE_Y_RATIO + (i as f32) * dst, PI, sp);
-          let gd = rand.nextFloat(1) < self.goingDownBeforeStandByRatio;
+          e.set(ses, x, self.field.size().y * /*Field.*/ PIT_SIZE_Y_RATIO + (i as f32) * dst, PI, sp);
+          let gd = rand.nextFloat(1.0) < self.goingDownBeforeStandByRatio;
           if fe == None {
             e.setSmallEnemyState(sp, av, (i * (dst / sp)) as i32, self.appPattern, er, ed, gd, 0.0, None);
             fe = Some(e);
@@ -467,7 +467,7 @@ impl<'a> Stage<'a> {
   pub fn moveOutsidePillars(&mut self) {
     if (self.cnt % 120) == 0 {
       if let Some(p) = self.pillars.getInstance() {
-        p.set(self.pillarSpec, 180, 0, None, self.outsidePillarShape, (((self.cnt / 120) % 2 * 2 - 1) as f32)  * 0.003, true);
+        p.set(&self.pillarSpec, 180, 0, None, self.outsidePillarShape, (((self.cnt / 120) % 2 * 2 - 1) as f32)  * 0.003, true);
       }
     }
   }

@@ -309,8 +309,8 @@ impl<'a> Token<EnemyState, EnemySpec> for Enemy<'a> {
     self.state.ts.pos.y = y;
     self.state.ts.deg = deg;
     self.state.ts.speed = speed;
-    self.spec.set(self.state);
-    self.actor._exists = true;
+    self.spec.set(&self.state);
+    self._exists = true;
   }
 
   fn remove(&self) {
@@ -399,18 +399,18 @@ impl<'a> Enemy<'a> {
     self.spec.isInAttack(&self.state)
   }
 
-  fn isInScreen(&self) -> bool {
+  pub fn isInScreen(&self) -> bool {
     if self.spec.isBeingCaptured(&self.state) {
       return false;
     }
     self.spec.isInScreen(&self.state)
   }
 
-  fn isBeingCaptured(&self) -> bool {
+  pub fn isBeingCaptured(&self) -> bool {
     self.spec.isBeingCaptured(&self.state)
   }
 
-  fn isCaptured(&self) -> bool {
+  pub fn isCaptured(&self) -> bool {
     match self.spec.get_type() {
       EnemySpecType::GhostEnemySpec => true,
       EnemySpecType::MiddleEnemySpec => false,
@@ -445,7 +445,7 @@ impl<'a> Enemy<'a> {
   }
 }
 
-const TRAIL_NUM : usize = 64;
+const TRAIL_NUM : i32 = 64;
 const TRAIL_INTERVAL : i32 = 8;
 const TURRET_MAX_NUM2 : usize = 3;
 
@@ -517,7 +517,7 @@ impl EnemyState {
       //size : Vector::new(0.0, 0.0),
       //targetSize : Vector::new(0.0, 0.0),
       sizeVel : Vector::new(0.0, 0.0),
-      trails : [Trail::new(); TRAIL_NUM],
+      trails : [Trail::new(); TRAIL_NUM as usize],
       baseSpeed : 0.0,
       baseAngVel : 0.0,
       angVel : 0.0,
@@ -598,8 +598,8 @@ impl EnemyState {
   }
 
   fn drawTrails(&self, s : &EnemyShape, r : f32, g : f32, b : f32, size : Vector, field : &Field) {
-    let mut ti : i32 = self.trailIdx;
-    let mut a : f32 = 1.0;
+    let mut ti = self.trailIdx;
+    let mut a = 1.0;
     for i in 0..(TRAIL_NUM / TRAIL_INTERVAL) {
       ti -= TRAIL_INTERVAL;
       if ti < 0 {
@@ -682,7 +682,7 @@ impl<'a> EnemySpecData<'a> {
               enemies : &'a mut EnemyPool, stage : &'a mut Stage,
               shape : &'a mut EnemyShape, trailShape : &'a mut EnemyShape,
               bulletSpec : &'a mut BulletSpec, counterBulletSpec : &'a mut BulletSpec,
-              gameState : GameState) -> EnemySpec {
+              gameState : &'a GameState<'a>) -> EnemySpec {
     EnemySpecData {
       //ts : TokenSpec::<EnemyState>::new(field, shape),
       field : field,
@@ -1313,8 +1313,8 @@ impl<'a> EnemySpec for GhostEnemySpec<'a> {
     //with (es) {
       let p = self.field.calcCircularPos1(es.ts.pos);
       let cd = Field::calcCircularDeg(es.ts.pos.x);
-      Screen::setColor(0.5, 0.5, 1, 0.8);
-      (self.shape as &EnemyShape).draw6(p, cd, es.ts.deg, es.cnt as f32, es.size);
+      Screen::setColor(0.5, 0.5, 1.0, 0.8);
+      (&self.shape as &EnemyShape).draw6(p, cd, es.ts.deg, es.cnt as f32, es.size);
     //}
   }
 
@@ -1349,17 +1349,17 @@ impl<'a> MiddleEnemySpec<'a> {
     }
     match gameState.mode() {
     Mode::CLASSIC => {
-      inst.es.shield = 2;
+      inst.es.shield = 2.0;
       inst.es.capturable = false;
       inst.es.removeBullets = false;
     },
     Mode::BASIC => {
-      inst.es.shield = 3;
+      inst.es.shield = 3.0;
       inst.es.capturable = false;
       inst.es.removeBullets = false;
     },
     Mode::MODERN => {
-      inst.es.shield = 32;
+      inst.es.shield = 32.0;
       inst.es.capturable = true;
       inst.es.removeBullets = true;
       },
@@ -1643,7 +1643,7 @@ impl<'a> SE1Spec<'a> {
       shape : shape, trailShape : trailShape, bulletSpec : bulletSpec, counterBulletSpec : counterBulletSpec, gameState : gameState}};
 
     inst.turretSpecs[0] = TurretSpec::new(field, bullets, player, enemies, particles, stage, bulletSpec, gameState);
-    inst.shild = match gameState.mode() {
+    inst.es.shild = match gameState.mode() {
       Mode::CLASSIC => 1,
       Mode::BASIC => 1,
       Mode::MODERN => 2,
@@ -1710,7 +1710,7 @@ impl<'a> EnemySpec for SE1Spec<'a> {
       },
       2 => {
         es.centerPos.y = -self.es.field.size().y * 0.7;
-        es.centerPos.x = self.es.player.pos.x;
+        es.centerPos.x = self.es.player.pos().x;
         es.nextPhaseCnt = 30;
       },
       3 => {
@@ -1747,7 +1747,7 @@ impl<'a> SE2Spec<'a> {
       shape : shape, trailShape : trailShape, bulletSpec : bulletSpec, counterBulletSpec : counterBulletSpec, gameState : gameState}};
 
     inst.turretSpecs[0] = TurretSpec::new(field, bullets, player, enemies, particles, stage, bulletSpec, gameState);
-    inst.shield = match gameState.mode() {
+    inst.es.shield = match gameState.mode() {
       Mode::CLASSIC => 1,
       Mode::BASIC => 1,
       Mode::MODERN => 2,
@@ -1842,15 +1842,15 @@ impl<'a> EnemySpec for SE2Spec<'a> {
   }
 
   fn movePhase(&mut self, es : &mut EnemyState) {
-    self.es.movePhase(es);
+    (&mut self.es as &mut EnemySpec).movePhase(es);
     //with (es) {
       if es.phase == 3 {
         if es.centerPos.x < 0.0 {
-          if es.ts.pos.x > (-self.es.field.size.x * 1.2) {
+          if es.ts.pos.x > (-self.es.field.size().x * 1.2) {
             es.ts.pos.x += (es.centerPos.x - es.ts.pos.x) * 0.2;
           }
         } else {
-          if es.ts.pos.x < (self.es.field.size.x * 1.2) {
+          if es.ts.pos.x < (self.es.field.size().x * 1.2) {
             es.ts.pos.x += (es.centerPos.x - es.ts.pos.x) * 0.2;
           }
         }
@@ -1961,7 +1961,7 @@ impl<'a> TurretSpec<'a> {
   fn new(field : &'a mut Field, bullets : &'a mut BulletPool, player : &'a mut Player,
               enemies : &'a mut EnemyPool, particles : &'a mut ParticlePool,
               stage : &'a mut Stage, bulletSpec : &'a mut BulletSpec, gameState : &'a mut GameState) -> TurretSpec<'a> {
-    let mut inst = TurretSpec{
+    TurretSpec {
       //shape : //not used? 
       bulletSpec : bulletSpec,
       field : field,
@@ -1969,9 +1969,20 @@ impl<'a> TurretSpec<'a> {
       player : player,
       stage : stage,
       gameState : gameState,
-    };
-    inst.initParam();
-    inst
+      interval : 99999,
+      speed : 1.0,
+      speedAccel : 0.0,
+      burstNum : 1,
+      burstInterval : 99999,
+      nway : 1,
+      nwayAngle : 0.0,
+      nwayBaseDeg : 0.0,
+      nwaySpeedAccel : 0.0,
+      fireingAtATime : false,
+      fireIntervalRatio : 0.0,
+      _disabled : false,
+      minimumFireDist : 0.0,
+    }
   }
 
   fn initParam(&mut self) {
@@ -1986,7 +1997,7 @@ impl<'a> TurretSpec<'a> {
     self.nwaySpeedAccel = 0.0;
     self.fireingAtATime = false;
     self.fireIntervalRatio = 0.0;
-    self.disabled = false;
+    self._disabled = false;
     self.minimumFireDist = 0.0;
   }
 
@@ -2044,13 +2055,13 @@ impl<'a> TurretSpec<'a> {
         br = rank * nsr * rr;
         ir = rank * nsr * (1.0 - rr);
       }
-      intervalMax = 120;
+      intervalMax = 120.0;
       self.burstInterval = 4 + rand.nextInt(4);
       },
     }
     self.burstNum = 1 + (br.sqrt() as i32);
     self.nway = 1 + (nr.sqrt() as i32);
-    self.interval = ((intervalMax / (ir + 1)) as i32) + 1;
+    self.interval = ((intervalMax / (ir + 1.0)) as i32) + 1;
     let sr : f32 = (rank - self.nway + 1 - self.burstNum + 1 - ir) as f32;
     if sr < 0.01 {
       sr = 0.01;
@@ -2254,10 +2265,10 @@ impl<'a> TurretSpec<'a> {
     } else {
       if ts.burstNum <= 0 {
         ts.fireCnt -= time;
-        if ts.fireCnt <= 0 {
+        if ts.fireCnt <= 0.0 {
           ts.fireCnt = itv;
-          if ts.fireCnt < 3 {
-            ts.fireCnt = 3;
+          if ts.fireCnt < 3.0 {
+            ts.fireCnt = 3.0;
           }
           ts.burstNum = self.burstNum;
           ts.burstCnt = 0.0;
@@ -2271,7 +2282,7 @@ impl<'a> TurretSpec<'a> {
           ts.burstNum -= 1;
           if self.isAbleToFire(ts.pos) {
             let d = ts.deg - self.nwayAngle * ((self.nway as f32) - 1.0) / 2.0 + self.nwayBaseDeg;
-            let nsp = ts.speed - self.nwaySpeedAccel * ts.nwaySpeedAccelDir * ((self.nway as f32) - 1.0) / 2.0;
+            let nsp = self.speed - self.nwaySpeedAccel * ts.nwaySpeedAccelDir * ((self.nway as f32) - 1.0) / 2.0;
             for i in 0..self.nway {
               if let Some(b) = self.bullets.getInstance() {
                 b.set(self.bulletSpec, ts.pos, d, nsp * SPEED_RATIO);
@@ -2282,7 +2293,7 @@ impl<'a> TurretSpec<'a> {
               }
             }
           }
-          ts.speed += self.speedAccel;
+          self.speed += self.speedAccel;
         }
       }
     }

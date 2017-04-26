@@ -248,16 +248,16 @@ impl<'a> Field<'a> {
       for _ in 0..16 {
         cp.x = d1.sin() * torusRad;
         cp.z = d1.cos() * torusRad;
-        Field::createRingOffset(&ringOfs, cp, ringRad, d1, d2);
+        Field::createRingOffset(&mut ringOfs, cp, ringRad, d1, d2);
         Screen::setColor(0.3, 0.3, 0.3, 0.8);
         Screen::glVertex3(ringOfs);
-        Field::createRingOffset(&ringOfs, cp, ringRad, d1, d2 + PI * 2.0 / 16.0);
+        Field::createRingOffset(&mut ringOfs, cp, ringRad, d1, d2 + PI * 2.0 / 16.0);
         Screen::glVertex3(ringOfs);
         cp.x = (d1 + PI * 2.0 / 32.0).sin() * torusRad;
         cp.z = (d1 + PI * 2.0 / 32.0).cos() * torusRad;
-        Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0, d2 + PI * 2.0 / 16.0);
+        Field::createRingOffset(&mut ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0, d2 + PI * 2.0 / 16.0);
         Screen::glVertex3(ringOfs);
-        Field::createRingOffset(&ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0, d2);
+        Field::createRingOffset(&mut ringOfs, cp, ringRad, d1 + PI * 2.0 / 32.0, d2);
         Screen::setColor(0.3, 0.3, 0.3, 0.2);
         Screen::glVertex3(ringOfs);
         d2 += PI * 2.0 / 16.0

@@ -174,7 +174,7 @@ impl<'a> Frame<'a> {
     rp.startRecord();
     let replayData = ReplayData::new();
     replayData.inputRecord = rp.inputRecord;
-    replayData.seed = self.rand.nextInt32();
+    replayData.seed = self.rand.borrow_mut().nextInt32();
     self.clearAll();
     self.field.borrow_mut().set();
     self.player.borrow_mut().set();
@@ -293,8 +293,8 @@ impl<'a> Frame<'a> {
       field.drawBack();
       field.drawFront();
       field.beginDrawingFront();
-      if gameState.isTitle {
-        self.title.draw();
+      if gameState.isTitle() {
+        self.title.draw1();
       }
     }
   }
@@ -323,8 +323,8 @@ impl<'a> Frame<'a> {
       let mut gameState = self.gameState.borrow_mut();
       let mut stage = self.stage.borrow_mut();
       self.loadReplay(LAST_REPLAY_FILE_NAME);
-      gameState.lastGameScore = replayData.score;
-      gameState.lastGameMode = replayData.mode;
+      gameState.lastGameScore(replayData.score);
+      gameState.lastGameMode(replayData.mode);
       stage.randomized = replayData.stageRandomized;
     }
     //} catch (Throwable o) {
@@ -443,7 +443,7 @@ impl<'a> GameState<'a> {
     self.left = 2;
     self.setExtendScore();
     self._lastGameScore = -1;
-    self.preference.setMode(self._mode);
+    self.preference.setMode(self._mode as i32);
     self.stage.randomized = self.tageRandomized;
   }
 
@@ -474,7 +474,7 @@ impl<'a> GameState<'a> {
   }
 
   pub fn startGameOver(&mut self) {
-    if !self.isInGameAndNotGameOver {
+    if !self.isInGameAndNotGameOver() {
       return;
     }
     self._isGameOver = true;
