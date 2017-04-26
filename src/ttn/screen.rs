@@ -145,8 +145,8 @@ impl Screen {
   }
 
   fn handleError(&mut self) {
-    let error : GLenum  = glGetError();
-    if error == GL_NO_ERROR {
+    let error = glGetError();
+    if error == GLenum::GL_NO_ERROR {
       return;
     }
     self.closeSDL();

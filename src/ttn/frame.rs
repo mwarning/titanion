@@ -397,7 +397,7 @@ pub struct GameState<'a> {
   pub turret_spec_rand : Rand,
   pub player_spec_rand : Rand,
   pub particle_spec_rand : Rand,
-  sound_rand : Rand,
+  pub sound_rand : Rand,
 }
 
 impl<'a> GameState<'a> {
@@ -641,7 +641,7 @@ impl<'a> GameState<'a> {
       Letter::drawNum(self._lastGameScore, 360.0, 5.0, 7.0);
       //Letter.drawString(GameState.MODE_NAME[_lastGameMode], 292, 24, 5);
     }
-    Letter::drawNum((self._multiplier * 100) as i32, 626.0, 4.0, 9.0, 3.0, 33, 2.0);
+    Letter::drawNum((self._multiplier * 100.0) as i32, 626.0, 4.0, 9.0, 3.0, 33, 2.0);
     if self.pmDispCnt > 0 {
       Letter::drawNum7(self.proximityMultiplier, 626.0, 30.0, 7.0, 0, 33.0);
     }
@@ -670,7 +670,7 @@ impl<'a> GameState<'a> {
       glTranslatef(-10.2 + (i as f32), -7.5, -10.0);
       glScalef(0.6, 0.6, 0.6);
       self.playerShape.draw();
-      Screen::setColor(0.0, 0.0, 0.0);
+      Screen::setColor(0.0, 0.0, 0.0, 1.0);
       self.playerLineShape.draw();
       glPopMatrix();
     }

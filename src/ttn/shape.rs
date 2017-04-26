@@ -1164,7 +1164,11 @@ pub struct Pillar1Shape {
 }
 
 impl Pillar1Shape {
-    fn new() -> Pillar1Shape { Pillar1Shape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> Pillar1Shape {
+        Pillar1Shape {
+            displayList: DisplayList::new(1)
+        }
+    }
 }
 
 impl Shape  for Pillar1Shape {
@@ -1187,9 +1191,8 @@ pub struct Pillar2Shape {
     displayList : DisplayList,
 }
 
-impl Pillar2Shape
-{
-    fn new() -> Pillar2Shape { Pillar2Shape{ displayList: DisplayList::new(1) } }
+impl Pillar2Shape {
+    pub fn new() -> Pillar2Shape { Pillar2Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Pillar2Shape {
@@ -1213,7 +1216,7 @@ pub struct Pillar3Shape {
 }
 
 impl Pillar3Shape {
-    fn new() -> Pillar3Shape { Pillar3Shape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> Pillar3Shape { Pillar3Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Pillar3Shape {
@@ -1236,7 +1239,7 @@ pub struct Pillar4Shape {
 }
 
 impl Pillar4Shape {
-    fn new() -> Pillar4Shape { Pillar4Shape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> Pillar4Shape { Pillar4Shape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for Pillar4Shape {
@@ -1260,7 +1263,7 @@ pub struct OutsidePillarShape {
 }
 
 impl OutsidePillarShape {
-    fn new() -> OutsidePillarShape { OutsidePillarShape{ displayList: DisplayList::new(1) } }
+    pub fn new() -> OutsidePillarShape { OutsidePillarShape{ displayList: DisplayList::new(1) } }
 }
 
 impl Shape for OutsidePillarShape {

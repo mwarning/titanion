@@ -206,7 +206,7 @@ impl<'a> Title<'a> {
         sx += ((c * 2.35) as i32) as f32;
         sz -= c * 0.03;
       }
-      Letter::drawNum7(self.preference.highScore[self.cursorIdx as usize][i], sx, sy, sz, 0, -1.0, -1);
+      Letter::drawNum7(self.preference.highScore()[self.cursorIdx as usize][i], sx, sy, sz, 0, -1.0, -1);
       y += 24.0;
     }
   }

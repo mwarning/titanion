@@ -170,12 +170,12 @@ impl<'a> Player<'a> {
 
   pub fn destroy(&mut self) {
     self.remove();
-    self.spec.destroyed(self.state);
+    self.spec.destroyed(&self.state);
   }
 
   pub fn drawState(&mut self) {
     if self.spec.gameState.mode() == Mode::CLASSIC {
-      self.spec.drawState(self.state);
+      self.spec.drawState(&self.state);
     }
   }
 
@@ -410,8 +410,8 @@ impl<'a> PlayerState<'a> {
 
   pub fn countShotHit(&mut self) {
     self.captureBeamEnergy += 0.02 / ((self.capturedEnemyNum as f32) + 1.0);
-    if self.captureBeamEnergy > 1 {
-      self.captureBeamEnergy = 1;
+    if self.captureBeamEnergy > 1.0 {
+      self.captureBeamEnergy = 1.0;
     }
   }
 }
@@ -546,7 +546,7 @@ impl<'a> PlayerSpec<'a> {
   pub fn move2(&mut self, ps : &PlayerState) -> bool {
     //with (ps) {
       let mut input : PadState;
-      if !self.replayMode {
+      if !ps.replayMode {
         input = self.pad.getState();
       } else {
         //try {
@@ -561,14 +561,14 @@ impl<'a> PlayerSpec<'a> {
       self.capturedEnemiesShots.checkParent();
       if self.gameState.isGameOver() {
         if self.input.button & BUTTON_A {
-          if !self.aPressed {
-            self.aPressed = true;
-            if !self.replayMode {
+          if !ps.aPressed {
+            ps.aPressed = true;
+            if !ps.replayMode {
               self.gameState.backToTitle();
             }
           }
         } else {
-          self.aPressed = false;
+          ps.aPressed = false;
         }
         return true;
       }
@@ -621,36 +621,36 @@ impl<'a> PlayerSpec<'a> {
         /*if (input.button & BUTTON_A) {
           if (!aPressed) {
             aPressed = true;
-            if (!captureBeamReleased)
+            if (!ps.captureBeamReleased)
               fireShot(ps);
           }
         } else {
           aPressed = false;
         }*/
-        if (self.input.button & BUTTON_A) && !self.captureBeamReleased {
-          if self.shotCnt <= 0 {
+        if (self.input.button & BUTTON_A) && !ps.captureBeamReleased {
+          if ps.shotCnt <= 0 {
             self.fireShot(ps);
           }
         } else {
-          self.isFirstShot = true;
+          ps.isFirstShot = true;
         }
       },
       Mode::BASIC => {
         if (self.input.button & BUTTON_A) && !(self.input.button & BUTTON_B) {
-          if self.shotCnt <= 0 {
+          if ps.shotCnt <= 0 {
             self.fireShot(ps);
           }
         } else {
-          self.isFirstShot = true;
+          ps.isFirstShot = true;
         }
       },
       Mode::MODERN => {
         if self.input.button & BUTTON_A {
-          if self.shotCnt <= 0 {
+          if ps.shotCnt <= 0 {
             self.fireShot(ps);
           }
         } else {
-          self.isFirstShot = true;
+          ps.isFirstShot = true;
         }
       },
       }
@@ -675,17 +675,17 @@ impl<'a> PlayerSpec<'a> {
       match self.gameState.mode() {
         Mode::CLASSIC => {
         if (self.input.button & BUTTON_B) &&
-            !self.captureBeamReleased && (ps.captureBeamEnergy >= 1.0) &&
+            !ps.captureBeamReleased && (ps.captureBeamEnergy >= 1.0) &&
             (self.capturedEnemyNum < MAX_CAPTURED_ENEMIES_NUM) {
-          self.captureBeamReleased = true;
+          ps.captureBeamReleased = true;
           self.isInvincible = true;
           self.invincibleCnt = 99999;
         }
-        if self.captureBeamReleased {
+        if ps.captureBeamReleased {
           if (ps.captureBeamEnergy <= 0.0) || (ps.capturedEnemyNum >= MAX_CAPTURED_ENEMIES_NUM) {
             ps.captureBeamEnergy = 0.0;
             if self.tractorBeam.reduceLength(0.5) {
-              self.captureBeamReleased = false;
+              ps.captureBeamReleased = false;
               self.invincibleCnt = 120;
             }
           } else {
@@ -712,11 +712,11 @@ impl<'a> PlayerSpec<'a> {
       },
       }
       self.tractorBeam.move1();
-      if self.shotCnt > 0 {
-        self.shotCnt -= 1;
+      if ps.shotCnt > 0 {
+        ps.shotCnt -= 1;
       }
-      if self.capturedEnemyShotCnt > 0 {
-        self.capturedEnemyShotCnt -= 1;
+      if ps.capturedEnemyShotCnt > 0 {
+        ps.capturedEnemyShotCnt -= 1;
       }
       match self.gameState.mode() {
       Mode::CLASSIC => {
@@ -725,8 +725,8 @@ impl<'a> PlayerSpec<'a> {
         }
       },
       Mode::BASIC => {
-        if ps.ts.pos.y > 0 {
-          ps.ts.pos.y = 0;
+        if ps.ts.pos.y > 0.0 {
+          ps.ts.pos.y = 0.0;
         }
       },
       Mode::MODERN => {
@@ -752,45 +752,45 @@ impl<'a> PlayerSpec<'a> {
 
   pub fn fireShot(&mut self, ps : &PlayerState) {
     //with (ps) {
-      if self.shots.num >= self.shotMaxNum {
+      if self.shots.num() >= self.shotMaxNum {
         return;
       }
       if let Some(s) = self.shots.getInstance() {
         s.set(self.shotSpec, ps.ts.pos, ps.deg, 0.66);
-        if self.isFirstShot {
-          self.isFirstShot = false;
-          self.shotCnt += FIRST_SHOT_INTERVAL;
+        if ps.isFirstShot {
+          ps.isFirstShot = false;
+          ps.shotCnt += FIRST_SHOT_INTERVAL;
         } else {
-          self.shotCnt += SHOT_INTERVAL;
+          ps.shotCnt += SHOT_INTERVAL;
         }
         self.gameState.countShotFired();
-        self.addShotParticle(ps.ts.pos, ps.deg);
+        self.addShotParticle(ps.ts.pos, ps.ts.deg);
         self.frame.sound.borrow().playSe("shot.wav");
         for i in 0..self.capturedEnemyNum {
-          if (self.gameState.mode() == Mode::MODERN) && ((i + self.ghostShotCnt) % 4 == 0) {
+          if (self.gameState.mode() == Mode::MODERN) && ((i + ps.ghostShotCnt) % 4 == 0) {
             continue;
           }
-          if self.capturedEnemies[i as usize].isCaptured {
+          if ps.capturedEnemies[i as usize].isCaptured() {
             if let Some(ces) = self.capturedEnemiesShots.getInstance() {
-              let mut d : f32 = ps.deg;
-              if self.gameState.mode == Mode::MODERN {
-                d -= (self.capturedEnemies[i].pos.x - self.pos.x) * 0.3;
+              let mut d : f32 = ps.ts.deg;
+              if self.gameState.mode() == Mode::MODERN {
+                d -= (ps.capturedEnemies[i].pos().x - self.pos.x) * 0.3;
               }
-              ces.set(self.shotSpec, self.capturedEnemies[i].pos, d, 0.66);
+              ces.set(self.shotSpec, ps.capturedEnemies[i].pos(), d, 0.66);
               if self.gameState.mode() != Mode::MODERN {
                 ces.setParent(s);
               }
               else {
                 self.gameState.countShotFired();
               }
-              self.addShotParticle(self.capturedEnemies[i].pos, ps.deg);
+              self.addShotParticle(ps.capturedEnemies[i].pos(), ps.deg);
             } else {
               break;
             }
           }
         }
         if self.gameState.mode() == Mode::MODERN {
-          self.ghostShotCnt += 1;
+          ps.ghostShotCnt += 1;
         }
       }
     //}
@@ -892,8 +892,8 @@ impl<'a> PlayerSpec<'a> {
       }
       let p = self.field.calcCircularPos1(ps.ts.pos);
       let cd = Field::calcCircularDeg(ps.ts.pos.x);
-      if self.hasShape() {
-        self.shape.draw(p, cd, ps.ts.deg);
+      if ps.hasShape() {
+        self.shape.draw1(p, cd, ps.ts.deg);
       }
       let c : i32 = ps.colorCnt % 60;
       let a = if c < 30 {
@@ -901,7 +901,7 @@ impl<'a> PlayerSpec<'a> {
       } else {
         1.0 - ((c - 30) as f32) / 30.0
       };
-      Screen::setColor(a, a, a);
+      Screen::setColor(a, a, a, 1.0);
       self.lineShape.draw(p, cd, ps.deg);
     //}
   }
@@ -1030,11 +1030,11 @@ impl<'a> Token<ShotState<'a>, ShotSpec<'a>> for Shot<'a> {
 
   fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
     self.state.clear();
-    self.state.pos.x = x;
-    self.state.pos.y = y;
+    self.state.ts.pos.x = x;
+    self.state.ts.pos.y = y;
     self.state.ts.deg = deg;
     self.state.ts.speed = speed;
-    self.spec.set(self.state);
+    self.spec.set(&self.state);
     self._exists = true;
   }
 
@@ -1050,7 +1050,7 @@ impl<'a> Token<ShotState<'a>, ShotSpec<'a>> for Shot<'a> {
 
 impl<'a> Shot<'a> {
   fn setParent(&mut self, s : &Shot) {
-    self.spec.setParent(self.state, s);
+    self.spec.setParent(&self.state, s);
   }
 }
 
@@ -1135,8 +1135,8 @@ impl<'a> ShotSpec<'a> {
 
   fn move2(&mut self, ss : &ShotState) -> bool {
     //with (ss) {
-      if ss.parent {
-        if ss.parent.exists == false {
+      if let Some(parent) = ss.parent {
+        if parent.getExists() == false {
           return false;
         }
       }
@@ -1145,22 +1145,22 @@ impl<'a> ShotSpec<'a> {
       if !self.tok.field.containsOuterY(ss.pos.y) {
         return false;
       }
-      if self.enemies.checkShotHit(ss.pos, ss.deg, 2.0) {
-        if self.parent {
-          self.parent.remove();
+      if self.enemies.checkShotHit(ss.pos, ss.ts.deg, 2.0) {
+        if let Some(parent) = self.parent {
+          parent.remove();
         }
         self.gameState.countShotHit();
         self.playerState.countShotHit();
         return false;
       }
       ss.cnt += 1;
-      true;
+      true
     //}
   }
 
-  fn checkParent(ss : ShotState) -> bool {
+  fn checkParent(ss : &ShotState) -> bool {
     if let Some(parent) = ss.parent {
-      if parent.exists == false {
+      if parent.getExists() == false {
         return false;
       }
     }
@@ -1203,7 +1203,7 @@ impl<'a> TractorBeam<'a> {
         Box::new(TractorBeamShapeDarkBlue::new()),
         Box::new(TractorBeamShapeDarkPurple::new())
       ],
-      length : 0,
+      length : 0.0,
       cnt : 0,
       isExtending : false,
     }
@@ -1213,13 +1213,13 @@ impl<'a> TractorBeam<'a> {
   }
 
   fn clear(&mut self) {
-    self.length = 0;
+    self.length = 0.0;
     self.cnt = 0;
     self.isExtending = false;
   }
 
   fn move1(&mut self) {
-    if self.length <= 0 {
+    if self.length <= 0.0 {
       return;
     }
     self.cnt += 1;
@@ -1236,7 +1236,7 @@ impl<'a> TractorBeam<'a> {
   fn reduceLength(&mut self, ratio : f32 /*= 1*/) -> bool {
     self.length += (0.0 - self.length) * 0.1 * ratio;
     if self.length < 0.33 {
-      self.length = 0;
+      self.length = 0.0;
       return true;
     }
     self.isExtending = false;
@@ -1257,7 +1257,7 @@ impl<'a> TractorBeam<'a> {
       return;
     }
     let y : f32 = SHAPE_INTERVAL_LENGTH - (self.cnt % SHAPE_INTERVAL_TIME) * SHAPE_INTERVAL_LENGTH / SHAPE_INTERVAL_TIME;
-    let c = (self.cnt / SHAPE_INTERVAL_TIME) as i32;
+    let c = (self.cnt / SHAPE_INTERVAL_TIME) as usize;
     loop {
       if y > self.length {
         break;

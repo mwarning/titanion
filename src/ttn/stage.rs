@@ -162,7 +162,7 @@ impl<'a> Stage<'a> {
       shotHitNumRsl : 0,
       shotFiredNumTotal : 0,
       shotHitNumTotal : 0,
-      hitRatio : 0,
+      hitRatio : 0.0,
       hitRatioBonus : 0,
       _existsCounterBullet : false,
     }
@@ -195,8 +195,8 @@ impl<'a> Stage<'a> {
     self.gameState.player_spec_rand.setRandSeed(randSeed);
     self.gameState.particle_spec_rand.setRandSeed(randSeed);
     self.gameState.sound_rand.setRandSeed(randSeed);
-    self.rank = 0;
-    self.rankTrg = 0;
+    self.rank = 0.0;
+    self.rankTrg = 0.0;
     self.phaseNum = 0;
     self.cnt = 0;
     self.shotFiredNumTotal = 0;
@@ -254,11 +254,11 @@ impl<'a> Stage<'a> {
     self.shotFiredNum = 0;
     self.shotHitNum = 0;
     if self.shotFiredNumRsl <= 0 {
-      self.hitRatio = 0;
+      self.hitRatio = 0.0;
     } else {
       self.hitRatio = (self.shotHitNumRsl as f32) / (self.shotFiredNumRsl as f32);
     }
-    let mut r : f32 = (((self.hitRatio * 100.0) as i32) / 100) as f32;
+    let mut r = (((self.hitRatio * 100.0) as i32) / 100) as f32;
     if r > 1.0 {
       r = 1.0;
     }
@@ -281,7 +281,7 @@ impl<'a> Stage<'a> {
       self.rank *= 0.1;
     }
     if !self.randomized {
-      let rs : i64 = self.phaseNum;
+      let rs = self.phaseNum as i64;
       match self.gameState.mode() {
         Mode::CLASSIC => { rs *= 2; },
         Mode::BASIC => {},
@@ -489,21 +489,21 @@ impl<'a> Stage<'a> {
   pub fn draw(&mut self) {
     if (self.gameState.mode() != Mode::MODERN) && (self.phaseTime < PHASE_RESULT_SHOW_CNT) && (self.phaseNum > 1) {
       Letter::drawString11("SHOTS FIRED", 152.0, 250.0, 6.0, Letter::Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 0.33);
-      Letter::drawNum(self.shotFiredNumRsl, 480.0, 250.0, 6);
+      Letter::drawNum(self.shotFiredNumRsl, 480.0, 250.0, 6.0);
       Letter::drawString11("NUMBER OF HITS", 152.0, 280.0, 6.0, Letter::Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 0.33);
-      Letter::drawNum(self.shotHitNumRsl, 480.0, 280.0, 6);
+      Letter::drawNum(self.shotHitNumRsl, 480.0, 280.0, 6.0);
       Letter::drawString("HIT-MISS RATIO", 152.0, 310.0, 6.0);
       Letter::drawNum7((self.hitRatio * 10000.0) as i32, 480.0, 310.0, 6.0, 3, -1.0, 2);
       Letter::drawString11("BONUS", 200.0, 350.0, 6.0, Letter::Direction::TO_RIGHT, false, 0.0, 1.0, 0.33, 0.33);
-      Letter::drawNum(self.hitRatioBonus, 440.0, 350.0, 6);
+      Letter::drawNum(self.hitRatioBonus, 440.0, 350.0, 6.0);
     } else if self.phaseTime < (PHASE_RESULT_SHOW_CNT + PHASE_START_SHOW_CNT) {
-      Letter::drawNum(self.phaseNum, 392.0, 200.0, 10);
+      Letter::drawNum(self.phaseNum, 392.0, 200.0, 10.0);
       Letter::drawString("PHASE", 232.0, 200.0, 10.0);
     }
   }
 
   pub fn drawPhaseNum(&self) {
-    Letter::drawNum(self.phaseNum, 622.0, 448.0, 10);
+    Letter::drawNum(self.phaseNum, 622.0, 448.0, 10.0);
   }
 
   pub fn drawGameover(&self) {
@@ -525,6 +525,6 @@ impl<'a> Stage<'a> {
   }
 
   pub fn existsCounterBullet(&self) -> bool {
-    self._existsCounterBullet && self.stageStarted && (self.enemies.numBeforeAlign <= 0)
+    self._existsCounterBullet && self.stageStarted && (self.enemies.numBeforeAlign() <= 0)
   }
 }

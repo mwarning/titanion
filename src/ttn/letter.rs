@@ -45,7 +45,7 @@ impl<'a> Letter<'a> {
     for j in LETTERSHAPES.into_iter() {
       for i in 0..LETTER_NUM {
         letter.displayList.newList();
-        letter.setLetter(i, j);
+        letter.setLetter(i as usize, *j);
         letter.displayList.endList();
       }
     }

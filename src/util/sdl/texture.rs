@@ -20,7 +20,7 @@ struct Texture {
 }
 
 impl Texture {
-  fn new1(name : &'static str) -> Texture {
+  pub fn new1(name : &'static str) -> Texture {
     let s : SDL_Surface = loadBmp(name);
     let num : GLuint = 0;
     glGenTextures(1, &num);
@@ -64,13 +64,13 @@ impl Texture {
     }
   }
 
-  fn new8(name : &'static str, sx : i32, sy : i32, xn : i32, yn : i32, panelWidth : i32, panelHeight : i32, maskColor : u32 /*= 0xffffffffu*/) -> Texture {
+  pub fn new8(name : &'static str, sx : i32, sy : i32, xn : i32, yn : i32, panelWidth : i32, panelHeight : i32, maskColor : u32 /*= 0xffffffffu*/) -> Texture {
     let &mut s : SDL_Surface = loadBmp(name);
     let surfacePixels : &u32 = /*cast(Uint32*)*/ s.pixels;
     new9(surfacePixels, s.w, sx, sy, xn, yn, panelWidth, panelHeight, maskColor)
   }
 
-  fn new9(surfacePixels : &u32, surfaceWidth : i32, sx : i32, sy : i32, xn : i32, yn : i32, panelWidth : i32, panelHeight : i32,
+  pub fn new9(surfacePixels : &u32, surfaceWidth : i32, sx : i32, sy : i32, xn : i32, yn : i32, panelWidth : i32, panelHeight : i32,
             maskColor : u32 /*= 0xffffffffu*/) -> Texture {
     let textureNum = xn * yn;
     let mut maskTextureNum : i32 = 0;
@@ -122,14 +122,14 @@ impl Texture {
     Texture {num : num, maskNum : maskNum, textureNum : textureNum, maskTextureNum : maskTextureNum, pixels : pixels, maskPixels : maskPixels}
   }
 
-  fn close(&self) {
+  pub fn close(&self) {
     glDeleteTextures(self.textureNum, &self.num);
     if self.maskTextureNum > 0 {
       glDeleteTextures(self.maskTextureNum, &self.maskNum);
     }
   }
 
-  fn bind(&self, idx : i32 /*= 0*/) {
+  pub fn bind(&self, idx : i32 /*= 0*/) {
     glBindTexture(GL_TEXTURE_2D, self.num + idx);
   }
 

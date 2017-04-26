@@ -604,8 +604,8 @@ impl<'a> Particle<'a> {
   pub fn setByVelocity(&mut self, x : f32, y : f32, vx : f32, vy : f32,
                             sz : f32, r : f32, g : f32, b : f32, a : f32,
                             c : i32 /*= 60*/, ebg : bool /* = true*/) {
-    self.spec = &self.triangleParticleSpec;
-    self.set(x, y, 0.0, 0.0);
+    self.spec = &'a self.triangleParticleSpec as &'a ParticleSpec;
+    self.set5(x, y, 0.0, 0.0);
     self.state.vel.x = vx;
     self.state.vel.y = vy;
     self.state.size = sz;

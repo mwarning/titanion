@@ -15,10 +15,10 @@ impl SDL_Event {
   }
 }
 
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub enum GLenum { GL_NO_ERROR }
 
-pub enum GLenum { DUMMY }
-
-pub fn glGetError() -> GLenum { GLenum::DUMMY }
+pub fn glGetError() -> GLenum { GLenum::GL_NO_ERROR }
 
 pub struct SDL_Joystick;
 pub fn SDL_Init(flags : u32) -> i32 { 0 }
@@ -166,7 +166,7 @@ pub fn glClearColor(a : f32, b : f32, c : f32, d : f32) {}
 pub fn glColor4f(a : f32, b : f32, c : f32, d : f32) {}
 pub fn glFrustum(left : f64, right : f64, bottom : f64, top : f64, nearVal : f64, farVal : f64) {}
 
-pub const GL_NO_ERROR : usize = 0;
+//pub const GL_NO_ERROR : usize = 0;
 pub const GL_COLOR_BUFFER_BIT : u32 = 0;
 pub const SDL_ENABLE : usize = 0;
 pub const SDL_DISABLE : usize = 0;
@@ -221,7 +221,7 @@ impl File {
 pub struct Texture;
 
 impl Texture {
-  fn new(s : &'static str) -> Texture {
+  pub fn new(s : &'static str) -> Texture {
     Texture{}
   }
 }

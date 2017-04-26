@@ -133,14 +133,14 @@ pub struct BulletSpec<'a> {
 }
 
 impl<'a> TokenSpec<BulletState> for BulletSpec<'a> {
-  fn set(&self, state : &BulletState) {}
-  fn removed(&self, state : &BulletState) {}
+  pub fn set(&self, state : &BulletState) {}
+  pub fn removed(&self, state : &BulletState) {}
 
-  fn move2(&self, state : &BulletState) -> bool {
+  pub fn move2(&self, state : &BulletState) -> bool {
     true
   }
 
-  fn draw(&self, state : &BulletState) {
+  pub fn draw(&self, state : &BulletState) {
     //with (state) {
       let p = self.field.calcCircularPos1(state.ts.pos);
       let cd = Field::calcCircularDeg(state.ts.pos.x);
@@ -150,7 +150,7 @@ impl<'a> TokenSpec<BulletState> for BulletSpec<'a> {
 } 
 
 impl<'a> BulletSpec<'a> {
-  fn new(field : &'a mut Field, player : &'a Player, enemies : &'a EnemyPool<'a>, particles : &'a mut ParticlePool,
+  pub fn new(field : &'a mut Field, player : &'a Player, enemies : &'a EnemyPool<'a>, particles : &'a mut ParticlePool,
               shape : &'a mut Shape, lineShape : &'a mut Shape, gameState : &'a mut GameState) -> BulletSpec<'a> {
     BulletSpec{
       //ts : TokenSpec::<BulletState>::new(field, shape),
@@ -166,15 +166,15 @@ impl<'a> BulletSpec<'a> {
 
   fn set(&mut self, bs : &mut BulletState) {
     //with bs {
-      bs.ppos.x = self.ts.pos.x;
-      bs.ppos.y = self.ts.pos.y;
-      bs.tailPos.x = self.ts.pos.x;
-      bs.tailPos.y = self.ts.pos.y;
+      bs.ppos.x = bs.ts.pos.x;
+      bs.ppos.y = bs.ts.pos.y;
+      bs.tailPos.x = bs.ts.pos.x;
+      bs.tailPos.y = bs.ts.pos.y;
       //assert(deg <>= 0);
     //}
   }
 
-  fn move2(&mut self, bs : &mut BulletState) -> bool {
+  pub fn move2(&mut self, bs : &mut BulletState) -> bool {
       if bs.waitCnt > 0 {
         bs.waitCnt -= 1;
         return true;
@@ -212,21 +212,20 @@ impl<'a> BulletSpec<'a> {
       (bs.cnt < (DISAPPEAR_CNT as i32))
   }
 
-  fn draw(&mut self, bs : &BulletState) {
+  pub fn draw(&mut self, bs : &BulletState) {
       if bs.waitCnt > 0 {
         return;
       }
-      let p : Vector3;
       glBegin(GL_LINES);
       Screen::setColor(0.1, 0.4, 0.4, 0.5);
-      p = self.field.calcCircularPos1(bs.tailPos);
+      let mut p = self.field.calcCircularPos1(bs.tailPos);
       Screen::glVertex(p);
       Screen::setColor(0.2 * colorAlpha, 0.8 * colorAlpha, 0.8 * colorAlpha, 1.0);
       p = self.field.calcCircularPos1(bs.ts.pos);
       Screen::glVertex(p);
       glEnd();
       p = self.field.calcCircularPos1(bs.ts.pos);
-      let d : f32 = match self.gameState.mode() {
+      let d = match self.gameState.mode() {
         Mode::CLASSIC => PI,
         Mode::BASIC => bs.ts.deg,
         Mode::MODERN => bs.ts.deg,
@@ -310,11 +309,11 @@ impl<'a> Token<BulletState, BulletSpec<'a>> for Bullet<'a> {
 
   fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
     self.state.clear();
-    self.state.pos.x = x;
-    self.state.pos.y = y;
-    self.state.deg = deg;
-    self.state.speed = speed;
-    self.spec.set(self.state);
+    self.state.ts.pos.x = x;
+    self.state.ts.pos.y = y;
+    self.state.ts.deg = deg;
+    self.state.ts.speed = speed;
+    self.spec.set(&self.state);
     self.actor._exists = true;
   }
 

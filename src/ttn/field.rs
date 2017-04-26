@@ -236,7 +236,7 @@ impl<'a> Field<'a> {
 
   pub fn drawTorusShape(&self, d1s : f32) {
     let mut cp = Vector3::new();
-    cp.y = 0;
+    cp.y = 0.0;
     let mut ringOfs = Vector3::new();
     let torusRad = CIRCLE_RADIUS * 0.9;
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -244,7 +244,7 @@ impl<'a> Field<'a> {
     let mut ringRad = CIRCLE_RADIUS * 0.3;
     let mut d1 = d1s;
     for _ in 0..16 {
-      let mut d2 = self.cnt * 0.003;
+      let mut d2 = (self.cnt as f32) * 0.003;
       for _ in 0..16 {
         cp.x = d1.sin() * torusRad;
         cp.z = d1.cos() * torusRad;
@@ -271,7 +271,7 @@ impl<'a> Field<'a> {
     Screen::setColor(0.1, 0.1, 0.1, 1.0);
     d1 = d1s;
     for _ in 0..16 {
-        let mut d2 = self.cnt * 0.003;
+        let mut d2 = self.cnt as f32 * 0.003;
         for _ in 0..16 {
           cp.x = (d1 + PI * 2.0 / 32.0 * 0.1).sin() * torusRad;
           cp.z = (d1 + PI * 2.0 / 32.0 * 0.1).cos() * torusRad;

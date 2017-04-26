@@ -307,7 +307,7 @@ impl<'a> Token<EnemyState, EnemySpec> for Enemy<'a> {
     self.state.clear();
     self.state.ts.pos.x = x;
     self.state.ts.pos.y = y;
-    self.state.deg = deg;
+    self.state.ts.deg = deg;
     self.state.ts.speed = speed;
     self.spec.set(self.state);
     self.actor._exists = true;
@@ -363,7 +363,7 @@ impl<'a> Enemy<'a> {
     self.spec.init(self.state);
   }
 
-  fn setGhostEnemyState(&mut self, x : f32, y : f32, deg : f32, cnt : i32) {
+  pub fn setGhostEnemyState(&mut self, x : f32, y : f32, deg : f32, cnt : i32) {
     self.state.ts.pos.x = x;
     self.state.ts.pos.y = y;
     self.state.ts.deg = deg;
@@ -387,12 +387,12 @@ impl<'a> Enemy<'a> {
     }
   }
 
-  fn destroyed(&mut self) {
+  pub fn destroyed(&mut self) {
     self.spec.destroyed(&self.state, 0.0);
     self._exists = false;
   }
 
-  fn isInAttack(&self) -> bool {
+  pub fn isInAttack(&self) -> bool {
     if self.spec.isBeingCaptured(&self.state) {
       return false;
     }
@@ -1481,7 +1481,7 @@ impl<'a> EnemySpec for MiddleEnemySpec<'a> {
       1 => {
         if (self.es.gameState.mode() != Mode::MODERN) && !self.es.player.hasCollision() {
           es.phase = 0;
-          es.nextPhaseCnt = self.es.calcStandByTime(es);
+          es.nextPhaseCnt = self.calcStandByTime(es);
         } else {
           spec.frame.sound.borrow().playSe("flying_down.wav");
           if self.es.gameState.mode() != Mode::MODERN {
@@ -1516,7 +1516,7 @@ impl<'a> EnemySpec for MiddleEnemySpec<'a> {
           es.centerPos.x = es.standByPos.x;
           es.centerPos.y = es.standByPos.y;
           es.phase = 0;
-          es.nextPhaseCnt = self.es.calcStandByTime(es);
+          es.nextPhaseCnt = self.calcStandByTime(es);
         } else {
           es.centerPos.x = es.standByPos.x;
           es.centerPos.y = -self.field.size.y * 1.5;
@@ -2061,7 +2061,7 @@ impl<'a> TurretSpec<'a> {
     if self.speed < 0.1 {
       self.speed = 0.1;
     } else {
-      self.speed = (self.speed * 10).sqrt() / 10;
+      self.speed = (self.speed * 10.0).sqrt() / 10.0;
     }
     //assert(speed > 0);
     match self.es.ts.gameState.mode() {
@@ -2070,7 +2070,7 @@ impl<'a> TurretSpec<'a> {
       if self.speed < 0.05 {
         self.speed = 0.05;
       } else {
-        self.speed = (self.speed * 20).sqrt() / 20;
+        self.speed = (self.speed * 20.0).sqrt() / 20.0;
       }
     },
     Mode::BASIC => {
@@ -2238,7 +2238,7 @@ impl<'a> TurretSpec<'a> {
             let nsp = sp - self.nwaySpeedAccel * ts.nwaySpeedAccelDir * ((self.nway as f32) - 1.0) / 2.0;
             for j in 0..self.nway {
               if let Some(b) = self.bullets.getInstance() {
-                b.set(self.bulletSpec, ts.pos, d, nsp * SPEED_RATIO);
+                b.set(self.bulletSpec, ts.ts.pos, d, nsp * SPEED_RATIO);
                 b.setWaitCnt(i * self.burstInterval);
                 d += self.nwayAngle;
                 nsp += self.nwaySpeedAccel * ts.nwaySpeedAccelDir;
