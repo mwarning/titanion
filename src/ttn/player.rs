@@ -377,7 +377,7 @@ impl<'a> PlayerState<'a> {
     if self.isInRespawn {
       return false;
     }
-    if !self.isInvincibl {
+    if !self.isInvincible {
       return true;
     }
     
@@ -597,7 +597,7 @@ impl<'a> PlayerSpec<'a> {
       }
 
       let mut px = ps.ts.pos.x;
-      ps.ts.pos.x += vx * ps.speed;
+      ps.ts.pos.x += vx * ps.ts.speed;
       if self.gameState.mode() == Mode::CLASSIC {
         vy *= 0.5;
       }
@@ -664,7 +664,7 @@ impl<'a> PlayerSpec<'a> {
           }
         }
       } else {
-        ps.speed += (BASE_SPEED * 2.0 - ps.speed) * 0.33;
+        ps.speed += (BASE_SPEED * 2.0 - ps.ts.speed) * 0.33;
         if ps.gameState.mode() == Mode::MODERN {
           ps.capturedEnemyWidth += 0.05;
           if ps.capturedEnemyWidth > 1.0 {
@@ -783,7 +783,7 @@ impl<'a> PlayerSpec<'a> {
               else {
                 self.gameState.countShotFired();
               }
-              self.addShotParticle(ps.capturedEnemies[i].pos(), ps.deg);
+              self.addShotParticle(ps.capturedEnemies[i as usize].pos(), ps.deg);
             } else {
               break;
             }
@@ -839,12 +839,12 @@ impl<'a> PlayerSpec<'a> {
       if !self.isActive {
         return;
       }
-      self.ps.destroyed();
+      ps.destroyed();
       self.tractorBeam.clear();
       self.gameState.destroyedPlayer();
-      let mut r : f32 = 0.5 + rand.nextFloat(0.5);
-      let mut g : f32= 0.3 + rand.nextFloat(0.3);
-      let mut b : f32 = 0.8 + rand.nextFloat(0.2);
+      let mut r = 0.5 + rand.nextFloat(0.5);
+      let mut g = 0.3 + rand.nextFloat(0.3);
+      let mut b = 0.8 + rand.nextFloat(0.2);
       for i in 0..100 {
         let mut p = self.particles.getInstanceForced();
         p.set(ParticleShape::QUAD, ps.ts.pos.x, ps.ts.pos.y, rand.nextFloat(PI * 2.0), 0.01 + rand.nextFloat(1.0),
@@ -1142,7 +1142,7 @@ impl<'a> ShotSpec<'a> {
       }
       self.stepForward();
       ss.pos.x = Field::normalizeX(ss.pos.x);
-      if !self.tok.field.containsOuterY(ss.pos.y) {
+      if !self.tok.field.containsOuterY(ss.ts.pos.y) {
         return false;
       }
       if self.enemies.checkShotHit(ss.pos, ss.ts.deg, 2.0) {
@@ -1263,7 +1263,7 @@ impl<'a> TractorBeam<'a> {
         break;
       }
       glPushMatrix();
-      let p = self.field.calcCircularPos(self.playerState.pos.x, self.playerState.pos.y + y);
+      let p = self.field.calcCircularPos(self.playerState.ts.pos.x, self.playerState.ts.pos.y + y);
       Screen::glTranslate3(p);
       let mut s = y;
       if s > 1.0 {

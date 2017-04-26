@@ -194,7 +194,7 @@ impl<'a> BulletSpec<'a> {
       if !self.field.containsOuter(bs.ts.pos) {
         return false;
       }
-      if !self.field.contains(bs.ts.pos) || bs.cnt >= (DISAPPEAR_CNT * 0.9) {
+      if !self.field.contains(bs.ts.pos) || (bs.cnt as f32) >= (DISAPPEAR_CNT * 0.9) {
         bs.tailPos.x += (bs.ts.pos.x - bs.tailPos.x) * 0.1;
         bs.tailPos.y += (bs.ts.pos.y - bs.tailPos.y) * 0.1;
       }

@@ -41,7 +41,7 @@ impl<'a> Field<'a> {
       _eyePos : Vector3::new(0.0, 0.0, 0.0),
       eyeDeg : 0.0,
       circlePos : Vector3::new(0.0, 0.0, 0.0),
-      cnt : 0.0,
+      cnt : 0,
     }
   }
 
@@ -50,7 +50,7 @@ impl<'a> Field<'a> {
     self._eyePos.y = 0.0;
     self._eyePos.z = 0.0;
     self.eyeDeg = 0.0;
-    self.cnt = 0.0;
+    self.cnt = 0;
   }
 
   pub fn contains1(&self, p : Vector) -> bool {

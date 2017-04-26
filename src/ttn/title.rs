@@ -116,7 +116,7 @@ impl<'a> Title<'a> {
     Screen::setColor(1.0, 1.0, 1.0, 1.0);
     glEnable(GL_TEXTURE_2D);
     self.titleTexture.bind();
-    self.drawBoard(self.titlePos.x, self.titlePos.y, 280 * self.titleSize, 64 * self.titleSize);
+    self.drawBoard(self.titlePos.x, self.titlePos.y, 280.0 * self.titleSize, 64.0 * self.titleSize);
     glDisable(GL_TEXTURE_2D);
     if (self.cnt % 120) < 60 {
       let x = 175.0;

@@ -444,7 +444,7 @@ impl<'a> GameState<'a> {
     self.setExtendScore();
     self._lastGameScore = -1;
     self.preference.setMode(self._mode as i32);
-    self.stage.randomized = self.tageRandomized;
+    self.stage.randomized = self.stageRandomized;
   }
 
   pub fn setExtendScore(&mut self) {

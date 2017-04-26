@@ -589,7 +589,7 @@ impl EnemyState {
   }
 
   fn recordTrail(&mut self) {
-    self.trails[self.trailIdx].set5(self.pos.x, self.pos.y, self.deg, self.cnt);
+    self.trails[self.trailIdx].set5(self.ts.pos.x, self.ts.pos.y, self.ts.deg, self.cnt);
     self.trailIdx += 1;
     if self.trailIdx >= TRAIL_NUM {
       self.trailIdx = 0;
@@ -1805,7 +1805,7 @@ impl<'a> EnemySpec for SE2Spec<'a> {
           es.nextPhaseCnt = self.es.calcStandByTime(es);
         } else {
           spec.frame.sound.borrow().playSe("flying_down.wav");
-          es.centerPos.y = -self.es.field.size.y * 0.3;
+          es.centerPos.y = -self.es.field.size().y * 0.3;
           es.centerPos.x = (es.standByPos.x + self.es.player.pos.x) / 2;
           es.baseSpeed = es.baseBaseSpeed;
           es.angVel = es.baseAngVel;
@@ -1813,16 +1813,16 @@ impl<'a> EnemySpec for SE2Spec<'a> {
         }
       },
       2 => {
-        es.centerPos.y = -self.es.field.size.y * 1.3;
+        es.centerPos.y = -self.es.field.size().y * 1.3;
         es.centerPos.x *= -1.0;
         es.nextPhaseCnt = 30;
       },
       3 => {
-        es.centerPos.y = -self.es.field.size.y * 1.0;
-        if es.centerPos.x < 0 {
-          es.centerPos.x = -self.es.field.size.x * 1.5;
+        es.centerPos.y = -self.es.field.size().y * 1.0;
+        if es.centerPos.x < 0.0 {
+          es.centerPos.x = -self.es.field.size().x * 1.5;
         } else {
-          es.centerPos.x = self.es.field.size.x * 1.5;
+          es.centerPos.x = self.es.field.size().x * 1.5;
         }
         es.baseSpeed = es.baseBaseSpeed * 1.5;
         es.angVel = es.baseAngVel * 1.5;
@@ -1883,7 +1883,7 @@ impl TurretState {
   fn clear(&mut self) {
     self.fireCnt = 0.0;
     self.burstCnt = 0.0;
-    self.burstNum = 0.0;
+    self.burstNum = 0;
     self.nwaySpeedAccelDir = 1;
     self.ts.clear();
   }
@@ -2165,7 +2165,7 @@ impl<'a> TurretSpec<'a> {
     }
     self.nway = (nr.sqrt() as i32) + 1;
     self.interval = ((intervalMax / ((ir + 1.0).sqrt())) as i32) + 1;
-    let sr : f32 = (rank - self.burstNum + 1 - self.nway + 1) as f32 - ir;
+    let sr : f32 = (rank as i32 - self.burstNum + 1 - self.nway + 1) as f32 - ir;
     if sr < 0.01 {
       sr = 0.01;
     }
@@ -2175,7 +2175,7 @@ impl<'a> TurretSpec<'a> {
     if self.speed < 0.1 {
       self.speed = 0.1;
     } else {
-      self.speed = (self.speed * 10.0).sqrt() / 10;
+      self.speed = (self.speed * 10.0).sqrt() / 10.0;
     }
     //assert(speed > 0);
     match self.gameState.mode() {
@@ -2184,7 +2184,7 @@ impl<'a> TurretSpec<'a> {
       if self.speed < 0.05 {
         self.speed = 0.05;
       } else {
-        self.speed = (self.speed * 20.0).sqrt / 20.0;
+        self.speed = (self.speed * 20.0).sqrt() / 20.0;
       }
     },
     Mode::BASIC => {
@@ -2272,13 +2272,13 @@ impl<'a> TurretSpec<'a> {
           }
           ts.burstNum = self.burstNum;
           ts.burstCnt = 0.0;
-          ts.speed = spd - self.speedAccel * ((ts.burstNum as f32) - 1.0) / 2.0;
+          self.speed = spd - self.speedAccel * ((ts.burstNum as f32) - 1.0) / 2.0;
         }
       }
       if ts.burstNum > 0 {
         ts.burstCnt -= time;
         if ts.burstCnt <= 0.0 {
-          ts.burstCnt = self.burstInterval;
+          ts.burstCnt = self.burstInterval as f32;
           ts.burstNum -= 1;
           if self.isAbleToFire(ts.pos) {
             let d = ts.deg - self.nwayAngle * ((self.nway as f32) - 1.0) / 2.0 + self.nwayBaseDeg;

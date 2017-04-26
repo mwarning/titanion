@@ -118,7 +118,7 @@ impl Music {
     }
   }
 
-  pub fn halt(&self) {
+  pub fn halt() {
     if !noSound && (Mix_PlayingMusic() != 0) {
       Mix_HaltMusic();
     }
