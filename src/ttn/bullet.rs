@@ -187,7 +187,7 @@ impl<'a> BulletSpec<'a> {
       }
       bs.tailPos.x -= bs.ts.deg.cos() * sp * 0.7;
       bs.tailPos.y += bs.ts.deg.cos() * sp * 0.7;
-      bs.ts.pos.pos.x -= bs.ts.deg.sin() * sp;
+      bs.ts.pos.x -= bs.ts.deg.sin() * sp;
       bs.ts.pos.y += bs.ts.deg.cos() * sp;
       self.field.addSlowdownRatio(bs.ts.speed * 0.04);
       bs.ts.pos.x = Field::normalizeX(bs.ts.pos.x);
@@ -219,10 +219,10 @@ impl<'a> BulletSpec<'a> {
       glBegin(GL_LINES);
       Screen::setColor(0.1, 0.4, 0.4, 0.5);
       let mut p = self.field.calcCircularPos1(bs.tailPos);
-      Screen::glVertex(p);
+      Screen::glVertex3(p);
       Screen::setColor(0.2 * colorAlpha, 0.8 * colorAlpha, 0.8 * colorAlpha, 1.0);
       p = self.field.calcCircularPos1(bs.ts.pos);
-      Screen::glVertex(p);
+      Screen::glVertex3(p);
       glEnd();
       p = self.field.calcCircularPos1(bs.ts.pos);
       let d = match self.gameState.mode() {
@@ -297,17 +297,17 @@ impl<'a> Token<BulletState, BulletSpec<'a>> for Bullet<'a> {
     v
   }*/
 
-  fn set5Vec(&self, spec : &BulletSpec, pos : Vector, deg : f32, speed : f32) {
+  fn set5Vec(&mut self, spec : &BulletSpec, pos : Vector, deg : f32, speed : f32) {
     self.spec = spec;
     self.set5(pos.x, pos.y, deg, speed);
   }
 
-  fn set6(&self, spec : &BulletSpec, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set6(&mut self, spec : &BulletSpec, x : f32, y : f32, deg : f32, speed : f32) {
     self.spec = spec;
     self.set5(x, y, deg, speed);
   }
 
-  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set5(&mut self, x : f32, y : f32, deg : f32, speed : f32) {
     self.state.clear();
     self.state.ts.pos.x = x;
     self.state.ts.pos.y = y;
@@ -317,7 +317,7 @@ impl<'a> Token<BulletState, BulletSpec<'a>> for Bullet<'a> {
     self._exists = true;
   }
 
-  fn remove(&self) {
+  fn remove(&mut self) {
     self._exists = false;
     self.spec.removed(self.state);
   }

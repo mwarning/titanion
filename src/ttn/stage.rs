@@ -38,6 +38,7 @@ pub struct Stage<'a> {
   bonusParticles : &'a ParticlePool<'a>,
   pillars : &'a PillarPool<'a>,
   gameState : &'a GameState<'a>,
+  frame : &'a Frame<'a>,
   rand : Rand,
   appCnt : i32,
   middleEnemySpec : MiddleEnemySpec<'a>,
@@ -115,6 +116,7 @@ impl<'a> Stage<'a> {
       bonusParticles : bonusParticles,
       pillars : pillars,
       gameState : gameState,
+      frame : frame,
       rand : Rand::new(),
 
       // moved here from setEnemySpecs(), some arguments were moved
@@ -295,7 +297,7 @@ impl<'a> Stage<'a> {
     let en : i32;
     match self.gameState.mode() {
       Mode::CLASSIC => {
-        en = 24 + ((50 + rand.nextInt(10)) * self.rank.sqrt() * 0.2) as i32;
+        en = 24 + ((50 + rand.nextInt(10)) as f32 * self.rank.sqrt() * 0.2) as i32;
         self.smallEnemyNum = 4 + rand.nextInt(2);
         if self.rank > 10.0 {
           self._existsCounterBullet = true;
@@ -308,7 +310,7 @@ impl<'a> Stage<'a> {
         self.middleEnemyAppInterval = 5 + rand.nextInt(2);
       },
       Mode::MODERN => {
-        en = 24 + ((50 + rand.nextInt(10)) * self.rank.sqrt() * 0.5) as i32;
+        en = 24 + ((50 + rand.nextInt(10)) as f32 * self.rank.sqrt() * 0.5) as i32;
         self.smallEnemyNum = 4 + rand.nextInt(2);
         self.middleEnemyAppInterval = 7 + rand.nextInt(3);
       }
@@ -429,12 +431,12 @@ impl<'a> Stage<'a> {
           e.set(ses, x, self.field.size().y * /*Field.*/ PIT_SIZE_Y_RATIO + (i as f32) * dst, PI, sp);
           let gd = rand.nextFloat(1.0) < self.goingDownBeforeStandByRatio;
           if fe == None {
-            e.setSmallEnemyState(sp, av, (i * (dst / sp)) as i32, self.appPattern, er, ed, gd, 0.0, None);
+            e.setSmallEnemyState(sp, av, (i as f32 * (dst / sp)) as i32, self.appPattern, er, ed, gd, 0.0, None);
             fe = Some(e);
           } else {
-            e.setSmallEnemyState(sp, av, (i * (dst / sp)) as i32, self.appPattern, er, ed, gd, fir, fe);
+            e.setSmallEnemyState(sp, av, (i as f32 * (dst / sp)) as i32, self.appPattern, er, ed, gd, fir, fe);
           }
-          fir += 1.0 / self.smallEnemyNum;
+          fir += 1.0 / (self.smallEnemyNum as f32);
         } else {
           break;
         }
@@ -445,13 +447,13 @@ impl<'a> Stage<'a> {
         self.stageStarted = true;
         self.appCnt = 9999999;
       } else {
-        self.appCnt += (self.appCntInterval * (1.0 - 1.0 / (self.enemies.num as f32 + 1.0))) as i32;
+        self.appCnt += (self.appCntInterval * (1.0 - 1.0 / (self.enemies.num() as f32 + 1.0))) as i32;
       }
     }
     self.appCnt -= 1;
     self.phaseTime += 1;
     if (self.phaseNum >= 10) && ((self.phaseNum % 10) == 0) && (self.phaseTime == 120) &&
-      self.gameState.isInGameAndNotGameOver {
+      self.gameState.isInGameAndNotGameOver() {
       Sound::nextBgm();
     }
     self.cnt += 1;
@@ -459,7 +461,7 @@ impl<'a> Stage<'a> {
     if self.enemies.numInScreen() > 0 {
       self.gameState.mulMultiplier(0.999);
     }
-    if self.stageStarted && self.enemies.num <= 0 {
+    if self.stageStarted && self.enemies.num() <= 0 {
       self.startPhase();
     }
   }
@@ -487,23 +489,25 @@ impl<'a> Stage<'a> {
   }
 
   pub fn draw(&mut self) {
+    let letter = self.frame.borrow();
     if (self.gameState.mode() != Mode::MODERN) && (self.phaseTime < PHASE_RESULT_SHOW_CNT) && (self.phaseNum > 1) {
-      Letter::drawString11("SHOTS FIRED", 152.0, 250.0, 6.0, Letter::Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 0.33);
-      Letter::drawNum(self.shotFiredNumRsl, 480.0, 250.0, 6.0);
-      Letter::drawString11("NUMBER OF HITS", 152.0, 280.0, 6.0, Letter::Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 0.33);
-      Letter::drawNum(self.shotHitNumRsl, 480.0, 280.0, 6.0);
-      Letter::drawString("HIT-MISS RATIO", 152.0, 310.0, 6.0);
-      Letter::drawNum7((self.hitRatio * 10000.0) as i32, 480.0, 310.0, 6.0, 3, -1.0, 2);
-      Letter::drawString11("BONUS", 200.0, 350.0, 6.0, Letter::Direction::TO_RIGHT, false, 0.0, 1.0, 0.33, 0.33);
-      Letter::drawNum(self.hitRatioBonus, 440.0, 350.0, 6.0);
+      letter.drawString11("SHOTS FIRED", 152.0, 250.0, 6.0, Letter::Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 0.33);
+      letter.drawNum(self.shotFiredNumRsl, 480.0, 250.0, 6.0);
+      letter.drawString11("NUMBER OF HITS", 152.0, 280.0, 6.0, Letter::Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 0.33);
+      letter.drawNum(self.shotHitNumRsl, 480.0, 280.0, 6.0);
+      letter.drawString("HIT-MISS RATIO", 152.0, 310.0, 6.0);
+      letter.drawNum7((self.hitRatio * 10000.0) as i32, 480.0, 310.0, 6.0, 3, -1.0, 2);
+      letter.drawString11("BONUS", 200.0, 350.0, 6.0, Letter::Direction::TO_RIGHT, false, 0.0, 1.0, 0.33, 0.33);
+      letter.drawNum(self.hitRatioBonus, 440.0, 350.0, 6.0);
     } else if self.phaseTime < (PHASE_RESULT_SHOW_CNT + PHASE_START_SHOW_CNT) {
-      Letter::drawNum(self.phaseNum, 392.0, 200.0, 10.0);
-      Letter::drawString("PHASE", 232.0, 200.0, 10.0);
+      letter.drawNum(self.phaseNum, 392.0, 200.0, 10.0);
+      letter.drawString("PHASE", 232.0, 200.0, 10.0);
     }
   }
 
   pub fn drawPhaseNum(&self) {
-    Letter::drawNum(self.phaseNum, 622.0, 448.0, 10.0);
+    let letter = self.frame.borrow();
+    letter.drawNum(self.phaseNum, 622.0, 448.0, 10.0);
   }
 
   pub fn drawGameover(&self) {
@@ -512,12 +516,13 @@ impl<'a> Stage<'a> {
     } else {
       0.0
     };
-    Letter::drawString11("SHOTS FIRED", 152.0, 250.0, 6.0, Letter::Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 0.33);
-    Letter::drawNum(self.shotFiredNumTotal, 480.0, 250.0, 6.0);
-    Letter::drawString("NUMBER OF HITS", 152.0, 280.0, 6.0, Letter::Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 0.33);
-    Letter::drawNum(self.shotHitNumTotal, 480.0, 280.0, 6.0);
-    Letter::drawString("HIT-MISS RATIO", 152.0, 310.0, 6.0);
-    Letter::drawNum7((hr * 10000.0) as i32, 480.0, 310.0, 6.0, 3, -1.0, 2);
+    let letter = self.frame.letter.borrow();
+    letter.drawString11("SHOTS FIRED", 152.0, 250.0, 6.0, Letter::Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 0.33);
+    letter.drawNum(self.shotFiredNumTotal, 480.0, 250.0, 6.0);
+    letter.drawString("NUMBER OF HITS", 152.0, 280.0, 6.0, Letter::Direction::TO_RIGHT, false, 0.0, 1.0, 1.0, 0.33);
+    letter.drawNum(self.shotHitNumTotal, 480.0, 280.0, 6.0);
+    letter.drawString("HIT-MISS RATIO", 152.0, 310.0, 6.0);
+    letter.drawNum7((hr * 10000.0) as i32, 480.0, 310.0, 6.0, 3, -1.0, 2);
   }
 
   pub fn attackSmallEnemyNum(&self) -> i32 {

@@ -183,7 +183,7 @@ impl<'a> Field<'a> {
     glMatrixMode(GL_MODELVIEW);
   }
 
-  pub fn beginDrawingFront() {
+  pub fn beginDrawingFront(&self) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0.0, 640.0, 480.0, 0.0, -1.0, 1.0);
@@ -237,7 +237,7 @@ impl<'a> Field<'a> {
   pub fn drawTorusShape(&self, d1s : f32) {
     let mut cp = Vector3::new();
     cp.y = 0.0;
-    let mut ringOfs = Vector3::new();
+    let mut ringOfs = Vector3::new(0.0, 0.0, 0.0);
     let torusRad = CIRCLE_RADIUS * 0.9;
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBegin(GL_QUADS);

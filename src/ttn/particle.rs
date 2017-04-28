@@ -28,7 +28,7 @@ pub struct ParticlePool<'a> {
 
 impl<'a> ParticlePool<'a> {
   pub fn new() -> ParticlePool<'a> {
-    ParticlePool { ap : ActorPool::<Particle<'a>>::new() }
+    ParticlePool { ap : ActorPoolData::<Particle<'a>>::new() }
   }
 }
 
@@ -440,15 +440,16 @@ impl<'a> BonusParticleSpec<'a> {
       if ps.waitCnt > 0 {
         return;
       }
+      let letter = self.frame.letter.borrow();
       glPushMatrix();
       let p = self.field.calcCircularPos1(ps.ts.pos);
       let aa = ps.a * self.ps.calcNearPlayerAlpha(ps.ts.pos);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       Screen::setColor(1.0, 1.0, 1.0, aa * 0.5);
       Screen::glTranslate3(p);
-      Letter::drawNumSign(ps.num as i32, 0.0, 0.0, ps.size, 33, 0, 1);
+      letter.drawNumSign(ps.num as i32, 0.0, 0.0, ps.size, 33, 0, 1);
       Screen::setColor(1.0, 1.0, 1.0, aa);
-      Letter::drawNumSign(ps.num as i32, 0.0, 0.0, ps.size, 33, 0, 2);
+      letter.drawNumSign(ps.num as i32, 0.0, 0.0, ps.size, 33, 0, 2);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
       glPopMatrix();
     //}
@@ -486,17 +487,17 @@ impl<'a> Token<ParticleState, ParticleSpec<'a>> for Particle<'a> {
   }
 */
 
-  fn set5Vec(&self, spec : &ParticleSpec, pos : Vector, deg : f32, speed : f32) {
+  fn set5Vec(&mut self, spec : &ParticleSpec, pos : Vector, deg : f32, speed : f32) {
     self.spec = spec;
     self.set5(pos.x, pos.y, deg, speed);
   }
 
-  fn set6(&self, spec : &ParticleSpec, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set6(&mut self, spec : &ParticleSpec, x : f32, y : f32, deg : f32, speed : f32) {
     self.spec = spec;
     self.set5(x, y, deg, speed);
   }
 
-  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set5(&mut self, x : f32, y : f32, deg : f32, speed : f32) {
     self.state.clear();
     self.state.ts.pos.x = x;
     self.state.ts.pos.y = y;
@@ -506,7 +507,7 @@ impl<'a> Token<ParticleState, ParticleSpec<'a>> for Particle<'a> {
     self._exists = true;
   }
 
-  fn remove(&self) {
+  fn remove(&mut self) {
     self._exists = false;
     self.spec.removed(&self.state);
   }
@@ -597,14 +598,14 @@ impl<'a> Particle<'a> {
     self.state.trgNum = num;
     self.state.waitCnt = waitCnt;
     if type_ == ParticleShape::BONUS {
-      (self.spec as &BonusParticleSpec).setSize(&self.state, sz);
+      (&mut self.spec as &mut BonusParticleSpec).setSize(&self.state, sz);
     }
   }
 
   pub fn setByVelocity(&mut self, x : f32, y : f32, vx : f32, vy : f32,
                             sz : f32, r : f32, g : f32, b : f32, a : f32,
                             c : i32 /*= 60*/, ebg : bool /* = true*/) {
-    self.spec = &'a self.triangleParticleSpec as &'a ParticleSpec;
+    self.spec = self.triangleParticleSpec as &'a ParticleSpec;
     self.set5(x, y, 0.0, 0.0);
     self.state.vel.x = vx;
     self.state.vel.y = vy;

@@ -6,26 +6,8 @@
  * Display list of OpenGL.
  */
 
-// Dummy
-fn glGenLists(num : i32) -> i32 {
-  num
-}
+use ttn::dummy::*;
 
-const GL_COMPILE : usize = 0;
-
-fn glNewList(idx : i32, opt : usize) {
-}
-
-fn glEndList() {
-}
-
-fn glCallList(idx : i32) {
-}
-
-fn glDeleteLists(idx : i32, num : i32) {
-}
-
-//#######################################
 
 pub struct DisplayList {
   registered : bool,

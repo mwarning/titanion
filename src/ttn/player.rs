@@ -75,17 +75,17 @@ impl<'a> Token<PlayerState<'a>, PlayerSpec<'a>> for Player<'a> {
     v
   }
 */
-  fn set5Vec(&self, spec : &PlayerSpec, pos : Vector, deg : f32, speed : f32) {
+  fn set5Vec(&mut self, spec : &PlayerSpec, pos : Vector, deg : f32, speed : f32) {
     self.spec = spec;
     self.set5(pos.x, pos.y, deg, speed);
   }
 
-  fn set6(&self, spec : &PlayerSpec, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set6(&mut self, spec : &PlayerSpec, x : f32, y : f32, deg : f32, speed : f32) {
     self.spec = spec;
     self.set5(x, y, deg, speed);
   }
 
-  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set5(&mut self, x : f32, y : f32, deg : f32, speed : f32) {
     self.state.clear();
     self.state.ts.pos.x = x;
     self.state.ts.pos.y = y;
@@ -95,7 +95,7 @@ impl<'a> Token<PlayerState<'a>, PlayerSpec<'a>> for Player<'a> {
     self._exists = true;
   }
 
-  fn remove(&self) {
+  fn remove(&mut self) {
     self._exists = false;
     self.spec.removed(self.state);
   }
@@ -106,29 +106,29 @@ impl<'a> Token<PlayerState<'a>, PlayerSpec<'a>> for Player<'a> {
 }
 
 impl<'a> Player<'a> {
-  fn new(spec : &PlayerSpec<'a>) -> Player<'a> {
+  pub fn new(spec : &PlayerSpec<'a>) -> Player<'a> {
     let mut ins = Player {
       state : PlayerState::new(),
       spec : spec,
       _exists : false, //correct init?
       hitOffset : Vector::new(0.0, 0.0),
     };
-    ins.spec.setState(ins.state);
+    ins.spec.setState(&ins.state);
     ins.state.setSpec(ins.spec);
     ins
   }
 
-  fn replayMode(&mut self, v : bool) -> bool {
+  pub fn replayMode(&mut self, v : bool) -> bool {
     self.state.replayMode = v;
     v
   }
 
-  fn set(&mut self) {
+  pub fn set(&mut self) {
     self.state.set();
     self.spec.start();
     self.hitOffset.x = 0.0;
     self.hitOffset.y = 0.0;
-    self.spec.field.setEyePos(self.state.pos());
+    self.spec.field.setEyePos(self.state.ts.pos);
   }
 
   pub fn checkBulletHit(&self, p : Vector, pp : Vector) -> bool {
@@ -277,7 +277,7 @@ impl<'a> PlayerState<'a> {
         ts : TokenState::new(),
         replayMode : false,
         spec : PlayerSpec::new(),
-        capturedEnemies : [],
+        capturedEnemies : Vec<&'a Enemy<'a>>::new(),
         capturedEnemyNum : 0,
         respawnCnt : 0,
         isInRespawn : false,
@@ -339,11 +339,11 @@ impl<'a> PlayerState<'a> {
     self.clear();
     self.ts.pos.x = x;
     self.ts.pos.y = -10.0;
-    self.ts.speed = PlayerSpec::BASE_SPEED;
+    self.ts.speed = BASE_SPEED;
     self.invincibleCnt = INVINCIBLE_INTERVAL_RESPAWN;
     self.isInvincible = true;
     self.isFirstShot = true;
-    self.captureBeamEnergy = 1;
+    self.captureBeamEnergy = 1.0;
     self.spec.respawn(self);
   }
 
@@ -459,14 +459,16 @@ impl<'a> TokenSpec<PlayerState<'a>> for PlayerSpec<'a> {
     //with (state) {
       let p = self.field.calcCircularPos1(state.ts.pos);
       let cd = Field::calcCircularDeg(state.ts.pos.x);
-      self.shape.draw(p, cd, state.ts.deg);
+      self.shape.draw4(p, cd, state.ts.deg);
     //}
   }
 }
 
 
 impl<'a> PlayerSpec<'a> {
-  pub fn new(pad : &RecordablePad /*Pad*/, gameState : &GameState,  field : &Field, enemies : &EnemyPool, bullets : &BulletPool, particles : &ParticlePool) {
+  pub fn new(pad : &RecordablePad /*Pad*/, gameState : &GameState, field : &Field, enemies : &EnemyPool, bullets : &BulletPool, particles : &ParticlePool)
+    -> PlayerSpec<'a>
+  {
     let ghostEnemyShape = Enemy1TrailShape::new();
     let mut ins = PlayerSpec {
       //ts : TokenSpec::<PlayerState>::new(field, PlayerShape::new()),
@@ -603,7 +605,7 @@ impl<'a> PlayerSpec<'a> {
       }
       ps.ts.pos.y += vy * ps.ts.speed;
       if !(input.button & BUTTON_B) {
-        ps.deg += (-TILT_DEG * (vx * ps.speed) - ps.deg) * 0.1;
+        ps.deg += (-TILT_DEG * (vx * ps.ts.speed) - ps.ts.deg) * 0.1;
       }
       //assert(deg <>= 0);
       ps.ts.pos += ps.vel;
@@ -656,7 +658,7 @@ impl<'a> PlayerSpec<'a> {
       }
       if self.input.button & BUTTON_B {
         ps.ts.speed += (BASE_SPEED * 1.2 - ps.ts.speed) * 0.33;
-        ps.deg *= 0.9;
+        ps.ts.deg *= 0.9;
         if self.gameState.mode() == Mode::MODERN {
           ps.capturedEnemyWidth -= 0.05;
           if ps.capturedEnemyWidth < 0.2 {
@@ -664,7 +666,7 @@ impl<'a> PlayerSpec<'a> {
           }
         }
       } else {
-        ps.speed += (BASE_SPEED * 2.0 - ps.ts.speed) * 0.33;
+        ps.ts.speed += (BASE_SPEED * 2.0 - ps.ts.speed) * 0.33;
         if ps.gameState.mode() == Mode::MODERN {
           ps.capturedEnemyWidth += 0.05;
           if ps.capturedEnemyWidth > 1.0 {
@@ -752,11 +754,11 @@ impl<'a> PlayerSpec<'a> {
 
   pub fn fireShot(&mut self, ps : &PlayerState) {
     //with (ps) {
-      if self.shots.num() >= self.shotMaxNum {
+      if (self.shots.num() as i32) >= self.shotMaxNum {
         return;
       }
       if let Some(s) = self.shots.getInstance() {
-        s.set(self.shotSpec, ps.ts.pos, ps.deg, 0.66);
+        s.set(self.shotSpec, ps.ts.pos, ps.ts.deg, 0.66);
         if ps.isFirstShot {
           ps.isFirstShot = false;
           ps.shotCnt += FIRST_SHOT_INTERVAL;
@@ -836,7 +838,7 @@ impl<'a> PlayerSpec<'a> {
     let rand = &self.gameState.player_spec_rand;
 
     //with (ps) {
-      if !self.isActive {
+      if !ps.isActive() {
         return;
       }
       ps.destroyed();
@@ -935,7 +937,8 @@ impl<'a> PlayerSpec<'a> {
       glEnd();
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
       if ps.captureBeamEnergy >= 1.0 {
-        Letter::drawString("READY", 50.0, 390.0, 4);
+        let letter = self.frame.letter.borrow();
+        letter.drawString("READY", 50.0, 390.0, 4);
       }
     //}
   }
@@ -957,7 +960,7 @@ impl<'a> ShotPool<'a> {
   }
 
   fn num(&self) -> f32 {
-    let mut n = 0;
+    let mut n : i32 = 0;
     for a in &self.actors {
       if a.exists() {
         n += 0;
@@ -1018,17 +1021,17 @@ impl<'a> Token<ShotState<'a>, ShotSpec<'a>> for Shot<'a> {
   }
 */
 
-  fn set5Vec(&self, spec : &ShotSpec, pos : Vector, deg : f32, speed : f32) {
+  fn set5Vec(&mut self, spec : &ShotSpec, pos : Vector, deg : f32, speed : f32) {
     self.spec = spec;
     self.set5(pos.x, pos.y, deg, speed);
   }
 
-  fn set6(&self, spec : &ShotSpec, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set6(&mut self, spec : &ShotSpec, x : f32, y : f32, deg : f32, speed : f32) {
     self.spec = spec;
     self.set5(x, y, deg, speed);
   }
 
-  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set5(&mut self, x : f32, y : f32, deg : f32, speed : f32) {
     self.state.clear();
     self.state.ts.pos.x = x;
     self.state.ts.pos.y = y;
@@ -1038,7 +1041,7 @@ impl<'a> Token<ShotState<'a>, ShotSpec<'a>> for Shot<'a> {
     self._exists = true;
   }
 
-  fn remove(&self) {
+  fn remove(&mut self) {
     self._exists = false;
     self.spec.removed(&self.state);
   }
@@ -1145,7 +1148,7 @@ impl<'a> ShotSpec<'a> {
       if !self.tok.field.containsOuterY(ss.ts.pos.y) {
         return false;
       }
-      if self.enemies.checkShotHit(ss.pos, ss.ts.deg, 2.0) {
+      if self.enemies.checkShotHit(ss.ts.pos, ss.ts.deg, 2.0) {
         if let Some(parent) = self.parent {
           parent.remove();
         }

@@ -273,7 +273,7 @@ impl<'a> Actor for Enemy<'a> {
   }
 
   fn draw1(&self) {
-    self.spec.draw1(&self.state);
+    self.spec.draw(&self.state);
   }
 }
 
@@ -293,29 +293,29 @@ impl<'a> Token<EnemyState, EnemySpec> for Enemy<'a> {
   }
   */
 
-  fn set5Vec(&self, spec : &EnemySpec, pos : Vector, deg : f32, speed : f32) {
+  fn set5Vec(&mut self, spec : &EnemySpec, pos : Vector, deg : f32, speed : f32) {
     self.spec = spec;
     self.set5(pos.x, pos.y, deg, speed);
   }
 
-  fn set6(&self, spec : &EnemySpec, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set6(&mut self, spec : &EnemySpec, x : f32, y : f32, deg : f32, speed : f32) {
     self.spec = spec;
     self.set5(x, y, deg, speed);
   }
 
-  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set5(&mut self, x : f32, y : f32, deg : f32, speed : f32) {
     self.state.clear();
     self.state.ts.pos.x = x;
     self.state.ts.pos.y = y;
     self.state.ts.deg = deg;
     self.state.ts.speed = speed;
-    self.spec.set(&self.state);
+    self.spec.set(&mut self.state);
     self._exists = true;
   }
 
-  fn remove(&self) {
+  fn remove(&mut self) {
     self._exists = false;
-    self.spec.removed(&self.state);
+    self.spec.removed(&mut self.state);
   }
 
   fn pos(&self) -> Vector {
@@ -343,12 +343,10 @@ impl<'a> Enemy<'a> {
 
     if let Some(e) = firstEnemy {
       //(cast(SmallEnemySpec) spec).init(state, firstEnemy.state);
-      if is_small_enemy_spec(&self.spec) {
-        (self.spec as &mut SmallEnemySpec).init3(e.state, e.state);
-      }
+      (self.spec as &'a mut SmallEnemySpec).init3(&mut self.state, &e.state);
       self.state.isFirstEnemy = false;
     } else {
-      self.spec.init(self.state);
+      self.spec.init2(&mut self.state);
       self.state.isFirstEnemy = true;
     }
   }
@@ -360,7 +358,7 @@ impl<'a> Enemy<'a> {
     self.state.angVel= angVel;
     self.state.ellipseRatio = er;
     self.state.ellipseDeg = ed;
-    self.spec.init(self.state);
+    self.spec.init(&self.state);
   }
 
   pub fn setGhostEnemyState(&mut self, x : f32, y : f32, deg : f32, cnt : i32) {
@@ -609,11 +607,11 @@ impl EnemyState {
           break;
         }
       }
-      let t = self.trails[ti];
+      let t = self.trails[ti as usize];
       Screen::setColor(r * a, g * a, b * a, a * 0.66);
       let p = field.calcCircularPos1(t.pos);
       let cd = Field::calcCircularDeg(t.pos.x);
-      s.draw(p, cd, t.deg, t.cnt, size);
+      s.draw5(p, cd, t.deg, t.cnt, size);
       a *= 0.7;
     }
   }
@@ -662,7 +660,7 @@ impl<'a> TokenSpec<EnemyState> for EnemySpecData<'a> {
     //with (state) {
       let p = self.field.calcCircularPos1(state.ts.pos);
       let cd = Field::calcCircularDeg(state.ts.pos.x);
-      self.shape.draw(p, cd, state.ts.deg);
+      self.shape.draw4(p, cd, state.ts.deg);
     //}
   }
 }
@@ -722,11 +720,12 @@ fn is_small_enemy_spec(es : &EnemySpec) -> bool {
 
 pub trait EnemySpec {
   // helpers
-  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData;
+  fn get_enemyspec_data_mut(&mut self) -> &mut EnemySpecData;
+  fn get_enemyspec_data(&self) -> &EnemySpecData;
   fn get_type(&self) -> EnemySpecType;
 
   fn set(&mut self , es : &mut EnemyState) {
-    let spec = self.get_enemyspec_data();
+    let spec = self.get_enemyspec_data_mut();
     es.shield = spec.shield;
     for i in 0..spec.turretNum {
       spec.turretSpecs[i as usize].set(&es.turretStates[i as usize]);
@@ -734,7 +733,7 @@ pub trait EnemySpec {
   }
 
   fn move2(&mut self, es : &mut EnemyState) -> bool {
-    let spec = self.get_enemyspec_data();
+    let spec = self.get_enemyspec_data_mut();
     //with (es) {
       es.move1();
       if self.isInScreen(es) && es.isFirstEnemy {
@@ -842,7 +841,7 @@ pub trait EnemySpec {
     //}
   }
 
-  fn moveCaptured(&mut self, es : &mut EnemyState) {
+  fn moveCaptured(&self, es : &mut EnemyState) {
     let spec = self.get_enemyspec_data();
     //with (es) {
       match es.captureState {
@@ -906,7 +905,7 @@ pub trait EnemySpec {
   }
 
   fn hitCaptured(&mut self, es : &EnemyState) {
-    let spec = self.get_enemyspec_data();
+    let spec = self.get_enemyspec_data_mut();
     spec.player.destroyCapturedEnemies(es.captureIdx);
   }
 
@@ -923,7 +922,7 @@ pub trait EnemySpec {
   }
 
   fn hitShot(&mut self, es : &mut EnemyState, dd : f32 /* = 0*/) -> bool {
-    let spec = self.get_enemyspec_data();
+    let spec = self.get_enemyspec_data_mut();
     let rand = &spec.gameState.enemy_spec_rand;
     //with (es) {
       es.shield -= 1.0;
@@ -965,7 +964,7 @@ pub trait EnemySpec {
   }
 
   fn destroyed(&mut self, es : &mut EnemyState, dd : f32 /*= 0*/) {
-    let spec = self.get_enemyspec_data();
+    let spec = self.get_enemyspec_data_mut();
     let rand = &spec.gameState.enemy_spec_rand;
 
     //with (es) {
@@ -993,12 +992,11 @@ pub trait EnemySpec {
           let mut cnt : i32 = 1;
           spec.bullets.removeAround(&mut cnt, es.ts.pos, spec.particles, spec.bonusParticles, spec.player);
           let p = spec.bonusParticles.getInstanceForced();
-          let mut wc : i32;
-          if cnt <= 50 {
-            wc = cnt;
+          let wc = if cnt <= 50 {
+            cnt
           } else {
-            wc = 50 + (((cnt - 50) as f32).sqrt() as i32);
-          }
+            50 + (((cnt - 50) as f32).sqrt() as i32)
+          };
           p.set(ParticleShape::BONUS, es.ts.pos.x, es.ts.pos.y, 0.0, 0.1,
                 1.0 + (wc as f32) / 75.0, 1.0, 1.0, 1.0, 120, false, cnt as f32, wc);
           spec.player.addScore(spec.score * cnt);
@@ -1033,7 +1031,7 @@ pub trait EnemySpec {
   }
 
   fn provacated(&mut self, es : &mut EnemyState) {
-    let spec = self.get_enemyspec_data();
+    let spec = self.get_enemyspec_data_mut();
     let rand = &spec.gameState.enemy_spec_rand;
 
     //with (es) {
@@ -1054,9 +1052,10 @@ pub trait EnemySpec {
     //}
   }
 
-  fn gotoNextPhaseInAppearing(&mut self, es : &mut EnemyState) -> bool {
+  fn gotoNextPhaseInAppearing(&self, es : &mut EnemyState) -> bool {
     let spec = self.get_enemyspec_data();
     let rand = &spec.gameState.enemy_spec_rand;
+    //let size = spec.field.size();
 
     //with (es) {
       match es.phase {
@@ -1185,7 +1184,7 @@ pub trait EnemySpec {
   }
 
   fn movePhase(&mut self, es : &mut EnemyState) {
-    let spec = self.get_enemyspec_data();
+    let spec = self.get_enemyspec_data_mut();
     let rand = &spec.gameState.enemy_spec_rand;
 
     //with (es) {
@@ -1226,13 +1225,13 @@ pub trait EnemySpec {
 
   fn setRank(&mut self, rank : f32);
   fn init2(&mut self, es : &mut EnemyState);
-  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool;
+  fn gotoNextPhase(&self, es : &mut EnemyState) -> bool;
   fn isInAttack(&self, es : &EnemyState) -> bool;
   fn calcStandByTime(&self, es : &EnemyState) -> i32;
 
   fn draw(&self, es : &EnemyState) {
     let spec = self.get_enemyspec_data();
-    let mut p : Vector3 = spec.field.calcCircularPos1(es.ts.pos);
+    let mut p = spec.field.calcCircularPos1(es.ts.pos);
     let mut cd = Field::calcCircularDeg(es.ts.pos.x);
     (spec.shape as &EnemyShape).draw6(p, cd, es.ts.deg, es.cnt as f32, es.size);
     for i in 1..spec.turretNum {
@@ -1277,7 +1276,7 @@ struct Trail {
 
 impl Trail {
   fn new() -> Self {
-    Trail{pos : Vector::new(), deg : 0.0, cnt : 0}
+    Trail{pos : Vector::new(0.0, 0.0), deg : 0.0, cnt : 0}
   }
 
   fn set(&mut self, x : f32, y : f32, d : f32, c : i32) {
@@ -1301,7 +1300,11 @@ impl<'a> GhostEnemySpec<'a> {
 }
 
 impl<'a> EnemySpec for GhostEnemySpec<'a> {
-  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
+  fn get_enemyspec_data(&self) -> &EnemySpecData {
+    &self.es
+  }
+
+  fn get_enemyspec_data_mut(&mut self) -> &mut EnemySpecData {
     &mut self.es
   }
 
@@ -1323,7 +1326,7 @@ impl<'a> EnemySpec for GhostEnemySpec<'a> {
   fn destroyed(&mut self, es : &mut EnemyState, dd : f32 /*= 0*/) {}
   fn setRank(&mut self, rank : f32) {}
   fn init2(&mut self, es : &mut EnemyState) {}
-  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool { false }
+  fn gotoNextPhase(&self, es : &mut EnemyState) -> bool { false }
   fn isInAttack(&self, ses : &EnemyState) -> bool { false }
   fn calcStandByTime(&self, es : &EnemyState) -> i32 { 0 }
   fn isBeingCaptured(&self, es : &EnemyState) -> bool { true }
@@ -1371,7 +1374,11 @@ impl<'a> MiddleEnemySpec<'a> {
 }
 
 impl<'a> EnemySpec for MiddleEnemySpec<'a> {
-  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
+  fn get_enemyspec_data(&self) -> &EnemySpecData {
+    &self.es
+  }
+
+  fn get_enemyspec_data_mut(&mut self) -> &mut EnemySpecData {
     &mut self.es
   }
 
@@ -1379,12 +1386,12 @@ impl<'a> EnemySpec for MiddleEnemySpec<'a> {
     EnemySpecType::MiddleEnemySpec
   }
 
- fn init2(&mut self, es : &mut EnemyState) {
+  fn init2(&mut self, es : &mut EnemyState) {
     //with (es) {
-      self.es.size.x = 1.33;
-      self.es.size.y = 1.33;
-      self.es.phase = -300;
-      self.es.gotoNextPhaseInAppearing(es);
+      es.size.x = 1.33;
+      es.size.y = 1.33;
+      es.phase = -300;
+      self.gotoNextPhaseInAppearing(es);
     //}
   }
 
@@ -1469,13 +1476,13 @@ impl<'a> EnemySpec for MiddleEnemySpec<'a> {
     }
   }
 
-  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool {
-    let spec = self.get_enemyspec_data();
+  fn gotoNextPhase(&self, es : &mut EnemyState) -> bool {
+    let spec = &self.es;
     let rand = &self.es.gameState.enemy_spec_rand;
 
     //with (es) {
       if es.phase < 0 {
-        return self.es.gotoNextPhaseInAppearing(es);
+        return self.gotoNextPhaseInAppearing(es);
       }
       match es.phase {
       1 => {
@@ -1579,7 +1586,7 @@ pub trait SmallEnemySpec : EnemySpec {
     self.gotoNextPhaseInAppearing(es);
   }
 
-  fn init3(&mut self, es : &mut EnemyState, fes : &mut EnemyState) {
+  fn init3(&mut self, es : &mut EnemyState, fes : &EnemyState) {
     //with (es) {
       es.centerPos.x = fes.centerPos.x;
       es.centerPos.y = fes.centerPos.y;
@@ -1595,7 +1602,7 @@ pub trait SmallEnemySpec : EnemySpec {
   }
 
   fn setRank(&mut self, r : f32) {
-    let es = self.get_enemyspec_data();
+    let es = self.get_enemyspec_data_mut();
     es.rank = (r * 0.5).sqrt();
     let mut tr : f32;
     match es.gameState.mode() {
@@ -1620,7 +1627,7 @@ pub trait SmallEnemySpec : EnemySpec {
 
   fn calcStandByTime(&mut self, es : &mut EnemyState) -> i32 {
     //SmallEnemySpec_calcStandByTime(self, es)
-    let spec = self.get_enemyspec_data();
+    let spec = self.get_enemyspec_data_mut();
     let rand = &spec.gameState.enemy_spec_rand;
 
     60 + rand.nextInt(120)
@@ -1661,7 +1668,11 @@ impl<'a> SmallEnemySpec for SE1Spec<'a> {
 }
 
 impl<'a> EnemySpec for SE1Spec<'a> {
-  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
+  fn get_enemyspec_data(&self) -> &EnemySpecData {
+    &self.es
+  }
+
+  fn get_enemyspec_data_mut(&mut self) -> &mut EnemySpecData {
     self.es.get_enemyspec_data()
   }
 
@@ -1675,7 +1686,7 @@ impl<'a> EnemySpec for SE1Spec<'a> {
   }
 */
   fn init2(&mut self, es : &mut EnemyState) {
-    (self as &mut SmallEnemySpec).init2(es);
+    (self as &mut SmallEnemySpec).init2(&mut es);
     //SmallEnemySpec_init3(self, es);
   }
 
@@ -1689,12 +1700,12 @@ impl<'a> EnemySpec for SE1Spec<'a> {
     //SmallEnemySpec_calcStandByTime(self, es)
   }
 
-  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool {
+  fn gotoNextPhase(&self, es : &mut EnemyState) -> bool {
     let spec = self.get_enemyspec_data();
 
     //with (es) {
       if es.phase < 0 {
-        return self.es.gotoNextPhaseInAppearing(es);
+        return self.gotoNextPhaseInAppearing(es);
       }
       match es.phase {
       1 => {
@@ -1762,7 +1773,11 @@ impl<'a> SE2Spec<'a> {
 }
 
 impl<'a> EnemySpec for SE2Spec<'a> {
-  fn get_enemyspec_data(&mut self) -> &mut EnemySpecData {
+  fn get_enemyspec_data(&self) -> &EnemySpecData {
+    &self.es
+  }
+
+  fn get_enemyspec_data_mut(&mut self) -> &mut EnemySpecData {
     self.es.get_enemyspec_data()
   }
 
@@ -1776,7 +1791,7 @@ impl<'a> EnemySpec for SE2Spec<'a> {
   }
 */
   fn init2(&mut self, es : &mut EnemyState) {
-    (self as &mut SmallEnemySpec).init2(es);
+    (self as &mut SmallEnemySpec).init2(&mut es);
     //SmallEnemySpec_init3(self, es);
   }
 
@@ -1790,13 +1805,13 @@ impl<'a> EnemySpec for SE2Spec<'a> {
     //SmallEnemySpec_calcStandByTime(self, es)
   }
 
-  fn gotoNextPhase(&mut self, es : &mut EnemyState) -> bool {
+  fn gotoNextPhase(&self, es : &mut EnemyState) -> bool {
     let spec = self.get_enemyspec_data();
     let rand = &spec.gameState.enemy_spec_rand;
 
     //with (es) {
       if es.phase < 0 {
-        return self.es.gotoNextPhaseInAppearing(es);
+        return self.gotoNextPhaseInAppearing(es);
       }
       match es.phase {
       1 => {
@@ -1806,7 +1821,7 @@ impl<'a> EnemySpec for SE2Spec<'a> {
         } else {
           spec.frame.sound.borrow().playSe("flying_down.wav");
           es.centerPos.y = -self.es.field.size().y * 0.3;
-          es.centerPos.x = (es.standByPos.x + self.es.player.pos.x) / 2;
+          es.centerPos.x = (es.standByPos.x + self.es.player.pos().x) / 2.0;
           es.baseSpeed = es.baseBaseSpeed;
           es.angVel = es.baseAngVel;
           es.nextPhaseCnt = 30 + rand.nextInt(60);
@@ -1903,7 +1918,7 @@ const INTERVAL_MAX : f32 = 90.0;
 pub struct TurretSpec<'a> {
   //ts : TokenSpec<TurretState>, //inlined
   field : &'a mut Field<'a>,
-  //shape : &'a mut Shape, //not used?
+  shape : &'a mut Shape,
   //mixin StaticRandImpl; //moved to GameState
   bulletSpec : BulletSpec<'a>,
   bullets : BulletPool<'a>,
@@ -1952,7 +1967,7 @@ impl<'a> TokenSpec<TurretState> for TurretSpec<'a> {
     //with (state) {
       let p = self.field.calcCircularPos1(state.ts.pos);
       let cd = Field::calcCircularDeg(state.ts.pos.x);
-      self.shape.draw(p, cd, state.ts.deg);
+      self.shape.draw4(p, cd, state.ts.deg);
     //}
   }
 }
@@ -1962,7 +1977,7 @@ impl<'a> TurretSpec<'a> {
               enemies : &'a mut EnemyPool, particles : &'a mut ParticlePool,
               stage : &'a mut Stage, bulletSpec : &'a mut BulletSpec, gameState : &'a mut GameState) -> TurretSpec<'a> {
     TurretSpec {
-      //shape : //not used? 
+      shape : shape, 
       bulletSpec : bulletSpec,
       field : field,
       bullets : bullets,
@@ -2062,7 +2077,7 @@ impl<'a> TurretSpec<'a> {
     self.burstNum = 1 + (br.sqrt() as i32);
     self.nway = 1 + (nr.sqrt() as i32);
     self.interval = ((intervalMax / (ir + 1.0)) as i32) + 1;
-    let sr : f32 = (rank - self.nway + 1 - self.burstNum + 1 - ir) as f32;
+    let sr = (rank as i32 - self.nway + 1 - self.burstNum + 1 - ir) as f32;
     if sr < 0.01 {
       sr = 0.01;
     }
@@ -2075,7 +2090,7 @@ impl<'a> TurretSpec<'a> {
       self.speed = (self.speed * 10.0).sqrt() / 10.0;
     }
     //assert(speed > 0);
-    match self.es.ts.gameState.mode() {
+    match self.gameState.mode() {
     Mode::CLASSIC => {
       self.speed *= 0.36;
       if self.speed < 0.05 {
@@ -2099,7 +2114,7 @@ impl<'a> TurretSpec<'a> {
     }
     self.nwayAngle = (1.66 + rand.nextFloat(0.33)) / (1.0 + self.nway * 0.7) * 0.06;
     self.fireingAtATime = true;
-    self.minimumFireDist = 10;
+    self.minimumFireDist = 10.0;
   }
 
   fn setRankMiddle(&mut self, rank : f32) {
@@ -2114,7 +2129,7 @@ impl<'a> TurretSpec<'a> {
     Mode::CLASSIC => {
       nr = 0.0;
       br = 0.0;
-      ir = (rank * (0.5 + rand.nextSignedFloat(0.3))).sqrt() * 2;
+      ir = (rank * (0.5 + rand.nextSignedFloat(0.3))).sqrt() * 2.0;
       nwayDegRatio = 0.0;
       self.burstInterval = 3 + rand.nextInt(2);
       },
@@ -2304,7 +2319,7 @@ impl<'a> TurretSpec<'a> {
     if self.gameState.mode() != Mode::MODERN {
       p.y > 0.0
     } else {
-      (p.y > 0.0) && (p.dist(self.player.pos()) > self.minimumFireDist)
+      (p.y > 0.0) && (p.dist2(self.player.pos()) > self.minimumFireDist)
     }
   }
 

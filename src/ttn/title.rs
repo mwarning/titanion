@@ -46,7 +46,7 @@ impl<'a> Title<'a> {
       aPressed : false,
       udPressed : false,
       titleTexture : Texture::new("title.bmp"),
-      titlePos : Vector::new(0.0, 0.0, 0.0),
+      titlePos : Vector::new(0.0, 0.0),
       titleSize : 0.0,
       cursorIdx : 0,
     }
@@ -93,8 +93,8 @@ impl<'a> Title<'a> {
           self.cursorIdx += 1;
         }
         if self.cursorIdx < 0 {
-          self.cursorIdx = GameState::MODE_NUM - 1;
-        } else if self.cursorIdx > (GameState::MODE_NUM - 1) {
+          self.cursorIdx = MODE_NUM - 1;
+        } else if self.cursorIdx > (MODE_NUM - 1) {
           self.cursorIdx = 0;
         }
       }
@@ -113,6 +113,7 @@ impl<'a> Title<'a> {
   }
 
   fn draw(&mut self) {
+    let letter = self.frame.letter.borrow();
     Screen::setColor(1.0, 1.0, 1.0, 1.0);
     glEnable(GL_TEXTURE_2D);
     self.titleTexture.bind();
@@ -129,7 +130,7 @@ impl<'a> Title<'a> {
         x += c * 4.33;
         sz -= c * 0.045;
       }
-      Letter::drawString("PUSH SHOT BUTTON TO START", x, 440.0, sz);
+      letter.drawString("PUSH SHOT BUTTON TO START", x, 440.0, sz);
     }
     if self.cnt >= 240 {
       self.drawRanking();
@@ -138,7 +139,7 @@ impl<'a> Title<'a> {
       Title::drawTriangle(575.0, 398.0, 180.0);
       Title::drawTriangle(575.0, 417.0, 0.0);
     }
-    Letter::drawString(MODE_NAME[self.cursorIdx as usize], 540.0, 400.0, 5.0);
+    letter.drawString(MODE_NAME[self.cursorIdx as usize], 540.0, 400.0, 5.0);
   }
 
   fn drawBoard(x : f32, y : f32, w : f32, h : f32) {
@@ -175,6 +176,7 @@ impl<'a> Title<'a> {
   }
 
   fn drawRanking(&self) {
+    let letter = self.frame.letter.borrow();
     let rn : i32 = (self.cnt - 240) / 30;
     if rn > (RANKING_NUM as i32) {
       rn = RANKING_NUM as i32;
@@ -190,9 +192,9 @@ impl<'a> Title<'a> {
         };
 
         if i < 9 {
-          Letter::drawString(rstr, 180.0, y, 7.0);
+          letter.drawString(rstr, 180.0, y, 7.0);
         } else {
-          Letter::drawString(rstr, 166.0, y, 7.0);
+          letter.drawString(rstr, 166.0, y, 7.0);
         }
       }
       let mut sx = 450.0;
@@ -206,7 +208,7 @@ impl<'a> Title<'a> {
         sx += ((c * 2.35) as i32) as f32;
         sz -= c * 0.03;
       }
-      Letter::drawNum7(self.preference.highScore()[self.cursorIdx as usize][i], sx, sy, sz, 0, -1.0, -1);
+      letter.drawNum7(self.preference.highScore()[self.cursorIdx as usize][i], sx, sy, sz, 0, -1.0, -1);
       y += 24.0;
     }
   }

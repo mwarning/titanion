@@ -12,20 +12,6 @@ use ttn::field::*;
 use ttn::screen::*;
 use ttn::dummy::*;
 
-/*
-//Dummy
-struct DisplayList {
-    size : usize,
-}
-
-impl DisplayList {
-    fn new(num : usize) -> DisplayList {
-        DisplayList{size : num}
-    }
-}*/
-
-
-//#############
 
 /**
  * 3D shapes of a player, enemies, particles, etc.

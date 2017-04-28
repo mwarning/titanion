@@ -96,7 +96,7 @@ impl Music {
   }
 
   pub fn free(&self) {
-    self.halt();
+    Music::halt();
     Mix_FreeMusic(self.music);
   }
 

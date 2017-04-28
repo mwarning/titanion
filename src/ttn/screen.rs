@@ -128,7 +128,7 @@ impl Screen {
     glMatrixMode(GL_MODELVIEW);
   }
 
-  fn setPerspective(mut self) {
+  pub fn setPerspective(mut self) {
     glLoadIdentity();
     //gluPerspective(45.0f, cast(GLfloat) width / cast(GLfloat) height, nearPlane, farPlane);
     glFrustum(-self._nearPlane as f64,

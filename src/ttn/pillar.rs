@@ -32,24 +32,24 @@ impl<'a> PillarPool<'a> {
 
   pub fn setEnd(&mut self) {
     for a in &self.ap.actors {
-      if a.exists {
+      if a.getExists() {
         a.setEnd();
       }
     }
   }
 
   pub fn drawCenter(&mut self) {
-    let sas = &self.actors.sort();
+    let sas = &self.ap.actors.sort();
     for a in sas {
-      if a.exists && !a.state.isOutside {
+      if a.getExists() && !a.state.isOutside {
         a.draw();
       }
     }
   }
 
   pub fn drawOutside(&mut self) {
-    for a in &self.actors {
-      if a.exists && a.state.isOutside {
+    for a in &self.ap.actors {
+      if a.getExists() && a.state.isOutside {
         a.draw();
       }
     }
@@ -84,13 +84,13 @@ impl<'a> Actor for Pillar<'a> {
   }
 
   fn move1(&self) {
-    if !self.spec.move2(self.state) {
+    if !self.spec.move2(&self.state) {
       self.remove();
     }
   }
 
   fn draw1(&self) {
-    self.spec.draw(self.state);
+    self.spec.draw(&self.state);
   }
 }
 
@@ -105,17 +105,17 @@ impl<'a> Token<PillarState<'a>, PillarSpec<'a>> for Pillar<'a> {
     v
   }
 */
-  fn set5Vec(&self, spec : &PillarSpec, pos : Vector, deg : f32, speed : f32) {
+  fn set5Vec(&mut self, spec : &PillarSpec, pos : Vector, deg : f32, speed : f32) {
     self.spec = spec;
     self.set5(pos.x, pos.y, deg, speed);
   }
 
-  fn set6(&self, spec : &PillarSpec, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set6(&mut self, spec : &PillarSpec, x : f32, y : f32, deg : f32, speed : f32) {
     self.spec = spec;
     self.set5(x, y, deg, speed);
   }
 
-  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32) {
+  fn set5(&mut self, x : f32, y : f32, deg : f32, speed : f32) {
     self.state.clear();
     self.state.ts.pos.x = x;
     self.state.ts.pos.y = y;
@@ -125,7 +125,7 @@ impl<'a> Token<PillarState<'a>, PillarSpec<'a>> for Pillar<'a> {
     self._exists = true;
   }
 
-  fn remove(&self) {
+  fn remove(&mut self) {
     self._exists = false;
     self.spec.removed(self.state);
   }
@@ -140,7 +140,7 @@ impl<'a> Pillar<'a> {
   fn set(&mut self, ps : PillarSpec, y : f32, maxY : f32, pp : &Pillar, s : &PillarShape, vdeg : f32, outside : bool /*= false*/) {
     self.set(ps, 0.0, y, 0.0, 0.0);
     self.state.maxY = maxY;
-    self.state.previousPillar = pp;
+    self.state.previousPillar = Some(pp);
     self.state.pshape = s;
     self.state.vdeg = vdeg;
     self.state.isOutside = outside;
@@ -266,6 +266,6 @@ impl<'a> PillarSpec<'a> {
   }
 
   fn draw(&self, ps : &PillarState) {
-    ps.pshape.draw(ps.ts.pos.y, ps.ts.deg);
+    ps.pshape.draw3(ps.ts.pos.y, ps.ts.deg);
   }
 }

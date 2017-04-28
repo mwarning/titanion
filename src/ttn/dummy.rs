@@ -15,6 +15,14 @@ impl SDL_Event {
   }
 }
 
+pub const GL_COMPILE : usize = 0;
+pub fn glGenLists(num : i32) -> i32 { 0 }
+pub fn glNewList(idx : i32, opt : usize) {}
+pub fn glEndList() {}
+pub fn glCallList(idx : i32) {}
+pub fn glDeleteLists(idx : i32, num : i32) {}
+
+
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum GLenum { GL_NO_ERROR }
 

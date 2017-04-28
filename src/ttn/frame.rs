@@ -90,7 +90,7 @@ impl<'a> Frame<'a> {
     //let preference = abstractPreference as &Preference;
     //self.preference = preference;
     self.preference.borrow_mut().load();
-    Letter::init();
+    self.letter.init();
     //let pad = abstractInput as &Pad;
     //self.pad = pad;
     self.abstractInput.openJoystick(); // was self.pad.openJoystick();
@@ -160,7 +160,7 @@ impl<'a> Frame<'a> {
     self.playerSpec.borrow_mut().close();
     self.gameState.borrow_mut().close();
     self.stage.borrow_mut().close();
-    Letter::close();
+    self.letter.close();
   }
 
   pub fn start(&self) {
@@ -229,7 +229,7 @@ impl<'a> Frame<'a> {
     let gameState = self.gameState.borrow_mut();
     gameState.move1();
     self.field.borrow_mut().move1();
-    if self.gameState.isInGame || (self.replayData != None) {
+    if self.gameState.isInGame() || (self.replayData != None) {
       if !self.gameState.paused() {
         self.stage.borrow_mut().move1();
         self.pillars.borrow_mut().move1();
@@ -268,7 +268,7 @@ impl<'a> Frame<'a> {
     let mut pillars = self.pillars.borrow_mut();
     let mut bullets = self.bullets.borrow_mut();
     field.setLookAt();
-    if gameState.isInGame || (self.replayData != None) {
+    if gameState.isInGame() || (self.replayData != None) {
       pillars.drawOutside();
       field.drawBack();
       enemies.drawPillarBack(&field);
@@ -282,7 +282,7 @@ impl<'a> Frame<'a> {
       bullets.draw1();
       field.beginDrawingFront();
       gameState.draw();
-      if gameState.isTitle {
+      if gameState.isTitle() {
         self.title.draw();
       }
       player.drawState();
@@ -357,7 +357,7 @@ pub enum Mode {
   CLASSIC, BASIC, MODERN,
 }
 
-const MODE_NUM : i32 = 3;
+pub const MODE_NUM : i32 = 3;
 pub const MODE_NAME: &'static [ &'static str ] = &["CLASSIC", " BASIC ", "MODERN"];
 pub static mut stageRandomized : bool = false;
 
@@ -482,7 +482,7 @@ impl<'a> GameState<'a> {
     self.sound.fadeBgm();
     self._lastGameScore = self.score;
     self._lastGameMode = self.mode;
-    self.preference.recordResult(self.score, self._mode);
+    self.preference.recordResult(self.score, self._mode as i32);
     self.preference.save();
   }
 
@@ -508,7 +508,7 @@ impl<'a> GameState<'a> {
 
   pub fn move1(&mut self) {
     self.handleEscKey();
-    if self.isInGameAndNotGameOver {
+    if self.isInGameAndNotGameOver() {
       self.handlePauseKey();
       if self._paused {
         self.pauseCnt += 1;
@@ -618,7 +618,7 @@ impl<'a> GameState<'a> {
   pub fn destroyedPlayer(&mut self) {
     self.left -= 1;
     if self.left < 0 {
-      if self.isInGame {
+      if self.isInGame() {
         self.startGameOver();
       } else {
         self.startGameOverWithoutRecording();
@@ -635,32 +635,32 @@ impl<'a> GameState<'a> {
   }
 
   pub fn draw(&mut self) {
-    Letter::drawNum(self.score, 132.0, 5.0, 7.0);
-    Letter::drawNum(self.nextExtendScore, 134.0, 25.0, 5.0);
+    self.letter.drawNum(self.score, 132.0, 5.0, 7.0);
+    self.letter.drawNum(self.nextExtendScore, 134.0, 25.0, 5.0);
     if self._lastGameScore >= 0 {
-      Letter::drawNum(self._lastGameScore, 360.0, 5.0, 7.0);
+      self.letter.drawNum(self._lastGameScore, 360.0, 5.0, 7.0);
       //Letter.drawString(GameState.MODE_NAME[_lastGameMode], 292, 24, 5);
     }
-    Letter::drawNum((self._multiplier * 100.0) as i32, 626.0, 4.0, 9.0, 3.0, 33, 2.0);
+    self.letter.drawNum((self._multiplier * 100.0) as i32, 626.0, 4.0, 9.0, 3.0, 33, 2.0);
     if self.pmDispCnt > 0 {
-      Letter::drawNum7(self.proximityMultiplier, 626.0, 30.0, 7.0, 0, 33.0);
+      self.letter.drawNum7(self.proximityMultiplier, 626.0, 30.0, 7.0, 0, 33.0);
     }
     self.stage.drawPhaseNum();
-    if self.isInGame {
+    if self.isInGame() {
       if !self._isGameOver {
         self.stage.draw();
       }
       if self._isGameOver {
         if self.gameOverCnt > 60 {
-          Letter::drawString("GAME OVER", 214.0, 200.0, 12.0);
+          self.letter.drawString("GAME OVER", 214.0, 200.0, 12.0);
           self.stage.drawGameover();
         }
       } else if self._paused {
         if (self.pauseCnt % 120) < 60 {
-          Letter::drawString("PAUSE", 290.0, 420.0, 7.0);
+          self.letter.drawString("PAUSE", 290.0, 420.0, 7.0);
         }
       }
-      Letter::drawString(GameState::MODE_NAME[self.mode() as usize], 540.0, 400.0, 5.0);
+      self.letter.drawString(GameState::MODE_NAME[self.mode() as usize], 540.0, 400.0, 5.0);
     }
   }
 

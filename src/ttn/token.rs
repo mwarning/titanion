@@ -20,6 +20,7 @@ use util::vector::*;
 use ttn::bullet::*;
 use ttn::shape::*;
 use ttn::field::*;
+use ttn::frame::*;
 use ttn::dummy::*;
 
 /**
@@ -61,17 +62,17 @@ pub trait Token<ST : ?Sized, SP : ?Sized> : Actor {
     self.spec.draw(self.state);
   }*/
 */
-  fn set5Vec(&self, spec : &SP, pos : Vector, deg : f32, speed : f32); /* {
+  fn set5Vec(&mut self, spec : &SP, pos : Vector, deg : f32, speed : f32); /* {
     self.spec = spec;
     self.set5(pos.x, pos.y, deg, speed);
   }*/
 
-  fn set6(&self, spec : &SP, x : f32, y : f32, deg : f32, speed : f32); /* {
+  fn set6(&mut self, spec : &SP, x : f32, y : f32, deg : f32, speed : f32); /* {
     self.spec = spec;
     self.set5(x, y, deg, speed);
   }*/
 
-  fn set5(&self, x : f32, y : f32, deg : f32, speed : f32); /* {
+  fn set5(&mut self, x : f32, y : f32, deg : f32, speed : f32); /* {
     self.state.clear();
     self.state.pos.x = x;
     self.state.pos.y = y;
@@ -81,7 +82,7 @@ pub trait Token<ST : ?Sized, SP : ?Sized> : Actor {
     self._exists = true;
   }*/
 
-  fn remove(&self); /* {
+  fn remove(&mut self); /* {
     self._exists = false;
     self.spec.removed(self.state);
   }*/
